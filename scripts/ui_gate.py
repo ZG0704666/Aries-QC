@@ -1,0 +1,32 @@
+from playwright.sync_api import sync_playwright
+
+errors = []
+with sync_playwright() as p:
+    b = p.chromium.launch(channel='msedge', headless=True)
+    pg = b.new_page(viewport={'width': 1440, 'height': 1000})
+    pg.on('console', lambda m: errors.append(f'{m.type}:{m.text}') if m.type == 'error' else None)
+    pg.on('pageerror', lambda e: errors.append(f'pageerror:{e}'))
+    pg.goto('http://127.0.0.1:8877/', wait_until='networkidle')
+    pg.wait_for_timeout(600)
+    pg.click('[data-demo="gate"]')
+    pg.wait_for_selector('#runView:not([hidden])', timeout=20000)
+    pg.wait_for_function("() => /NEEDS_INPUT/.test(document.querySelector('#runIdLabel').textContent)", timeout=60000)
+    pg.wait_for_timeout(600)
+    print('modal display', pg.eval_on_selector('#modal', 'e=>getComputedStyle(e).display'))
+    print('questions', len(pg.query_selector_all('.question')))
+    print('def rows', len(pg.query_selector_all('#questionForm input[data-class]')))
+    pg.fill('#qProject', '怀柔机器人产线动作采集（一期）')
+    inputs = pg.query_selector_all('#questionForm input[data-class]')
+    for i, item in enumerate(inputs):
+        item.fill(['AGV 车体，排除地面标线', '机械臂本体，排除线缆', '轨道门体，排除普通门'][i] if i < 3 else '')
+    pg.screenshot(path='runs/_ui_smoke/07_questions.png', full_page=True)
+    pg.click('#modalSubmit')
+    pg.wait_for_function("() => /DONE|FAILED/.test(document.querySelector('#runIdLabel').textContent)", timeout=180000)
+    pg.wait_for_timeout(1000)
+    print('after resume', pg.inner_text('#runIdLabel'))
+    print('modal display', pg.eval_on_selector('#modal', 'e=>getComputedStyle(e).display'))
+    print('gate', pg.inner_text('#gateBadge'))
+    print('headline', pg.inner_text('#headline')[:220])
+    pg.screenshot(path='runs/_ui_smoke/08_after_resume.png', full_page=True)
+    b.close()
+print('errors', errors)

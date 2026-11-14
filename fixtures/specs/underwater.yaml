@@ -1,0 +1,43 @@
+project: 水下机器人目标采集（验收批）
+label_format: detection
+classes:
+  - name: Unmanned ship
+    definition: 无人船
+    min_boxes: 40
+  - name: ROV
+    definition: 水下遥控潜器
+    min_boxes: 80
+  - name: Robotic fish
+    definition: 仿生机器鱼
+    min_boxes: 40
+  - name: Underwater rescue
+    definition: 水下救援目标/装置
+    min_boxes: 30
+  - name: Gold Dragon Fish
+    definition: 金色龙鱼
+    min_boxes: 40
+scenes:
+  - name: Water
+    min_images: 50
+  - name: water2
+    min_images: 40
+requirements:
+  min_images: 80
+  min_per_class: 0
+  min_resolution: [1280, 720]
+  max_blur_ratio: 0.15
+  orientation: landscape
+qc:
+  sample_rate: 0.2
+  overlap_iou: 0.5
+  duplicate_iou: 0.98
+  model_conf: 0.5
+delivery:
+  format: YOLO
+  acceptance: P0 清零；覆盖率不低于 90%；模糊率不超过 15%
+norms:
+  annotate_boxes_per_hour: 120
+  review_boxes_per_hour: 300
+  qa_images_per_hour: 220
+  workday_hours: 8
+  deadline_days: 2

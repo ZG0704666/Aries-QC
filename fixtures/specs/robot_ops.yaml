@@ -1,0 +1,58 @@
+project: 怀柔机器人产线动作采集（一期）
+label_format: segmentation
+classes:
+  - name: agv
+    definition: 自主移动搬运车（AGV）车体，含车头、车斗与可见轮组
+    include:
+      - 整车或可辨认的大半个车体
+      - 明显被货架/立柱部分遮挡但仍可判断为 AGV
+    exclude:
+      - 地面反光、地面标线
+      - 人物、叉车、普通货车
+    min_boxes: 220
+  - name: robotic arm
+    definition: 产线机械臂本体，含底座、连杆与末端执行器
+    include:
+      - 单臂、双臂、协作机械臂
+      - 末端夹爪/焊枪等执行器
+    exclude:
+      - 机械臂线缆、控制柜、围栏
+      - 单独放置的工件
+    min_boxes: 320
+  - name: rail door
+    definition: 轨道门/滑轨门体，含门扇与可见轨道
+    include:
+      - 关闭或半开的轨道门
+      - 门体被 AGV 部分遮挡但可辨认
+    exclude:
+      - 普通木门、卷帘门
+      - 仅有地面轨道、没有门体
+    min_boxes: 240
+scenes:
+  - name: AGV 小车
+    min_images: 120
+  - name: 供电柜联通测试
+    min_images: 100
+  - name: 轨道门缺陷识别
+    min_images: 110
+requirements:
+  min_images: 300
+  min_per_class: 0
+  min_resolution: [720, 720]
+  max_blur_ratio: 0.2
+  orientation: any
+qc:
+  sample_rate: 0.1
+  overlap_iou: 0.5
+  duplicate_iou: 0.98
+  model_conf: 0.5
+delivery:
+  format: YOLO
+  acceptance: P0 清零；P1/P2 候选逐条裁定；覆盖率不低于 90%
+norms:
+  annotate_boxes_per_hour: 80
+  review_boxes_per_hour: 250
+  qa_images_per_hour: 200
+  workday_hours: 8
+  deadline_days: 3
+notes: 机器人产线一期，含 AGV、机械臂、轨道门三类目标；分割多边形交付。

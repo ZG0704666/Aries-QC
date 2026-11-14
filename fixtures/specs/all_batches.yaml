@@ -1,0 +1,69 @@
+project: 机器人多批次合并交付（hr1 + hr2 + Underwater）
+label_format: either
+classes:
+  - name: Gold Dragon Fish
+    definition: 水下金色龙鱼目标
+    min_boxes: 40
+  - name: ROV
+    definition: 水下遥控潜器 ROV
+    min_boxes: 80
+  - name: Robotic fish
+    definition: 仿生机器鱼
+    min_boxes: 40
+  - name: Underwater rescue
+    definition: 水下救援目标/装置
+    min_boxes: 30
+  - name: Unmanned ship
+    definition: 无人船
+    min_boxes: 40
+  - name: agv
+    definition: 自主移动搬运车（AGV）车体
+    min_boxes: 220
+  - name: rail door
+    definition: 轨道门/滑轨门体
+    min_boxes: 240
+  - name: robotic arm
+    definition: 产线机械臂本体
+    min_boxes: 320
+  - name: sliding door
+    definition: 塞拉门/平移门体
+    min_boxes: 80
+  - name: smart hand
+    definition: 灵巧手/机械手
+    min_boxes: 80
+scenes:
+  - name: AGV 小车
+    min_images: 120
+  - name: 供电柜联通测试
+    min_images: 100
+  - name: 轨道门缺陷识别
+    min_images: 110
+  - name: 塞拉门
+    min_images: 100
+  - name: 灵巧手
+    min_images: 60
+  - name: Water
+    min_images: 50
+  - name: water2
+    min_images: 40
+requirements:
+  min_images: 500
+  min_per_class: 0
+  min_resolution: [720, 720]
+  max_blur_ratio: 0.2
+  orientation: any
+qc:
+  sample_rate: 0.1
+  overlap_iou: 0.5
+  duplicate_iou: 0.98
+  model_conf: 0.5
+delivery:
+  format: YOLO
+  acceptance: 跨批次类别 ID 全部对齐；P0 清零；覆盖率不低于 90%
+norms:
+  annotate_boxes_per_hour: 80
+  review_boxes_per_hour: 250
+  qa_images_per_hour: 200
+  workday_hours: 8
+  deadline_days: 4
+notes: 用于演示三个批次直接拼接时的类别 ID 冲突，以及规范类别表对齐后的结果。

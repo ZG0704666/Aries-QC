@@ -1,0 +1,11 @@
+# 核心运行依赖（不需要 GPU / torch）
+numpy>=1.24
+opencv-python>=4.8
+PyYAML>=6.0
+Pillow>=10.0
+pypdf>=4.0
+pytest>=8.0
+
+# 可选：模型交叉复核（体积大，未安装时自动降级）
+# ultralytics>=8.3
+# torch>=2.0
