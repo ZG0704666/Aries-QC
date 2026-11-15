@@ -55,6 +55,7 @@ def status():
         "breeze": bool(os.environ.get("BREEZE_API_KEY", "").strip()),
         "edge_tts": False,
         "ffmpeg": bool(shutil.which("ffmpeg")),
+        "ffprobe": bool(shutil.which("ffprobe")),
         "sapi": False,
     }
     try:
@@ -82,6 +83,46 @@ def _probe_mp3(data):
     if len(data) < 4:
         return False
     return data.startswith(b"ID3") or (data[0] == 0xFF and data[1] & 0xE0 == 0xE0)
+
+
+def probe_media(path):
+    """用 ffprobe 读**实际音频**的时长/码率/采样率。
+
+    为什么不按字节数除码率估：那样得到的不是实测值，一旦容器有变（WAV 兜底、
+    变码率）就会算错，而时长门正是要拿它当验收依据。读不到就返回 None，
+    由调用方如实报「未采集」，绝不编一个数字顶上。
+    """
+    exe = os.environ.get("FFPROBE_BIN") or shutil.which("ffprobe")
+    if not exe:
+        return None
+    try:
+        done = subprocess.run(
+            [exe, "-v", "error", "-show_entries",
+             "format=duration,bit_rate:stream=codec_name,sample_rate,channels",
+             "-of", "json", str(path)],
+            capture_output=True, timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if done.returncode != 0:
+        return None
+    try:
+        data = json.loads(done.stdout.decode("utf-8", "replace") or "{}")
+        duration = float((data.get("format") or {}).get("duration") or 0)
+    except (ValueError, json.JSONDecodeError, TypeError):
+        return None
+    if duration <= 0:
+        return None
+    stream = (data.get("streams") or [{}])[0] or {}
+    bitrate = (data.get("format") or {}).get("bit_rate")
+    sample_rate = stream.get("sample_rate")
+    return {
+        "duration_s": round(duration, 2),
+        "bitrate_kbps": int(int(bitrate) / 1000) if bitrate else None,
+        "codec": stream.get("codec_name"),
+        "sample_rate": int(sample_rate) if sample_rate else None,
+        "channels": stream.get("channels"),
+    }
 
 
 def _synthesize_breeze(text, voice=None):
@@ -266,6 +307,8 @@ def synthesize(project_id, exhibit_id, text, voice=None, engine=None):
         used_voice = meta.get("sapi_voice")
 
     elapsed = int((time.monotonic() - started) * 1000)
+    # 时长在合成这一刻就实测记录下来：交付单和历史记录都靠它，不能事后靠字数推算。
+    probed = probe_media(target) or {}
     info = {
         "path": str(target.relative_to(ROOT)) if ROOT in target.parents else str(target),
         "filename": filename,
@@ -277,6 +320,9 @@ def synthesize(project_id, exhibit_id, text, voice=None, engine=None):
         "format": fmt,
         "mime": meta.get("mime", "audio/mpeg"),
         "chars": len(text),
+        "duration_s": probed.get("duration_s"),
+        "bitrate_kbps": probed.get("bitrate_kbps"),
+        "sample_rate": probed.get("sample_rate"),
         "elapsed_ms": elapsed,
         "fallback_errors": errors,
     }

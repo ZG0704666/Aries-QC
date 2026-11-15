@@ -1,2 +1,10 @@
 .env.local
+.env
 audio/
+__pycache__/
+*.pyc
+*.log
+
+# 走查产物（可用 _ui_checks.py / _ui_layout.py 重跑生成，不入库）
+_ui_shots/
+_deliver_test/

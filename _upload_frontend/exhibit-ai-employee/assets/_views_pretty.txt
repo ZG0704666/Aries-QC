@@ -1,0 +1,549 @@
+===== LINE 32 =====
+const pill = (text,kind='') => `<span class="pill ${kind}">${esc(text)}</span>`;
+===== LINE 33 =====
+const note = text => `<div class="notice">${text}</div>`;
+===== LINE 34 =====
+const version = () => `v0.${state.version}`;
+===== LINE 35 =====
+const act = (action,label,cls='',extra='') => `<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`;
+===== LINE 36 =====
+const field = (label,name,value,type='text') => `<label class="field">
+<span>${label}</span>
+  <input name="${name}" type="${type}" value="${esc(value)}" ${type==='number'?'min="0" step="any"':''}>
+</label>`;
+===== LINE 37 =====
+const header = (title,subtitle,meta='') => `<div class="page-header">
+<div>
+  <h2>${title}</h2>
+    <p>${subtitle}</p>
+    </div>
+    <div class="header-meta">${meta || pill('演示数据 · 未连接生产服务','amber')}</div>
+    </div>`;
+===== LINE 38 =====
+function pipeline(steps,current) { return `<ol class="pipeline">${steps.map((s,i)=>`<li class="${i<current?'done':i===current?'current':''}">
+<span class="step-circle">${i<current?'✓':i===current?'•':i+1}</span>
+  <strong>${s[0]}</strong>
+    <small>${s[1]||''}</small>
+    </li>`).join('')}</ol>`; }
+===== LINE 39 =====
+function exhibitTray() {return `<div class="exhibit-tray">${exhibitData.map((e,i)=>`<button class="exhibit-tile ${state.exhibit===i?'active':''}" data-action="exhibit" data-value="${i}">
+<span class="exhibit-art ${e.cls||'refraction'}" aria-hidden="true">${i===0?'<i class="glass">
+</i>
+<i class="straw">
+</i>':i===1?'<i class="speaker">
+</i>':'<i class="mirror-plane">
+</i>
+<i class="ray">
+</i>'}</span>
+<span>
+  <strong>${e.id} ${e.name}</strong>${pill(i===1&&state.sourceIssue?'待核实':'草稿',i===1&&state.sourceIssue?'amber':'green')}<small>　目标约45秒</small>
+  </span>
+</button>`).join('')}</div>`;}
+===== LINE 40 =====
+function eventsHtml() {const demo=[['10:14:02','接收2份授权资料','示例过程，不代表真实授权'],['10:14:04','建立8个来源段落','示例段落计数'],['10:14:09','生成6条候选知识卡','示例成果'],['10:14:12','检出1处条件缺失','EX02 · 传播速度条件'],['10:14:13','等待人工确认','已暂停相关内容制作']];return `<ul class="event-list">${demo.map((e,i)=>`<li>
+<span class="event-mark ${i===4?'wait':''}">${i===4?'!':'✓'}</span>
+  <div>
+    <time>${e[0]}</time>
+      <strong>${e[1]}</strong>
+        <p>${e[2]}</p>
+        </div>
+      </li>`).join('')}${state.events.map(e=>`<li>
+      <span class="event-mark">•</span>
+        <div>
+          <time>${e.time}</time>
+            <strong>${esc(e.text)}</strong>
+              <p>${e.id} · 本地操作记录</p>
+              </div>
+            </li>`).join('')}</ul>`;}
+===== LINE 41 =====
+function log(text) {state.events.push({id:'LOCAL-'+String(state.events.length+1).padStart(3,'0'),time:stamp(),text});}
+===== LINE 42 =====
+function addMessage(role,text,actions=[]) {state.chats.push({role,text,time:stamp(),actions});renderChat();}
+===== LINE 43 =====
+function renderChat() {
+===== LINE 44 =====
+const attachments = `<div class="reference-files">
+<button data-action="sample-source" data-value="0">
+  <span class="file-glyph">▤</span>
+    <span>
+      <strong>展签资料.txt</strong>
+        <small>示例资料 · 查看原文</small>
+        </span>
+      </button>
+      <button data-action="sample-source" data-value="1">
+        <span class="file-glyph">▤</span>
+          <span>
+            <strong>教育材料.txt</strong>
+              <small>示例资料 · 查看原文</small>
+              </span>
+            </button>
+          </div>
+          <p class="reference-auth">✓ 附件与任务过程均为演示示例</p>`;
+===== LINE 45 =====
+const results = `<div class="chat-result">
+<button class="chat-result-row" data-action="source">
+  <span class="result-icon">▤</span>
+    <span>
+      <strong>来源整理</strong>
+        <small>2份资料 · 8个段落（示例）</small>
+        </span>
+        <span class="result-check">✓</span>
+          <span class="chevron">›</span>
+          </button>
+          <button class="chat-result-row" data-action="nav-content">
+            <span class="result-icon">▥</span>
+              <span>
+                <strong>知识卡</strong>
+                  <small>6条候选 · 1处待核实（示例）</small>
+                  </span>
+                  <span class="chevron">›</span>
+                  </button>
+                </div>`;
+===== LINE 46 =====
+$('#chat-log').innerHTML=state.chats.map((m,i)=>`<div class="message ${m.role}">
+<span class="mini-avatar">${m.role==='user'?'林':'<span class="orbit">
+</span>'}</span>
+<div class="message-body">
+  <p>${esc(m.text)}</p>${m.actions.length?`<div class="message-actions">${m.actions.map(a=>act(a[0],a[1],a[2]||'')).join('')}</div>`:''}<span class="message-time">${m.time}</span>
+  </div>
+</div>${i===0?attachments:i===1?results:''}`).join('');
+===== LINE 47 =====
+$('#chat-log').scrollTop=$('#chat-log').scrollHeight;
+===== LINE 48 =====
+}
+===== LINE 49 =====
+function go(view){if(!views.some(v=>v[0]===view))view='live';if(location.hash!=='#'+view)location.hash=view;else render();}
+===== LINE 50 =====
+function render(){let route=location.hash.slice(1);state.view=views.some(v=>v[0]===route)?route:'live';$('#workspace-tabs').innerHTML=views.map(v=>`<a href="#${v[0]}" class="${state.view===v[0]?'active':''}" ${state.view===v[0]?'aria-current="page"':''}>${v[1]}</a>`).join('');$('#workspace-body').dataset.view=state.view;$('#workspace-body').innerHTML=({project:projectView,live:liveView,content:contentView,tests:testsView,voice:voiceView,release:releaseView,feedback:feedbackView}[state.view])();restoreWorkspace();document.title=views.find(v=>v[0]===state.view)[1]+' · 展览互动内容制作员';}
+===== LINE 51 =====
+function projectView(){const p=state.project;return header('试点需求与报价','PRJ-DEMO-001　·　把范围、审核人和交付责任先说清楚。',pill(p.confirmed?'范围已本地确认':'需求待确认',p.confirmed?'green':'amber'))+pipeline([['需求确认',p.confirmed?'本地已确认':'当前阶段'],['报价草案','访谈假设'],['签约','未签约'],['启动款','未确认']],p.confirmed?1:0)+`<div class="grid cols-2">
+<section class="panel panel-pad">
+  <h3>需求与交付范围</h3>
+    <form id="project-form">
+      <div class="field-row">${field('客户名称','customer',p.customer)}${field('内容审核人','reviewer',p.reviewer)}</div>
+        <div class="field-row">${field('目标观众','audience',p.audience)}${field('讲解目标时长（秒）','duration',p.duration,'number')}</div>${field('服务范围','scope',p.scope)}<dl class="detail-list">
+          <div>
+            <dt>交付内容</dt>
+              <dd>主讲解、简化版、追问与资料外兜底<br>来源知识卡、四类测试、一次修改与复测</dd>
+              </div>
+              <div>
+                <dt>设备范围</dt>
+                  <dd>网页内容体验<br>眼镜接入与实机验收另行确认</dd>
+                  </div>
+                  <div>
+                    <dt>排除项</dt>
+                      <dd>多语言、驻场、专用硬件开发及第三方授权</dd>
+                      </div>
+                    </dl>
+                    <div class="inline-actions">
+                      <button type="submit" class="green">✓ 保存并确认范围（本地）</button>
+                      </div>
+                    </form>
+                  </section>
+                  <div class="stack">
+                    <section class="panel panel-pad">
+                      <h3>报价与证据</h3>
+                        <div class="price">¥ ${Number(p.price).toLocaleString('zh-CN')}</div>
+                          <div class="metric-row">${pill('访谈假设','green')}${pill('未签约')}</div>
+                            <p class="small muted">仅用于试点报价访谈，不代表已成交收入。</p>
+                              <form id="cost-form">
+                                <div class="field-row">${field('报价假设','price',p.price,'number')}${field('直接人工','labor',p.labor,'number')}</div>
+                                  <div class="field-row">${field('模型与语音','models',p.models,'number')}${field('其他直接费用','other',p.other,'number')}</div>
+                                    <button type="submit" class="outline-green full">更新测算</button>
+                                    </form>
+                                    <ul class="cost-lines">
+                                      <li>直接成本<strong>¥ ${p.labor+p.models+p.other}</strong>
+                                      </li>
+                                      <li class="total">项目贡献（假设）<strong>¥ ${p.price-p.labor-p.models-p.other}</strong>
+                                      </li>
+                                    </ul>${note('以上为公式测算，未含获客、税费、折旧，不代表实测利润。')}</section>
+                                  </div>
+                                </div>
+                                <section class="panel panel-pad section-spacer">
+                                  <h3>项目里程碑</h3>
+                                    <div class="milestones">${['资料交接','内容审校','试听验收','设备验收'].map(t=>`<div>${t}<small>日期与责任人待确认</small>
+                                    </div>`).join('')}</div>
+                                    <div class="footer-actions">${act('export-quote','↓ 导出报价草案','outline-green')}</div>
+                                    </section>`;}
+===== LINE 52 =====
+function liveView(){const e=exhibitData[state.exhibit];return header('工作现场','TASK-DEMO-017　 '+version(),pill(state.sourceIssue?'等待确认':'草稿待审核','amber'))+pipeline([['资料接收','示例'],['来源定位','示例'],['知识卡','候选'],['讲解与问答','待确认'],['测试','未运行'],['审核','待审核'],['语音','未制作'],['发布','已锁定']],3)+`<div class="grid cols-live">
+<section class="panel">
+  <div class="panel-header">
+    <div class="artifact-heading">
+      <span class="eyebrow">内容成果 / 讲解文档</span>
+        <h3>
+          <span>${e.id}</span>${e.name}</h3>
+          </div>${act('read-content','展开阅读','text-button')}${act('nav-content','编辑内容 ↗','text-button')}</div>
+          <div class="tab-line">${['知识卡','主讲解','简化版','追问','资料外兜底'].map(t=>`<button data-action="content-tab" data-value="${t}" class="${state.contentTab===t?'active':''}">${t}</button>`).join('')}</div>
+            <div class="paper">
+              <div class="paper-heading">
+                <strong>▤ ${state.contentTab}（草稿）</strong>${pill('待人工审核','amber')}</div>
+                  <p class="script-body">${esc(getContentText())}</p>
+                    <div class="citations">${act('source','▤ F-00'+(state.exhibit+1),'citation')}${act('source','▤ SRC-00'+(state.exhibit+1)+' · P001','citation')}</div>
+                      <div class="quote">
+                        <div class="quote-head">
+                          <span>
+                            <span class="quote-mark">❝</span>原文引用</span>${act('source','定位原文','text-button')}</div>
+                              <p>“${esc(state.source[state.exhibit])}”</p>
+                              </div>
+                              <p class="subtle">目标约45秒 · 实测时长未记录</p>
+                              </div>${exhibitTray()}</section>
+                              <aside class="panel event-inspector">
+                                <div class="panel-pad">
+                                  <div class="panel-title">运行事件 <span class="micro-tag">示例 + 本地记录</span>
+                                  </div>${state.sourceIssue?`<div class="notice">
+                                  <strong>! 需要你确认</strong>EX02 的速度描述缺少适用条件。<br>
+                                    <span class="mono">SRC-002 · P003（示例）</span>
+                                      <div class="notice-actions">${act('source','补充资料','primary')}${act('remove-fact','移除该候选事实')}</div>
+                                      </div>`:`<div class="notice green">候选问题已在本地移除，内容仍需审核。</div>`}<details class="event-history">
+                                      <summary>查看运行记录 <span class="mono">${5+state.events.length} 条</span>
+                                      </summary>${eventsHtml()}</details>
+                                      <h4>后续步骤</h4>
+                                        <ul class="gate-list">
+                                          <li>测试未执行 ${pill('未连接')}</li>
+                                            <li>审核未批准 ${pill('待审核','amber')}</li>
+                                              <li>音频缺失 ${pill('未制作')}</li>
+                                              </ul>
+                                              <button class="primary full" disabled>⌑ 发布版本</button>
+                                              </div>
+                                            </aside>
+                                          </div>`;}
+===== LINE 53 =====
+function getContentText(){const e=exhibitData[state.exhibit];switch(state.contentTab){case '知识卡':return 'FACT-00'+(state.exhibit+1)+'：'+state.source[state.exhibit];case '简化版':return e.simple;case '延伸':return '可选延伸需要补充来源，当前未提供。';case '追问':return '你想换个角度再观察一次吗？';case '澄清':return '你想了解哪一个展项：光的折射、声音的传播，还是镜面反射？';case '资料外兜底':return '现有资料没有提供这条信息。';default:return state.scripts[state.exhibit];}}
+===== LINE 54 =====
+function contentView(){const e=exhibitData[state.exhibit];return header('每一句讲解，都能回到来源','原始资料只读 · 引用可定位 · 修改后需重新审核。')+`<section class="panel panel-pad" style="margin-bottom:16px">${exhibitTray()}</section>
+<div class="grid content-two">
+  <section id="source-panel" class="panel panel-pad">
+    <h3>原始资料（只读）</h3>
+      <div class="metric-row">
+        <strong>SRC-00${state.exhibit+1}</strong>${pill(state.importedName?'本地导入':'示例展签','blue')}${pill('来源 v1')}</div>
+          <p class="small muted">${esc(state.importedName||'展签资料.txt')} · 原文不被生成内容覆盖</p>
+            <div class="source-paragraph">
+              <div class="source-id">P001 / 展品说明</div>
+                <div class="source-text">${esc(state.source[state.exhibit])}</div>
+                </div>
+                <h4>引用定位</h4>
+                  <div class="mini-code">SRC-00${state.exhibit+1} · P001 · UTF-16 [0, ${state.source[state.exhibit].length})</div>
+                    <h4>来源校验摘要</h4>
+                      <div class="mini-code">尚未计算 · 不以示例字符串冒充摘要</div>
+                        <label class="approval-checkbox">
+                          <input type="checkbox" data-change="authorization" ${state.authorized?'checked':''}>
+                          <span>确认拥有本次资料使用权（本地记录，不上传）</span>
+                          </label>
+                          <label class="file-input">＋ 导入 UTF-8 纯文本资料<input type="file" accept=".txt,text/plain" id="source-file" hidden>
+                          </label>
+                          <p class="subtle">最多 200 KB，仅在本地读取。刷新页面会重置。</p>
+                          </section>
+                          <section class="panel">
+                            <div class="panel-header">
+                              <h3>知识卡与脚本</h3>${pill(state.approved?'本地审核意见已保存':'草稿 · 待审核',state.approved?'green':'amber')}</div>
+                                <div class="tab-line">${['知识卡','主讲解','简化版','延伸','追问','澄清','资料外兜底'].map(t=>`<button class="${state.contentTab===t?'active':''}" data-action="content-tab" data-value="${t}">${t}</button>`).join('')}</div>
+                                  <div class="panel-pad">
+                                    <div class="paper-heading">
+                                      <strong>${e.id} ${e.name}</strong>
+                                        <span class="mono">${version()} · 目标约45秒</span>
+                                        </div>${state.contentTab==='主讲解'?`<label class="field">
+                                        <span>讲解内容（可编辑）</span>
+                                          <textarea id="script-editor" class="editor" maxlength="8000">${esc(state.scripts[state.exhibit])}</textarea>
+                                          </label>`:`<p class="script-body">${esc(getContentText())}</p>`}<div class="citations">${act('source','▤ 定位对应来源','citation')}</div>
+                                          <div class="quote">
+                                            <strong>内容检查</strong>
+                                              <p>来源覆盖仍需人工核对；类比与观察引导不得被记录成新增史实。</p>
+                                              </div>
+                                              <div class="inline-actions">${act('save-script','保存草稿','outline-green',state.contentTab!=='主讲解'?'disabled':'')}${act('nav-tests','提交审核 →','primary')}</div>
+                                                <p class="subtle">保存新版本会使旧审核意见和示例测试显示失效。</p>
+                                                </div>
+                                              </section>
+                                            </div>`;}
+===== LINE 55 =====
+function testsView(){const rows=initialTests.filter(t=>state.testFilter==='全部'||t.kind===state.testFilter);const chosen=initialTests.find(t=>t.id===state.selectedTest);const result=t=>state.testsLoaded?t.sampleStatus:'未运行';const color=t=>result(t)==='通过'?'green':result(t)==='待修订'?'amber':result(t)==='执行失败'?'red':'';return header('测试与人工审核','区分未运行、执行失败与不通过，不自动批准内容。')+pipeline([['草稿',version()],['测试','服务未连接'],['修订','待确认'],['人工批准','待审核'],['发布','已锁定']],1)+`<div class="grid cols-2">
+<section class="panel panel-pad">
+  <div class="paper-heading">
+    <h3>测试结果</h3>${act('load-tests',state.testsLoaded?'已载入示例记录':'载入示例记录','outline-green')}</div>
+      <div class="metric-row">${pill('6 条展示用例','blue')}${pill(state.testsLoaded?'3 通过 · 1 待修订 · 1 执行失败 · 1 未运行':'6 未运行',state.testsLoaded?'amber':'')}</div>
+        <div class="tab-line" style="margin-bottom:13px">${['全部','资料内','资料外','歧义','连续追问'].map(t=>`<button data-action="test-filter" data-value="${t}" class="${state.testFilter===t?'active':''}">${t}</button>`).join('')}</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>用例</th>
+                    <th>类别</th>
+                      <th>展项</th>
+                        <th>输入</th>
+                          <th>结果</th>
+                          </tr>
+                        </thead>
+                        <tbody>${rows.map(t=>`<tr class="${state.selectedTest===t.id?'selected':''}" data-action="test-select" data-value="${t.id}" tabindex="0">
+                          <td>${t.id}</td>
+                            <td>${t.kind}</td>
+                              <td>${t.ex}</td>
+                                <td>${esc(t.input)}</td>
+                                  <td>${pill(result(t),color(t))}</td>
+                                  </tr>`).join('')}</tbody>
+                                </table>
+                              </div>
+                              <div class="test-detail">
+                                <strong>${chosen.id} / ${esc(chosen.input)}</strong>
+                                  <div class="two-up">
+                                    <div>
+                                      <strong>期望行为</strong>
+                                        <p class="small">${esc(chosen.expected)}</p>
+                                        </div>
+                                        <div>
+                                          <strong>实际回答</strong>
+                                            <p class="small">${state.testsLoaded&&chosen.sample?esc(chosen.sample):'尚未执行，没有实际回答。'}</p>${state.testsLoaded?pill('仅示例记录，不计为验收','amber'):pill('未运行')}</div>
+                                            </div>
+                                          </div>
+                                          <h4>连续复测记录</h4>
+                                            <div class="rounds">${[1,2,3].map(i=>`<div class="round-card">第 ${i} 轮<br>${pill('未运行')}<br>没有真实执行时间</div>`).join('')}</div>
+                                              <div class="inline-actions">${act('run-tests','运行真实测试','primary')}${act('retry-tests','重试失败项')}</div>
+                                                <p class="subtle">真实测试需接入问答服务。载入示例不会解除任何发布门禁。</p>
+                                                </section>
+                                                <section class="panel panel-pad">
+                                                  <h3>人工审核</h3>
+                                                    <div class="metric-row">${pill(version(),'blue')}${pill('版本绑定','green')}${pill('发布锁定','amber')}</div>
+                                                      <div class="notice red">
+                                                        <strong>仍有阻断条件</strong>测试服务未接入，音频尚未制作。内容审核意见可以保存，但不能批准发布。</div>
+                                                          <h4>版本差异 · 示例</h4>
+                                                            <div class="diff old">− 光通过介质时一定发生偏折。</div>
+                                                              <div class="diff new">＋ 光进入另一透明介质时，方向可能发生改变。</div>
+                                                                <form id="review-form" class="section-spacer">${field('审核人','reviewName',state.reviewName)}<label class="field">
+                                                                  <span>审核意见</span>
+                                                                    <textarea name="reviewNote" rows="3" maxlength="2000" placeholder="写下事实、语气或来源方面的修改意见…">${esc(state.reviewNote)}</textarea>
+                                                                    </label>
+                                                                    <label class="approval-checkbox">
+                                                                      <input name="reviewConfirmed" type="checkbox" ${state.reviewConfirmed?'checked':''}>
+                                                                      <span>我已核对当前版本的来源与内容，仅记录本地审校意见。</span>
+                                                                      </label>
+                                                                      <div class="inline-actions">
+                                                                        <button type="submit" class="outline-green">保存审核意见</button>${act('reject','退回修订','danger')}<button disabled class="primary">批准发布版本</button>
+                                                                        </div>
+                                                                      </form>
+                                                                    </section>
+                                                                  </div>`;}
+===== LINE 56 =====
+function voiceView(){return header('语音制作与终端','文本转语音与语音识别分别验证；网页不代替眼镜验收。')+`<div class="grid cols-2">
+<div class="stack">
+  <section class="panel panel-pad">
+    <h3>语音制作流程</h3>${pipeline([['内容批准','待完成'],['Breeze 合成','未接入'],['音频校验','未执行'],['人工试听','未执行']],0)}<div class="two-up">
+      <div>${field('文本版本','voiceVersion',version())}<label class="field">
+        <span>音色选择</span>
+          <select disabled>
+            <option>待确认授权音色</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>输出格式</span>
+              <select id="audio-format">
+                <option>MP3</option>
+                  <option>WAV</option>
+                  </select>
+                </label>
+                <div class="metric-row">${pill('官方接口未验证','amber')}</div>
+                  <button disabled class="primary full">合成语音</button>
+                  </div>
+                  <div class="audio-empty">
+                    <span class="audio-symbol">♫</span>
+                      <strong>${state.audio?'本地音频试听':'尚无可播放音频'}</strong>
+                        <p class="small">${state.audio?esc(state.audio.name):'完成合成后在此播放'}</p>${state.audio?`<audio controls preload="metadata" src="${esc(state.audioUrl)}">
+                        </audio>
+                        <p class="subtle">${state.audio.bytes} 字节 · 不是Breeze生成结果</p>`:`<div class="audio-controls">
+                          <button disabled>◀</button>
+                            <button disabled>▶</button>
+                              <button disabled>■</button>
+                              </div>`}</div>
+                            </div>
+                            <label class="file-input section-spacer">导入本地音频试播（不计为合成成果）<input id="audio-file" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg" hidden>
+                            </label>
+                            <h4>音频任务</h4>
+                              <div class="table-wrap">
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>名称</th>
+                                        <th>文本版本</th>
+                                          <th>音频摘要</th>
+                                            <th>状态</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <td>EX01 主讲解</td>
+                                                <td>${version()}</td>
+                                                  <td>—</td>
+                                                    <td>${pill('待合成','amber')}</td>
+                                                    </tr>
+                                                    <tr>
+                                                      <td>EX02 简化版</td>
+                                                        <td>${version()}</td>
+                                                          <td>—</td>
+                                                            <td>${pill('待合成','amber')}</td>
+                                                            </tr>
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    </section>
+                                                    <section class="panel panel-pad">
+                                                      <h3>实时双向语音 <span class="micro-tag">服务未连接</span>
+                                                      </h3>
+                                                      <div class="voice-flow">${[['♩','麦克风'],['〰','VAD'],['▤','ASR'],['◇','来源约束问答'],['〰','TTS'],['◖','播放']].map(n=>`<div class="voice-node">
+                                                        <span class="circle">${n[0]}</span>
+                                                          <strong>${n[1]}</strong>
+                                                            <small>未连接</small>
+                                                            </div>`).join('')}</div>
+                                                            <div class="two-up">
+                                                              <div class="empty">您的语音（实时转写）<br>连接后展示转写</div>
+                                                                <div class="empty">AI 回答与事实依据<br>仅查询已发布版本</div>
+                                                                </div>
+                                                                <div class="inline-actions">
+                                                                  <button disabled>开始会话</button>
+                                                                    <button disabled>停止播放</button>
+                                                                      <button disabled>打断播报</button>${act('voice-help','查看接入说明','text-button')}</div>
+                                                                      </section>
+                                                                    </div>
+                                                                    <section class="panel panel-pad">
+                                                                      <h3>终端验证</h3>
+                                                                        <div class="tab-line">${['网页播放','眼镜设备'].map(t=>`<button data-action="device" data-value="${t}" class="${state.device===t?'active':''}">${t}</button>`).join('')}</div>
+                                                                          <div class="section-spacer">${field('设备型号','deviceModel','')}${field('固件版本','firmware','')}<h4>接入形态</h4>
+                                                                            <div class="radio-row">${['固定音频','伴随设备','原生实时'].map(t=>`<label>
+                                                                              <input type="radio" name="deviceMode" value="${t}">${t}</label>`).join('')}</div>
+                                                                              <h4>设备能力检查</h4>${['麦克风','扬声器','网络连接','内容下发'].map(t=>`<div class="device-check">
+                                                                                <span>${t}</span>${pill('待核实','amber')}</div>`).join('')}<h4>验收记录</h4>
+                                                                                  <dl class="detail-list">
+                                                                                    <div>
+                                                                                      <dt>播报结果</dt>
+                                                                                        <dd>${pill('未测试')}</dd>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                          <dt>追问结果</dt>
+                                                                                            <dd>${pill('未测试')}</dd>
+                                                                                            </div>
+                                                                                            <div>
+                                                                                              <dt>操作者</dt>
+                                                                                                <dd>待指定</dd>
+                                                                                                </div>
+                                                                                              </dl>
+                                                                                              <div class="notice section-spacer">
+                                                                                                <strong>网页演示 ≠ 眼镜实机验收</strong>本地音频可试播，但不能证明目标设备已经适配。</div>${act('device-note','记录设备备注','outline-green full section-spacer')}</div>
+                                                                                                </section>
+                                                                                              </div>`;}
+===== LINE 57 =====
+function releaseView(){const files=['01 需求与资料清单','02 知识卡与出处','03 脚本与互动问答','04 音频','05 测试用例与实际执行记录','06 修改差异与待解决问题','07 客户审核与验收单','08 发布与设备适配说明','manifest.json'];return header('发布与交付验收','光与声音探索展 / '+version())+pipeline([['内容批准','待确认'],['测试','未完成'],['音频','缺失'],['发布','未发布'],['客户签收','待签收'],['回款','未确认']],0)+`<div class="grid cols-3">
+<section class="panel panel-pad">
+  <h3>交付包文件结构</h3>
+    <div class="file-tree">
+      <h4>⌄ 光与声音探索展_${version()}</h4>${files.map((f,i)=>`<details>
+        <summary>▤ ${f} ${pill(i===3?'缺失':'候选',i===3?'red':'')}</summary>
+          <p>${i===3?'尚未生成语音，无可交付音频。':'草稿预期内容，需与来源和内容版本绑定。'}</p>
+          </details>`).join('')}</div>
+        </section>
+        <section class="panel panel-pad">
+          <h3>发布门禁检查</h3>
+            <ul class="gate-list">
+              <li>来源版本${pill(state.authorized?'待核验':'未确认授权','amber')}</li>
+                <li>人工审核${pill('未批准','red')}</li>
+                  <li>四类真实测试${pill('未运行','red')}</li>
+                    <li>音频有效性${pill('缺失','red')}</li>
+                    </ul>
+                    <p class="small muted">资料内 · 资料外 · 歧义 · 连续追问</p>
+                      <div class="notice red">
+                        <strong>完整交付被阻止</strong>审核、真实测试与音频条件未满足。</div>
+                          <button class="primary full section-spacer" disabled>⌑ 发布完整版本</button>${act('export-draft','↓ 导出草稿 JSON','outline-green full section-spacer')}<p class="subtle">仅导出本地草稿，不是正式内容包，也不包含合成音频。</p>
+                            <h4>版本与发布记录</h4>
+                              <div class="mini-code">候选版本 ${version()}<br>来源摘要：未计算<br>内容摘要：未计算<br>音频摘要：无</div>
+                                <button class="full section-spacer" disabled>暂无已发布版本，无法回滚</button>
+                                </section>
+                                <section class="panel panel-pad">
+                                  <h3>客户验收与回款</h3>
+                                    <dl class="detail-list">
+                                      <div>
+                                        <dt>客户</dt>
+                                          <dd>${esc(state.project.customer)}</dd>
+                                          </div>
+                                          <div>
+                                            <dt>交付范围</dt>
+                                              <dd>${esc(state.project.scope)}</dd>
+                                              </div>
+                                              <div>
+                                                <dt>访谈测试价</dt>
+                                                  <dd>¥ ${state.project.price} ${pill('假设','amber')}</dd>
+                                                  </div>
+                                                  <div>
+                                                    <dt>合同状态</dt>
+                                                      <dd>${pill('未签约','red')}</dd>
+                                                      </div>
+                                                      <div>
+                                                        <dt>签收人</dt>
+                                                          <dd>待指定</dd>
+                                                          </div>
+                                                          <div>
+                                                            <dt>设备验收</dt>
+                                                              <dd>${pill('未验收','red')}</dd>
+                                                              </div>
+                                                              <div>
+                                                                <dt>启动款 / 尾款</dt>
+                                                                  <dd>— / —</dd>
+                                                                  </div>
+                                                                </dl>${act('issue','记录未结问题','full section-spacer')}<div class="notice section-spacer">
+                                                                <strong>批准 ≠ 签收 ≠ 回款</strong>三个动作分别记录证据，不能相互替代。</div>
+                                                                </section>
+                                                              </div>`;}
+===== LINE 58 =====
+function feedbackView(){const f=feedbacks[state.feedback];return header('从反馈到可验证的改进','候选先测试，批准后发布，原版本始终保留。')+pipeline([['运行','示例'],['发现问题','示例'],['形成候选',state.candidate?'本地草案':'待确认'],['回归测试','未运行'],['人工批准','待指定'],['发布','未发布']],2)+`<div class="grid cols-3">
+<section class="panel panel-pad">
+  <div class="paper-heading">
+    <h3>反馈列表（3）</h3>${pill('示例','blue')}</div>${feedbacks.map((x,i)=>`<button class="feedback-item ${state.feedback===i?'active':''}" data-action="feedback-select" data-value="${i}">
+      <strong>${x.id}</strong>
+        <span>${x.title}</span>
+          <small>● 示例 · 待核实</small>
+          </button>`).join('')}</section>
+          <section class="panel panel-pad">
+            <h3>候选详情</h3>
+              <div class="metric-row">${pill(f.ex,'blue')}${pill(version())}${pill(f.session+' · 示例')}</div>
+                <dl class="detail-list">
+                  <div>
+                    <dt>观众输入</dt>
+                      <dd>${esc(f.question)}</dd>
+                      </div>
+                      <div>
+                        <dt>问题描述</dt>
+                          <dd>${esc(f.problem)}</dd>
+                          </div>
+                          <div>
+                            <dt>修改对象</dt>
+                              <dd>${state.feedback===2?'故障调查说明':'简化脚本 / 边界回答'}</dd>
+                              </div>
+                              <div>
+                                <dt>影响范围</dt>
+                                  <dd>仅 ${f.ex}</dd>
+                                  </div>
+                                </dl>
+                                <h4>版本差异对比（示例候选）</h4>
+                                  <div class="diff old">− ${f.old}</div>
+                                    <div class="diff new">＋ ${f.next}</div>
+                                      <p class="subtle">文案仍需来源支持，不能根据反馈改变展览事实。</p>${act('candidate',state.candidate?'候选草案已本地登记':'登记改进候选','outline-green full')}</section>
+                                        <section class="panel panel-pad">
+                                          <h3>回归测试台</h3>
+                                            <div class="device-check">
+                                              <span>固定测试集</span>
+                                                <strong>6 例</strong>
+                                                </div>
+                                                <div class="device-check">
+                                                  <span>新增失败用例</span>
+                                                    <strong>1 例</strong>
+                                                    </div>
+                                                    <div class="device-check">
+                                                      <span>真实测试结果</span>${pill('未运行')}</div>${field('批准人','candidateReviewer','')}<p class="small muted">需要完成真实回归和人工批准，才可生成新的发布版本。</p>${act('run-tests','▶ 执行真实回归','primary full')}<button class="full section-spacer" disabled>批准并发布</button>
+                                                        <div class="notice section-spacer">当前为改进建议台账，未执行修订与回归，不标为闭环完成。</div>
+                                                        </section>
+                                                      </div>
+                                                      <section class="panel panel-pad section-spacer">
+                                                        <h3>运行证据 <span class="micro-tag">未实测指标不填数值</span>
+                                                        </h3>
+                                                        <div class="metrics-strip">${[['样本量','0'],['任务成功率','—'],['返工工时','—'],['语音首响应','—'],['调用费用','—']].map(x=>`<div class="metric">
+                                                          <small>${x[0]}</small>
+                                                            <strong>${x[1]}</strong>
+                                                              <em>仅真实测量后填写</em>
+                                                              </div>`).join('')}</div>
+                                                              <div class="inline-actions">${act('events','查看本地事件记录 ↗','text-button')}</div>
+                                                              </section>`;}

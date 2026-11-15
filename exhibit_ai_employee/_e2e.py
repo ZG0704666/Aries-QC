@@ -1,4 +1,8 @@
-"""端到端走查：按当前 studio_web.html 的真实选择器，验证定位、知识卡、自测、审核、试听链路。"""
+"""端到端走查（经典工作台）：按 studio_classic.html 的真实选择器，验证定位、知识卡、自测、审核、试听链路。
+
+新前端（studio_web.html + assets/app.js）的走查在 _ui_checks.py / _ui_layout.py。
+本文件的选择器属于 /classic 那一版，所以入口改成 /classic。
+"""
 import json
 import sys
 import urllib.request
@@ -25,7 +29,7 @@ def main():
         errors = []
         page.on("pageerror", lambda e: errors.append("pageerror: " + str(e)))
         page.on("console", lambda m: errors.append("console: " + m.text) if m.type == "error" else None)
-        page.goto(BASE + "/", wait_until="networkidle")
+        page.goto(BASE + "/classic", wait_until="networkidle")
         page.wait_for_timeout(2000)
 
         print("mode:", page.inner_text("#modeText"))

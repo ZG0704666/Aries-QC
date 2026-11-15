@@ -5,7 +5,9 @@
 数据：  studio.sqlite3（项目、事件、调用记录）
 模型：  通过 .env.local 的 AI_BASE_URL / AI_MODEL / DEEPSEEK_API_KEY 调用
 """
+import hashlib
 import hmac
+import io
 import ipaddress
 import json
 import os
@@ -17,10 +19,11 @@ import traceback
 import urllib.error
 import urllib.request
 import uuid
+import zipfile
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("STUDIO_DB", ROOT / "studio.sqlite3"))
@@ -58,7 +61,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-c"
+CODE_REV = "studio-2026-11-15-d"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -94,7 +97,12 @@ def load(project_id):
         row = c.execute("SELECT body FROM projects WHERE id=?", (project_id,)).fetchone()
     if not row:
         raise KeyError("项目不存在")
-    return json.loads(row["body"])
+    project = json.loads(row["body"])
+    # 老项目里没有这几张附表；在这里补默认值，前端就不必到处判 None
+    project.setdefault("quote", None)
+    project.setdefault("feedbacks", [])
+    project.setdefault("acceptance", None)
+    return project
 
 
 def save(project):
@@ -459,6 +467,34 @@ def seed(project_id=None, materials=None):
 
 # ---------------------------------------------------------------- tests
 
+# 讲解目标时长与容差。容差可用环境变量改，但默认值必须在自测详情里写清楚，
+# 让「约 45 秒」是一个可核对的区间，而不是一句形容。
+DURATION_TARGET = float(os.environ.get("STUDIO_DURATION_TARGET", "45"))
+DURATION_TOLERANCE = float(os.environ.get("STUDIO_DURATION_TOLERANCE", "0.25"))
+
+
+def measured_duration(project, exhibit_id):
+    """返回 (实测秒数, 来源)。现场 ffprobe 优先并把结果回写进项目，其次用合成时记的时长。
+
+    刻意不按「字节数 ÷ 码率」估算：那是推算不是实测，而时长门是验收依据。
+    """
+    info = (project.get("audio") or {}).get(exhibit_id)
+    if not info:
+        return None, None
+    path = tts.AUDIO_ROOT / project["id"] / str(info.get("filename") or "")
+    if path.is_file():
+        probed = tts.probe_media(path) or {}
+        if probed.get("duration_s"):
+            info["duration_s"] = probed["duration_s"]
+            if probed.get("bitrate_kbps"):
+                info["bitrate_kbps"] = probed["bitrate_kbps"]
+            info["probed_at"] = now()
+            return float(probed["duration_s"]), "ffprobe"
+    if info.get("duration_s"):
+        return float(info["duration_s"]), "记录值"
+    return None, None
+
+
 def content_tests(project):
     results = []
 
@@ -490,13 +526,39 @@ def content_tests(project):
                 cross.append("%s 引用了 %s" % (exhibit["id"], ref))
     add("无跨展项串台", not cross, "各展项只引用自己的资料" if not cross else "；".join(cross))
 
-    lengths = []
+    # 时长门：字数只是替代指标，真正能验收的是朗读出来的秒数。
+    # 有音频就必须量到真实时长；量不到算未通过（不能拿字数通过来冒充时长通过）。
+    low = DURATION_TARGET * (1 - DURATION_TOLERANCE)
+    high = DURATION_TARGET * (1 + DURATION_TOLERANCE)
+    lengths, out_of_range, unmeasured, measured = [], [], [], []
     for exhibit in exhibits:
         text = (exhibit.get("main") or {}).get("text", "")
         n = len(text)
         if not 80 <= n <= 400:
             lengths.append("%s 主讲解 %d 字" % (exhibit["id"], n))
-    add("主讲解时长约 45 秒", not lengths, "各展项字数在 80~400 字之间" if not lengths else "；".join(lengths))
+        seconds, source = measured_duration(project, exhibit["id"])
+        if seconds is None:
+            if (project.get("audio") or {}).get(exhibit["id"]):
+                unmeasured.append("%s 有音频但读不出时长（ffprobe 不可用或文件损坏）" % exhibit["id"])
+            continue
+        measured.append("%s %.2f 秒" % (exhibit["id"], seconds))
+        if not low <= seconds <= high:
+            out_of_range.append("%s 实测 %.2f 秒" % (exhibit["id"], seconds))
+    window = "%.1f~%.1f 秒" % (low, high)
+    problems = []
+    if lengths:
+        problems.append("字数不在 80~400：" + "、".join(lengths))
+    if out_of_range:
+        problems.append("实测时长超出 %s：%s" % (window, "、".join(out_of_range)))
+    problems.extend(unmeasured)
+    if problems:
+        detail = "；".join(problems)
+    elif measured:
+        detail = "字数 80~400；实测朗读时长 %s 全部落在 %s 内（目标 %.0f 秒 ±%.0f%%）" % (
+            "、".join(measured), window, DURATION_TARGET, DURATION_TOLERANCE * 100)
+    else:
+        detail = "字数在 80~400 字；本项目尚未合成音频，本次只核字数，未核实测时长"
+    add("主讲解时长约 45 秒", not problems, detail)
 
     facts_total = sum(len(e.get("facts", [])) for e in exhibits)
     per_exhibit = len(exhibits) and facts_total / len(exhibits) >= 2
@@ -515,7 +577,336 @@ def content_tests(project):
     return results
 
 
+# ---------------------------------------------------------------- 交付导出
+
+STATUS_TEXT = {
+    "draft": "草稿", "running": "生成中", "awaiting_confirmation": "等待确认",
+    "tested": "已自测", "approved": "已批准", "published": "已发布", "failed": "失败",
+}
+
+
+def fmt_duration(seconds):
+    """把秒数写成人能读的形式；拿不到有效值就返回 None，绝不编一个。"""
+    try:
+        value = float(seconds)
+    except (TypeError, ValueError):
+        return None
+    if value <= 0:
+        return None
+    minutes, rest = divmod(value, 60)
+    if minutes >= 1:
+        return "%d 分 %.1f 秒" % (int(minutes), rest)
+    return "%.1f 秒" % rest
+
+
+def delivery_files(project):
+    """已登记音频的**落盘事实**：字节数与 sha256 一律按磁盘上的文件重算，
+    不直接采信合成时写进数据库的记录——库里的指纹证明不了客户手上的文件。
+
+    返回的每一项都带 present 标记；文件丢了就标 missing，由调用方如实说明，
+    而不是照着数据库里的旧数字写出一份看起来齐全的交付稿。
+    """
+    rows = []
+    for exhibit in project.get("exhibits", []):
+        info = (project.get("audio") or {}).get(exhibit["id"])
+        if not info:
+            continue
+        filename = str(info.get("filename") or "")
+        path = tts.AUDIO_ROOT / project["id"] / filename
+        present = bool(filename) and "/" not in filename and ".." not in filename and path.is_file()
+        rows.append({
+            "exhibit_id": exhibit["id"],
+            "info": info,
+            "filename": filename,
+            "path": path,
+            "present": present,
+            "bytes": path.stat().st_size if present else 0,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest() if present else "",
+            "duration_s": info.get("duration_s"),
+        })
+    return rows
+
+
+def build_export_markdown(project):
+    """交付稿正文。状态行必须如实反映审核/自测/音频的真实状态，不能只写成品目录。"""
+    audio_map = project.get("audio") or {}
+    rows = {row["exhibit_id"]: row for row in delivery_files(project)}
+    tests = project.get("tests") or []
+    passed = sum(1 for t in tests if t.get("status") == "passed")
+    review = project.get("review") or {}
+    if review.get("decision") == "approved":
+        review_line = "%s 于 %s 批准（v%s）" % (review.get("reviewer"), review.get("at"), review.get("version"))
+    elif review.get("decision") == "needs_revision":
+        review_line = "%s 于 %s 要求修改（v%s）" % (review.get("reviewer"), review.get("at"), review.get("version"))
+    else:
+        review_line = "尚未人工审核——本稿不可当作已验收交付"
+    missing = [e["id"] for e in project["exhibits"] if e["id"] not in audio_map]
+    lines = [
+        "# %s 交付稿 v%s" % (project["name"], project["version"]),
+        "",
+        "> 项目状态：%s" % STATUS_TEXT.get(project["status"], project["status"]),
+        "> 自测状态：%s" % ("%d/%d 通过" % (passed, len(tests)) if tests else "未运行"),
+        "> 审核状态：%s" % review_line,
+        "> 音频状态：%s" % ("全部展项均已合成音频（指纹见各展项小节）" if not missing
+                          else "不完整——以下展项没有音频：" + "、".join(missing)),
+        "> 音频文件：本 Markdown 只含清单与指纹；MP3 本体在 export.zip 的「音频」目录内。",
+        "",
+    ]
+    for exhibit in project["exhibits"]:
+        lines += ["## %s %s" % (exhibit["id"], exhibit["title"]), "",
+                  (exhibit.get("main") or {}).get("text", ""), "",
+                  "> 简化版：" + (exhibit.get("simplified") or {}).get("text", ""), ""]
+        for fact in exhibit.get("facts", []):
+            lines.append("- [%s] %s（%s，%s）" % (fact.get("id"), fact.get("text"), fact.get("source_ref"),
+                                              "已核验" if fact.get("verified") else "待核验"))
+        row = rows.get(exhibit["id"])
+        if row is None:
+            # 没产出就说没产出，不留空白
+            lines.append("- 音频：未生成（本展项尚无合成音频，不可视为已交付音频）")
+        elif not row["present"]:
+            lines.append("- 音频：登记为 %s，但磁盘上找不到该文件——需重新合成后才能交付" % row["filename"])
+        else:
+            duration = fmt_duration(row["duration_s"])
+            lines.append("- 音频：%s｜%s｜%s｜%d 字节｜sha256 %s%s" % (
+                row["filename"], row["info"].get("engine"), row["info"].get("format", "mp3"),
+                row["bytes"], row["sha256"][:16],
+                ("｜实测时长 %s" % duration) if duration else "｜实测时长未采集"))
+        lines.append("")
+    return "\n".join(lines)
+
+
+def build_audio_readme(project, rows):
+    """音频目录说明。由导出时生成，取代过去那份手写模板。"""
+    packed = [row for row in rows if row["present"]]
+    first = packed[0]["info"] if packed else {}
+    lines = [
+        "# 音频交付说明",
+        "",
+        "本文件由 Studio 导出时自动生成，与同目录下的 MP3 一一对应。",
+        "",
+        "## 合成信息",
+        "",
+        "- 引擎：%s" % (first.get("engine") or "—"),
+        "- 模型：%s" % (first.get("model") or "—"),
+        "- 音色：%s" % (first.get("voice") or "—"),
+        "- 格式：%s" % (first.get("format") or "mp3"),
+        "",
+        "## 文件清单",
+        "",
+        "| 展项 | 文件 | 字节 | 实测时长 | sha256（前 16 位） |",
+        "|---|---|---|---|---|",
+    ]
+    for row in rows:
+        if row["present"]:
+            lines.append("| %s | %s | %d | %s | %s |" % (
+                row["exhibit_id"], row["filename"], row["bytes"],
+                fmt_duration(row["duration_s"]) or "未采集", row["sha256"][:16]))
+        else:
+            lines.append("| %s | %s（磁盘上已丢失） | — | — | — |" % (row["exhibit_id"], row["filename"]))
+    if not packed:
+        lines.append("| — | 本项目尚无可用音频 | — | — | — |")
+    lines += [
+        "",
+        "## 已验证 / 未验证（务必看清再验收）",
+        "",
+        "- 已验证：文件由服务端真实合成并落盘，可解码；上表 sha256 是导出时对**实际打包字节**重算的结果。",
+        "- 已验证：上表时长是用 ffprobe 读实际音频得到的（标「未采集」的是合成早于时长采集开启）。",
+        "- 未验证：音色、语速、断句是否符合馆方要求，需要人工试听确认。",
+        "- 未验证：设备端（耳机、音箱、眼镜）能否正常播放，本项目尚未接入真机。",
+        "- 结论：合成成功只证明文件产出了，不等于验收通过。",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def build_export_bundle(project):
+    """把 Markdown 交付稿、音频本体、音频说明与清单打成一个 zip，返回 (bytes, manifest)。"""
+    markdown = build_export_markdown(project)
+    rows = delivery_files(project)
+    manifest = {
+        "project_id": project["id"],
+        "project_name": project["name"],
+        "version": project["version"],
+        "status": project["status"],
+        "exported_at": now(),
+        "review": project.get("review"),
+        "tests": {"total": len(project.get("tests") or []),
+                  "passed": sum(1 for t in (project.get("tests") or []) if t.get("status") == "passed")},
+        "files": [
+            {"path": "交付稿.md", "bytes": len(markdown.encode())},
+        ],
+    }
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as bundle:
+        bundle.writestr("交付稿.md", markdown)
+        for row in rows:
+            if not row["present"]:
+                continue
+            bundle.write(row["path"], "音频/" + row["filename"])
+            manifest["files"].append({
+                "path": "音频/" + row["filename"], "bytes": row["bytes"],
+                "sha256": row["sha256"], "duration_s": row["duration_s"],
+                "engine": row["info"].get("engine"), "voice": row["info"].get("voice"),
+            })
+        bundle.writestr("音频/README.md", build_audio_readme(project, rows))
+        bundle.writestr("交付清单.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+    return buffer.getvalue(), manifest
+
+
+# ------------------------------------------------- 项目附表：报价 / 反馈 / 签收
+# 这三样原来是前端自己捏的草稿（3000/1200/150/150、三条假反馈、虚假签收）。
+# 要让界面上每个数字都能回头查，就必须落到项目上，并且由服务端校验。
+
+def _text(value, limit):
+    return str(value or "").strip()[:limit]
+
+
+def _money(value, label):
+    """金额只收有限非负数。前端拦不住直接调接口，脏数据会一路进报价与交付清单。"""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        raise ValueError("「%s」必须是数字" % label)
+    if number != number or not (0 <= number <= 1e9):
+        raise ValueError("「%s」必须是 0~10 亿之间的数字" % label)
+    return round(number, 2)
+
+
+QUOTE_TEXT_FIELDS = (("customer", "客户名称"), ("reviewer", "内容审核人"),
+                     ("audience", "目标观众"), ("scope", "服务范围"))
+QUOTE_MONEY_FIELDS = (("duration", "目标时长"), ("price", "报价"),
+                      ("labor", "直接人工"), ("models", "模型与语音"), ("other", "其他直接费用"))
+
+
+def quote_of(project):
+    """返回补全后的报价对象。成本与贡献一律服务端算，不采信前端传的值。"""
+    quote = dict(project.get("quote") or {})
+    for key, _ in QUOTE_TEXT_FIELDS:
+        quote.setdefault(key, "")
+    for key, _ in QUOTE_MONEY_FIELDS:
+        quote.setdefault(key, 0.0)
+    quote.setdefault("confirmed", False)
+    quote.setdefault("confirmed_at", None)
+    quote.setdefault("updated_at", None)
+    quote["cost"] = round(sum(float(quote[key]) for key in ("labor", "models", "other")), 2)
+    quote["contribution"] = round(float(quote["price"]) - quote["cost"], 2)
+    return quote
+
+
+def apply_quote(project, data):
+    quote = quote_of(project)
+    for key, label in QUOTE_TEXT_FIELDS:
+        if key in data:
+            quote[key] = _text(data.get(key), 200)
+    for key, label in QUOTE_MONEY_FIELDS:
+        if key in data:
+            quote[key] = _money(data.get(key), label)
+    if data.get("confirm"):
+        missing = [label for key, label in QUOTE_TEXT_FIELDS[:1] + QUOTE_TEXT_FIELDS[3:]
+                   if not quote[key]]
+        if missing:
+            raise ValueError("确认范围前必须填写：" + "、".join(missing))
+        if quote["price"] <= 0:
+            raise ValueError("确认范围前必须填写报价金额")
+        quote["confirmed"] = True
+        quote["confirmed_at"] = quote["confirmed_at"] or now()
+    quote["updated_at"] = now()
+    project["quote"] = {k: v for k, v in quote.items() if k not in ("cost", "contribution")}
+    return quote_of(project)
+
+
+def add_feedback(project, data):
+    items = project.setdefault("feedbacks", [])
+    problem = _text(data.get("problem"), 2000)
+    if len(problem) < 4:
+        raise ValueError("反馈问题至少写 4 个字：没有现象描述的反馈无法复核")
+    entry = {
+        "id": "FB-%03d" % (len(items) + 1),
+        "exhibit_id": _text(data.get("exhibit_id"), 16) or None,
+        "title": _text(data.get("title"), 80) or problem[:24],
+        "question": _text(data.get("question"), 200),
+        "problem": problem,
+        "old": _text(data.get("old"), 1000),
+        "suggestion": _text(data.get("suggestion"), 1000),
+        "state": "recorded",
+        "recorded_at": now(),
+    }
+    items.append(entry)
+    return entry
+
+
+def update_feedback(project, data):
+    target = None
+    for item in project.get("feedbacks") or []:
+        if item["id"] == _text(data.get("feedback_id"), 16):
+            target = item
+    if target is None:
+        raise KeyError("反馈记录不存在")
+    state = _text(data.get("state"), 20)
+    if state not in ("candidate", "closed"):
+        raise ValueError("state 只能是 candidate（登记为改进候选）或 closed")
+    if state == "candidate":
+        suggestion = _text(data.get("suggestion"), 1000) or target.get("suggestion", "")
+        if len(suggestion) < 4:
+            raise ValueError("登记改进候选必须写明改成什么说法")
+        target["suggestion"] = suggestion
+    target["state"] = state
+    target["state_at"] = now()
+    return target
+
+
+def record_acceptance(project, data):
+    """签收是客户动作，只能发生在已发布版本上——批准 ≠ 签收 ≠ 回款。"""
+    if project.get("status") != "published":
+        raise PermissionError("只有已发布的版本才能登记客户签收（当前状态：%s）"
+                              % STATUS_TEXT.get(project.get("status"), project.get("status")))
+    signer = _text(data.get("signer"), 40)
+    if not signer:
+        raise ValueError("签收人不能为空：没有署名的签收不算凭证")
+    decision = _text(data.get("decision"), 20)
+    if decision not in ("accepted", "rejected"):
+        raise ValueError("decision 必须是 accepted 或 rejected")
+    project["acceptance"] = {"signer": signer, "decision": decision,
+                             "note": _text(data.get("note"), 1000),
+                             "version": project.get("version"), "at": now()}
+    return project["acceptance"]
+
+
+def apply_exhibit_text(project, data):
+    """改写主讲解。改完必须让旧的自测与审核失效，否则界面会拿着过期结论放行。"""
+    exhibit_id = _text(data.get("exhibit_id"), 16)
+    text = str(data.get("text") or "").strip()
+    exhibit = None
+    for item in project.get("exhibits", []):
+        if item["id"] == exhibit_id:
+            exhibit = item
+    if exhibit is None:
+        raise KeyError("展项不存在：" + (exhibit_id or "(空)"))
+    if len(text) < 20:
+        raise ValueError("主讲解至少 20 字，太短无法承载一个知识点")
+    if len(text) > 2000:
+        raise ValueError("主讲解最多 2000 字")
+    old = (exhibit.get("main") or {}).get("text", "")
+    if text == old:
+        raise ValueError("内容没有变化")
+    exhibit["main"] = {"text": text,
+                       "fact_ids": list((exhibit.get("main") or {}).get("fact_ids") or [])}
+    project["version"] = round(float(project.get("version", 0)) + 0.1, 1)
+    # 改一个字，旧的时长实测、测试结论、审核签名就都不再对应当前文本
+    project["tests"] = []
+    project["review"] = None
+    if project.get("status") in ("tested", "approved", "published"):
+        project["status"] = "awaiting_confirmation"
+    return exhibit, old
+
+
 # ---------------------------------------------------------------- http
+
+ASSET_TYPES = {".css": "text/css; charset=utf-8",
+               ".js": "application/javascript; charset=utf-8",
+               ".svg": "image/svg+xml", ".png": "image/png",
+               ".woff2": "font/woff2", ".ico": "image/x-icon"}
+
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "Studio/1.0"
@@ -540,7 +931,36 @@ class Handler(BaseHTTPRequestHandler):
         try:
             return json.loads(raw.decode("utf-8-sig"))
         except (json.JSONDecodeError, UnicodeDecodeError):
-            return {}
+            # 以前这里静默返回 {}：一个编码错的请求体会被当成「所有字段都没传」，
+            # 报价这类整体覆盖的写入会悄悄把已有值清空。宁可 400，也不要静默成功。
+            raise ValueError("请求体不是合法的 UTF-8 JSON")
+
+    def serve_page(self, name):
+        page = (ROOT / name).read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(page)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        return self.wfile.write(page)
+
+    def serve_asset(self, path):
+        """只下发 assets/ 目录内的静态文件。与页面一样免口令——里面没有项目数据。"""
+        base = (ROOT / "assets").resolve()
+        target = (ROOT / path.lstrip("/")).resolve()
+        try:
+            target.relative_to(base)
+        except ValueError:
+            return self.send_json(404, {"error": "文件不存在"})
+        if not target.is_file():
+            return self.send_json(404, {"error": "文件不存在"})
+        raw = target.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", ASSET_TYPES.get(target.suffix.lower(), "application/octet-stream"))
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        return self.wfile.write(raw)
 
     def authorized(self):
         """校验访问口令。未配置口令时放行——启动护栏（main）保证这只在监听本机时才发生。
@@ -565,14 +985,13 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         query = parse_qs(parsed.query)
+        if path.startswith("/assets/"):
+            return self.serve_asset(path)
         if path in ("/", "/index.html", "/studio"):
-            page = (ROOT / "studio_web.html").read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(page)))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            return self.wfile.write(page)
+            return self.serve_page("studio_web.html")
+        if path in ("/classic", "/classic.html"):
+            # 旧版工作台保留可访问：新界面换代期间它仍是已经验过的那一份
+            return self.serve_page("studio_classic.html")
         # 静态页本身不含数据，放行；所有 /api/studio/* 接口都要口令。
         denied = self.require_auth()
         if denied is not None:
@@ -625,34 +1044,23 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 return self.wfile.write(raw)
-            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/export", path)
+            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/export(\.zip)?", path)
             if match:
                 project = load(match.group(1))
-                lines = ["# %s 交付稿 v%s" % (project["name"], project["version"]), ""]
-                audio_map = project.get("audio") or {}
-                for exhibit in project["exhibits"]:
-                    lines += ["## %s %s" % (exhibit["id"], exhibit["title"]), "",
-                              (exhibit.get("main") or {}).get("text", ""), "",
-                              "> 简化版：" + (exhibit.get("simplified") or {}).get("text", ""), ""]
-                    for fact in exhibit.get("facts", []):
-                        lines.append("- [%s] %s（%s，%s）" % (fact.get("id"), fact.get("text"), fact.get("source_ref"),
-                                                          "已核验" if fact.get("verified") else "待核验"))
-                    info = audio_map.get(exhibit["id"])
-                    if info:
-                        # 音频真实产出就写出可核对的指纹；没产出就说没产出，不留空白
-                        lines.append("- 音频：%s｜%s｜%s｜%d 字节｜sha256 %s" % (
-                            info.get("filename"), info.get("engine"), info.get("format", "mp3"),
-                            info.get("bytes", 0), str(info.get("sha256", ""))[:16]))
-                    else:
-                        lines.append("- 音频：未生成（本展项尚无合成音频，不可视为已交付音频）")
-                    lines.append("")
-                missing = [e["id"] for e in project["exhibits"] if e["id"] not in audio_map]
-                lines.insert(1, "")
-                lines.insert(2, "> 音频状态：%s" % (
-                    "全部展项均已合成音频（指纹见各展项小节）" if not missing
-                    else "不完整——以下展项没有音频：" + "、".join(missing)))
-                lines.insert(3, "")
-                raw = "\n".join(lines).encode()
+                if match.group(2):
+                    # 交付包：Markdown + 音频本体 + 音频说明 + 清单，客户拿到的就是能直接归档的一份
+                    raw, manifest = build_export_bundle(project)
+                    filename = "studio-%s-v%s.zip" % (project["id"], project["version"])
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/zip")
+                    self.send_header("Content-Disposition",
+                                     'attachment; filename="%s"; filename*=UTF-8\'\'%s'
+                                     % (filename, quote(filename)))
+                    self.send_header("Content-Length", str(len(raw)))
+                    self.send_header("X-Delivered-Files", str(len(manifest["files"])))
+                    self.end_headers()
+                    return self.wfile.write(raw)
+                raw = build_export_markdown(project).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/markdown; charset=utf-8")
                 self.send_header("Content-Disposition", 'attachment; filename="studio-%s.md"' % project["id"])
@@ -671,12 +1079,12 @@ class Handler(BaseHTTPRequestHandler):
         if denied is not None:
             return denied
         path = urlparse(self.path).path
-        data = self.read_json()
         try:
+            data = self.read_json()
             if path in ("/api/studio/projects", "/api/studio/seed"):
                 project = seed()
                 return self.send_json(200, {"project": project})
-            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/(run|review|chat|tests|issue|material|voice|publish|authorize)", path)
+            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/(run|review|chat|tests|issue|material|voice|publish|authorize|quote|exhibit|feedback|acceptance)", path)
             if not match:
                 return self.send_json(404, {"error": "接口不存在"})
             project_id, action = match.group(1), match.group(2)
@@ -720,7 +1128,11 @@ class Handler(BaseHTTPRequestHandler):
 
             if action == "tests":
                 project["tests"] = content_tests(project)
-                project["status"] = "tested" if all(t["status"] == "passed" for t in project["tests"]) else project["status"]
+                all_passed = bool(project["tests"]) and all(t["status"] == "passed" for t in project["tests"])
+                if project.get("exhibits"):
+                    # 自测不过就退回待确认：不能让项目继续挂着「已自测」的旧状态，
+                    # 否则界面上的状态本身就在骗人（旧代码在失败时保留原状态）。
+                    project["status"] = "tested" if all_passed else "awaiting_confirmation"
                 save(project)
                 event(project_id, "tests", {"message": "自测完成：%d/%d 通过" % (
                     sum(1 for t in project["tests"] if t["status"] == "passed"), len(project["tests"]))})
@@ -780,6 +1192,47 @@ class Handler(BaseHTTPRequestHandler):
                       {"message": "资料授权已确认 · " + name})
                 return self.send_json(200, {"project": project})
 
+            if action == "quote":
+                quote = apply_quote(project, data)
+                save(project)
+                event(project_id, "quote", {
+                    "message": "报价%s · ¥%s" % ("范围已确认" if quote["confirmed"] else "已更新",
+                                                quote["price"]),
+                    "price": quote["price"], "contribution": quote["contribution"]})
+                return self.send_json(200, {"project": project, "quote": quote})
+
+            if action == "exhibit":
+                exhibit, old_text = apply_exhibit_text(project, data)
+                save(project)
+                event(project_id, "exhibit", {
+                    "message": "%s 主讲解已改写，版本升到 v%s；旧测试与审核已失效" % (
+                        exhibit["id"], project["version"]),
+                    "exhibit_id": exhibit["id"],
+                    "chars_before": len(old_text), "chars_after": len(exhibit["main"]["text"])})
+                return self.send_json(200, {"project": project})
+
+            if action == "feedback":
+                op = _text(data.get("op"), 20) or "add"
+                if op == "add":
+                    entry = add_feedback(project, data)
+                    message = "记录反馈 %s" % entry["id"]
+                elif op in ("candidate", "closed"):
+                    entry = update_feedback(project, dict(data, state=op))
+                    message = "反馈 %s → %s" % (entry["id"], op)
+                else:
+                    return self.send_json(400, {"error": "op 只能是 add / candidate / closed"})
+                save(project)
+                event(project_id, "feedback", {"message": message, "feedback_id": entry["id"]})
+                return self.send_json(200, {"project": project, "feedback": entry})
+
+            if action == "acceptance":
+                record = record_acceptance(project, data)
+                save(project)
+                event(project_id, "acceptance", {
+                    "message": "客户%s · %s" % ("签收" if record["decision"] == "accepted" else "拒收",
+                                              record["signer"])})
+                return self.send_json(200, {"project": project, "acceptance": record})
+
             if action == "voice":
                 exhibit_id = str(data.get("exhibit_id") or "")[:16]
                 text = str(data.get("text") or "").strip()
@@ -832,6 +1285,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {"project": project})
 
             return self.send_json(404, {"error": "接口不存在"})
+        except PermissionError as error:
+            return self.send_json(403, {"error": str(error)})
+        except ValueError as error:
+            return self.send_json(400, {"error": str(error)})
         except KeyError as error:
             return self.send_json(404, {"error": str(error)})
         except ModelError as error:
