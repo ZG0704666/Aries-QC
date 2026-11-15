@@ -1,0 +1,4 @@
+pipecat-ai[websocket,whisper]==0.0.108
+faster-whisper==1.2.1
+httpx>=0.27.2,<0.29
+uvicorn[standard]>=0.30,<1

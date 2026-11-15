@@ -1,0 +1,7 @@
+﻿OK https://www.kepu.net.cn/irs-c-mobile/search-result?code=182109db521&searchWord=%E5%85%89%E7%9A%84%E6%8A%98%E5%B0%84 len 1650 ctype text/html
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=referrer content=same-origin><link rel=icon href=/irs-c-mobile/favicon.ico><link rel=stylesheet href=/irs-c-mobile/tpls/customSyle.css><title>智能检索系统</title><script src=/irs-c-mobile/flexible.js></script><script src=/irs-c-mobile/css-vars-ponyfill.js></script><script src=/irs-c-mobile/theme.js></script><script>// css变量兼容IE浏览器       if (theme) {         cssVars({variables: theme})       }</script><link href=/irs-c-mobile/css/chunk-0cba165e.232c8993.css rel=prefetch><link href=/irs-c-mobile/css/chunk-3f7661b6.bdc82829.css rel=prefetch><link href=/irs-c-mobile/css/chunk-7920cea1.f9f769f7.css rel=prefetch><link href=/irs-c-mobile/js/chunk-0cba165e.e189ac99.js rel=prefetch><link h
+---
+FAIL https://www.kepu.net.cn/irs-c-web/search-result.json?code=182109db521&searchWord=%E5%85%89 HTTPError HTTP Error 404: Not Found
+---
+FAIL https://www.kepu.net.cn/irs-c-web/search!searchResult.action?code=182109db521&searchWord=% HTTPError HTTP Error 404: Not Found
+---

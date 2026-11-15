@@ -1,0 +1,19 @@
+﻿cookies: []
+FAIL HTTPError HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.
+The last 30x error message was:
+Moved Temporarily
+---
+FAIL HTTPError HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.
+The last 30x error message was:
+Moved Temporarily
+---
+163 OK https://www.163.com/search?keyword=%E5%85%89%E7%9A%84%E6%8A%98%E5%B0%84 51005
+<!DOCTYPE HTML>
+<!--[if IE 6 ]><html id="ne_wrap" class="ne_ua_ie6 ne_ua_ielte8"><![endif]-->
+<!--[if IE 7 ]><html id="ne_wrap" class="ne_ua_ie7 ne_ua_ielte8"><![endif]-->
+<!--[if IE 8 ]><html id="ne_wrap" class="ne_ua_ie8 ne_ua_ielte8"><![endif]-->
+<!--[if IE 9 ]><html id="ne_wrap" class="ne_ua_ie9"><![endif]-->
+<!--[if (gte IE 10)|!(IE)]><!--><html id="ne_wrap"><!--<![endif]-->
+<head>
+    
+    <

@@ -1,0 +1,8 @@
+﻿OK A%84%E6%8A%98%E5%B0%84&pg=10&p=1&cateid= {"roles":null,"permissions":null,"success":false,"message":"分类ID未填写","code":"200","data":{},"traceId":"C1A7EAFD8A9F4DC5B8758C4BF0A6DA96","messageType":0}
+--
+OK %84%E6%8A%98%E5%B0%84&pg=10&p=1&cateid=0 {"roles":null,"permissions":null,"success":false,"message":"不存在此分类","code":"200","data":{},"traceId":"855661955A9E41099E001FD3C237664A","messageType":0}
+--
+OK 4%E6%8A%98%E5%B0%84&pg=10&p=1&cateid=all {"roles":null,"permissions":null,"success":false,"message":"不存在此分类","code":"200","data":{},"traceId":"29E1B9E6C86841458BBF2875848FCDE9","messageType":0}
+--
+OK %E6%8A%98%E5%B0%84&pg=10&p=1&cateid=null {"roles":null,"permissions":null,"success":false,"message":"不存在此分类","code":"200","data":{},"traceId":"37812DF312D0483F91E4A55F1649EC36","messageType":0}
+--

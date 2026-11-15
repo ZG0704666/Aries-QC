@@ -1,0 +1,6 @@
+﻿== 光的折射 site:kepu.net.cn len 3921
+FAIL 光的折射 site:kepu.net.cn TypeError 'callable_iterator' object is not subscriptable
+== 声音的传播 site:kepu.net.cn len 3371
+FAIL 声音的传播 site:kepu.net.cn TypeError 'callable_iterator' object is not subscriptable
+== 光的色散 site:kepu.net.cn len 3475
+FAIL 光的色散 site:kepu.net.cn TypeError 'callable_iterator' object is not subscriptable

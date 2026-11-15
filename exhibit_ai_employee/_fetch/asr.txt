@@ -1,0 +1,79 @@
+﻿== 光的折射 total=10
+    2022-02-25 | 流体流动之谜 | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2022/art_a57bbb96cd3a4fddbc4f37e11fcb7d55.html
+    2021-09-02 | 软设定，硬内涵——超级机器人系列科幻动画的发展脚步 | http://www.cdstm.cn/theme/khsj/khzk/jqda/art/2021/art_72577d8fb9ea4fe1bd40b7fcd213e0d7.html
+    2021-06-11 | 云端科学课 第125期：小博士讲科学——光的折射 | https://www.cdstm.cn/subjects/yxkx/ydkxk/video/202106/t20210611_1049554.html
+    2020-11-10 | 【科学放大镜】带孩子去科技馆，如何不被问懵？（光影之绚篇） | http://neo.cdstm.cn/gallery/kxfdj/art/2020/art_1e1409c7767b4a62bef207828bdfb93b.html
+    2020-11-05 | 为什么女生都爱钻石？ | http://neo.cdstm.cn/gallery/kxfdj/art/2020/art_f24c9cd4c00f470290f5b8a78c4d2fd2.html
+    2020-03-06 | 洛洛沙漠历险记 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_01313bf7633348f6a7e1ffc07dafefee.html
+    2020-02-21 | 第79集 光纤的发展故事 | http://www.cdstm.cn/videos/sounds/xkxzj/art/2020/art_f57b8d837c124003892367b9b6adb190.html
+    2020-01-23 | 悬空的彩桥 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_735034437e8b46919e2754a0bdb5dfe5.html
+    2019-07-12 | 光学迷宫 | http://www.cdstm.cn/museum/zphc/tsyfxA/art/2019/art_3992d698992947fd86fea17b9191952b.html
+    2017-09-11 | 烈日灼画，夏天里get一项新玩法 | http://www.cdstm.cn/gallery/media/mkjx/kxzy/art/2017/art_2a33918478f14adf9da9e1bd40f6247f.html
+== 光的折射 原理 total=9
+    2021-09-02 | 软设定，硬内涵——超级机器人系列科幻动画的发展脚步 | http://www.cdstm.cn/theme/khsj/khzk/jqda/art/2021/art_72577d8fb9ea4fe1bd40b7fcd213e0d7.html
+    2020-11-10 | 【科学放大镜】带孩子去科技馆，如何不被问懵？（光影之绚篇） | http://neo.cdstm.cn/gallery/kxfdj/art/2020/art_1e1409c7767b4a62bef207828bdfb93b.html
+    2020-03-06 | 洛洛沙漠历险记 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_01313bf7633348f6a7e1ffc07dafefee.html
+    2020-02-21 | 第79集 光纤的发展故事 | http://www.cdstm.cn/videos/sounds/xkxzj/art/2020/art_f57b8d837c124003892367b9b6adb190.html
+    2020-01-23 | 悬空的彩桥 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_735034437e8b46919e2754a0bdb5dfe5.html
+    2019-07-12 | 光学迷宫 | http://www.cdstm.cn/museum/zphc/tsyfxA/art/2019/art_3992d698992947fd86fea17b9191952b.html
+    2013-06-11 | 通往天国的彩虹桥 | http://www.cdstm.cn/gallery/media/qkdr/ydy/art/2013/art_6f2ca50813e140649450ede03c8268f3.html
+    2013-03-14 | 潜望镜工作原理 | http://www.cdstm.cn/videos/videolishi/xxsnjkxk9809/art/2013/art_a819be9ee39141edb14c7297073debf3.html
+    2011-07-08 | 崇尚理性和数学演绎法的笛卡尔 | http://www.cdstm.cn/gallery/media/mkjx/zxsslh/art/2011/art_2b34000835e0423f8bd7f818e4538fcb.html
+== 光的折射现象 total=2
+    2020-03-06 | 洛洛沙漠历险记 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_01313bf7633348f6a7e1ffc07dafefee.html
+    2015-11-07 | 彩虹彩虹变出来 | http://www.cdstm.cn/gallery/media/mkjx/snkxhb/art/2015/art_cca0c7ace8db4e959febfe927a79dd53.html
+== 声音的传播 total=10
+    2024-06-28 | 第411集 听不见的声音 | http://neo.cdstm.cn/xqq/etly/tyt/kxkkm/art/2024/art_a81427dd89c945f487472028b3088d8e.html
+    2024-06-02 | 寂静的真空 | http://www.cdstm.cn/museum/zphc/dgkxg/art/2024/art_69bfb746bb7547828bb83159b85fb2be.html
+    2022-04-07 | 毅力号证实火星声音速度更慢：先听高音后听低音 4米就失真 | http://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_d6e564b9cf914b70866eede85f58c228.html
+    2022-03-28 | 火星上的声音传播，与地球上有什么不同？ | http://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_ac89fb7a365746f3a7410f6e7ac246e6.html
+    2021-12-24 | 【深度科普】无线电——世界因此相邻 | http://www.cdstm.cn/gallery/zhuanti/rd/art/2021/art_db73f70048244e4a81189fcf9f458515.html
+    2021-05-10 | NASA首次公布“机智号”飞行声音，直升机在火星上发出的声音是这样的…… | http://neo.cdstm.cn/theme/khsj/khzx/khcb/art/2021/art_64fe69225e9447c3afe9ac12907a8122.html
+    2021-01-13 | 科学家讲科学：你听到的，看到的世界都是真实的吗？ | http://www.cdstm.cn/subjects/jzrm/kpydh/zsjsllzzkpwz/zlxmt/art/2021/art_bda5bff7bf474be1a500d57b6f92a23f.html
+    2020-11-25 | “倾听”果然是个好办法：除了沟通感情，还可以用来预测龙卷风 | http://www.cdstm.cn/theme/khsj/khzx/khqw/art/2020/art_a2a0b352d0ea4e3d88413579d9fddf1a.html
+    2020-06-26 | 声音跑多快？ | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2384d3f53dfc455d8fb6b36cb9a97923.html
+    2020-06-19 | 声音是什么？ | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_48b013bcec814995bd1dc75a3387bdfb.html
+== 声波 介质 传播 total=10
+    2022-10-11 | 看得见的声波 | http://www.cdstm.cn/museum/zphc/zbskjg/art/2022/art_53d919081f5c4861af9f323418ce984f.html
+    2022-07-22 | 你有没有听过超大质量黑洞的咆哮？ | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2022/art_5973c00af5d14cd98b7194089f1bd24d.html
+    2022-07-01 | 黑科技？魔幻的悬浮技术，让科幻照进现实！ | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2022/art_0e2a587ff4fa40e58bd2767d968b92b2.html
+    2021-12-23 | 为什么语音里自己的声音能这么难听？ | http://neo.cdstm.cn/gallery/kxfdj/art/2021/art_8a182d2a513245e194a2f90d2b6daf1a.html
+    2021-08-19 | 超声检查就是B超吗？ | http://neo.cdstm.cn/zt/xjll/yh/art/2021/art_fca0305f5daa418daf8971f8401ab987.html
+    2020-12-28 | “反派”气溶胶的自白 | http://www.cdstm.cn/frontier/yyjk/art/2020/art_c4cf8bde1ada4ea6af1efa5ab5eb1485.html
+    2020-06-26 | 声音跑多快？ | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2384d3f53dfc455d8fb6b36cb9a97923.html
+    2020-06-26 | 运动变“声”术 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_d79788cf09334f7ca3311613728e45ec.html
+    2020-06-19 | 声音是什么？ | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_48b013bcec814995bd1dc75a3387bdfb.html
+    2020-06-19 | 听不见的声音 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_18bdfc14e0ad408a9b43b442620694fc.html
+== 声音 传播 速度 total=10
+    2024-10-31 | 2024年9月“科学”流言榜 | http://www.cdstm.cn/frontier/xw/art/2024/art_94f5017e2bb945c8b55c7f5e0cc0ac71.html
+    2022-07-29 | 它们变色失败，全因轮船太吵 | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2022/art_346d06d2a63d4052a63968a087d9b81d.html
+    2022-07-25 | 曙光之前 | http://neo.cdstm.cn/theme/khsj/khxs/dpxs/art/2022/art_cfbcbec6339f460590bbf0aafa66183e.html
+    2022-07-22 | 你有没有听过超大质量黑洞的咆哮？ | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2022/art_5973c00af5d14cd98b7194089f1bd24d.html
+    2022-07-13 | 昨日幻梦 | http://neo.cdstm.cn/theme/khsj/khxs/dpxs/art/2022/art_276ed82a62fc442187e5fa4d1920db28.html
+    2022-06-22 | 归来之人 | http://neo.cdstm.cn/theme/khsj/khxs/dpxs/art/2022/art_d1f34086d3d14a80ab309b1d5ee5674e.html
+    2022-06-01 | 20世纪60年代的疯狂：美国向太空发射了4.8亿根铜针 | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2022/art_a8ea3d8b9bb940d9a817aa1902ee8bf2.html
+    2022-05-16 | 冥王星：自带“爱心” 却被退出\"群聊\"的矮个子 | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2022/art_3052a9ee3e954f899d39e766c941f9e5.html
+    2022-04-07 | 毅力号证实火星声音速度更慢：先听高音后听低音 4米就失真 | http://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_d6e564b9cf914b70866eede85f58c228.html
+    2022-03-28 | 火星上的声音传播，与地球上有什么不同？ | http://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_ac89fb7a365746f3a7410f6e7ac246e6.html
+== 光的色散 total=5
+    2020-05-13 | 站在巨人肩膀上的巨人：牛顿 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2c2f0c25f6384676ae1a3f558f9cc112.html
+    2020-01-06 | 现代科学之父”牛顿出生，那颗砸中他的苹果其实不存在？ | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2020/art_b591bf98101547228fa052e47c8e5919.html
+    2015-07-20 | 第四届辅导员大赛 展品辅导赛 单件展品辅导-戴璐璐 | http://www.cdstm.cn/videos/Tops/dsjqgkjfdyds/art/2015/art_e4e2acfd7d9f45b69ce6b85c780ccbfe.html
+    2015-07-20 | 辅导员大赛-戴璐璐 | http://www.cdstm.cn/videos/videolishi/dsjfdydshjzpsp/art/2015/art_30be940914494f4e98f9e2d8260039ae.html
+    2013-03-14 | 光的色散和合成 | http://www.cdstm.cn/videos/videolishi/xxsnjkxk9809/art/2013/art_76afdd52d61044cda1b7d2d0a0b439fd.html
+== 白光 色散 total=2
+    2020-01-06 | 现代科学之父”牛顿出生，那颗砸中他的苹果其实不存在？ | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2020/art_b591bf98101547228fa052e47c8e5919.html
+    2012-07-23 | 镜观宇宙四百年-《无线电》杂志2012年第07期 | http://neo.cdstm.cn/gallery/media/mkjx/wxd/art/2012/art_c47d4853a1e243a0ab1970762a57b7ec.html
+== 三原色 total=1
+    2019-11-20 | 三原色 | http://www.cdstm.cn/museum/zphc/kpdpc/art/2019/art_ae42d0b7cc9b4734b729ebbad8c383e1.html
+== 物体的颜色 total=10
+    2022-04-11 | 夜太黑看不清？研究人员“教”AI在黑暗中识别颜色 | http://www.cdstm.cn/theme/khsj/khzx/khqx/art/2022/art_095851c7b6e648c09bb5eb4e3855fdb2.html
+    2021-08-27 | 第46期：创造“熟悉的陌生感” | http://neo.cdstm.cn/gallery/myksj/art/2021/art_f92d7c695a424472b736fbef6ff438ca.html
+    2021-08-23 | 数学这么难，为啥小动物们能学会？ | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2021/art_a272c8db080545c79e85d16710a7be35.html
+    2019-11-20 | 三原色 | http://www.cdstm.cn/museum/zphc/kpdpc/art/2019/art_ae42d0b7cc9b4734b729ebbad8c383e1.html
+    2019-09-26 | 身体里的小相机 | http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2019/art_5fe23966e642421b934b424135115a61.html
+    2018-12-28 | 人们看一样东西的时候，看到的颜色是一样的吗？ | http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2018/art_1aec662fcdf64bfa848f224586f059d0.html
+    2017-10-27 | 眼见为“虚”——光与色的奥秘 | http://neo.cdstm.cn/zt/xjll/pyj/art/2017/art_c0d56a506e1e4bfeb94f2c6853e1479a.html
+    2016-03-30 | 记忆产生的种种奥秘 | http://www.cdstm.cn/gallery/media/mkjx/bkzs/art/2016/art_760522f7510545839bd1630fb9bd5d10.html
+    2014-06-27 | 用领带给鸡蛋染色 | http://www.cdstm.cn/gallery/hycx/hqkxltkxsygt/art/2014/art_d0cce4517e924f56b3d90d36550d78e1.html
+    2013-12-19 | “余像”的奇异原理 | http://www.cdstm.cn/gallery/hycx/hqkxltkxsygt/art/2013/art_e3fcd1e48a804bb5819549af165a2a3f.html

@@ -1,0 +1,12 @@
+﻿<area shape="rect" coords="78,182,153,202" href="./basic/physics2005/index.html" alt="世界物理年" >
+<area shape="rect" coords="167,182,237,202" href="./basic/szsx/index.htm" alt="数字数学博物馆" >
+<area shape="rect" coords="256,182,319,202" href="./basic/magnetism/index.html" alt="磁学馆" >
+<area shape="rect" coords="337,182,402,202" href="./basic/scigate/index.html" alt="科学之门" >
+<area shape="rect" coords="423,182,492,202" href="./basic/nano/index.html" alt="纳米世界" >
+<area shape="rect" coords="735,251,780,271" href="./civilization/architecture/index.html" alt="建筑">
+<area shape="rect" coords="657,251,851,271" href="./civilization/printing/index.html" alt="印刷">
+<area shape="rect" coords="724,251,945,271" href="./civilization/liao/index.html" alt="风云辽代">
+<area shape="rect" coords="824,251,1044,271" href="./civilization/china-silk/index.html" alt="中国丝绸">
+<area shape="rect" coords="735,284,780,305" href="./civilization/gardens/index.html" alt="园林">
+<area shape="rect" coords="724,284,945,305" href="./civilization/zhou/index.html" alt="东周图说">
+<area shape="rect" coords="826,284,1044,305" href="./civilization/chinaware/index.html" alt="中国陶瓷">

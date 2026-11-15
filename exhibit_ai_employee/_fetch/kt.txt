@@ -1,0 +1,31 @@
+﻿OK http://www.kepu.net.cn/gb/earth/index.html -> https://www.kepu.net.cn/gb/earth/index.html len 419
+OK http://www.kepu.net.cn/gb/earth/ -> https://www.kepu.net.cn/gb/earth/ len 419
+OK http://www.kepu.net.cn/gb/technology/ -> https://www.kepu.net.cn/gb/technology/ len 419
+OK http://www.kepu.net.cn/gb/basic/ -> https://www.kepu.net.cn/gb/basic/ len 419
+OK http://www.kepu.net.cn/gb/lives/ -> https://www.kepu.net.cn/gb/lives/ len 419
+OK https://www.kepu.cn/ -> https://www.kepu.net.cn/ len 48243
+     --> | https://self.kepu.net.cn/self_yj/202611/t20261105_864155.html
+     夏江江：当天气预报遇到AI | https://self.kepu.net.cn/self_yj/202611/t20261105_864155.html
+     --> | https://v.kepu.net.cn/topic/rushiqingzhou/202604/t20260416_830865.html
+     --> | https://www.kepu.net.cn/kpzg_kpjd/all/2026nofl/202610/t20261008_858991
+     这个世界被一条条线填满了？没学过高等数学的他震撼了物理学界 | https://www.kepu.net.cn/kpzg_kpjd/all/2026nofl/202610/t20261008_858991
+     --> | ./news/
+     [详情] | ./news/202609/t20260915_857122.html 
+     2026年“全国科学教育暑期学校”中小学教师培训成功举办 | ./news/202609/t20260902_855557.html
+     |  更多动态... | ./news/
+     商代青铜器：“大东北，是我的家乡！……” | https://mp.weixin.qq.com/s/XDDiivzETge9QwCoCe23lQ
+     “花园城市”新加坡，最近空气这么差了？ | https://mp.weixin.qq.com/s/qsrz0eKJ08_rejtyRBUgsQ
+     不耗电的 “巨型保温杯”上了铁路，冷链物流怎么偷偷进化了？ | ./kpzg_kpjd/all/2026nofl/202611/t20261109_864384.html
+     泡沫箱里98%是空气，为什么反而更保温？ | ./kpzg_kpjd/all/2026nofl/202611/t20261109_864382.html
+     快递里的冰袋不是水，那装的是什么？ | ./kpzg_kpjd/all/2026nofl/202611/t20261109_864380.html
+     没有防腐剂，冻干食品为啥能放一年？ | ./kpzg_kpjd/all/2026nofl/202611/t20261109_864378.html
+     有苦“说”得出：机器学习可预测牛奶中的苦味肽 | ./kpqykj/all/2023/202401/t20240105_202456.html
+     谢军：纹枰论道——方寸之间的... | https://self.kepu.net.cn/self_yj/202611/t20261111_864638.html
+     [详情] | https://self.kepu.net.cn/self_yj/202611/t20261111_864638.html
+     聂士昌：一场机械与东方的对话 | https://self.kepu.net.cn/self_yj/202611/t20261105_864154.html
+     张庆红：以冰雹窥世界之变 | https://self.kepu.net.cn/self_yj/202610/t20261023_862911.html
+     赵维殳：从深渊到太空，探索生命极限 | https://self.kepu.net.cn/self_yj/202611/t20261111_864639.html
+     张江：涌现——从简单规则到AI观察者 | https://self.kepu.net.cn/self_yj/202610/t20261013_860463.html
+     视频 | https://v.kepu.net.cn
+     袁亚湘院士导读《数学大师》 | https://v.kepu.net.cn/topic/readbooks/202604/t20260424_835134.html
+     周忠和院士导读《恩斯特·迈尔讲进化》 | https://v.kepu.net.cn/topic/readbooks/202604/t20260424_835125.html

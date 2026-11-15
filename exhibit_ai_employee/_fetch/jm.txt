@@ -1,0 +1,2 @@
+﻿FAIL https://www.kepu.net.cn/vmuseum/images/kepu_virtualmuseum_menu2.js HTTPError HTTP Error 404: Not Found
+FAIL https://www.kepu.net.cn/vmuseum/images/kepu_virtualmuseum_menu3.js HTTPError HTTP Error 404: Not Found

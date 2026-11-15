@@ -1,0 +1,22 @@
+﻿URL: http://neo.cdstm.cn/gallery/kxfdj/art/2020/art_1e1409c7767b4a62bef207828bdfb93b.html FAIL URLError <urlopen error [Errno 11001] getaddrinfo failed>
+
+URL: http://neo.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2018/art_1aec662fcdf64bfa848f224586f059d0.html FAIL URLError <urlopen error [Errno 11001] getaddrinfo failed>
+
+URL: http://neo.cdstm.cn/zt/xjll/pyj/art/2017/art_c0d56a506e1e4bfeb94f2c6853e1479a.html FAIL URLError <urlopen error [Errno 11001] getaddrinfo failed>
+
+URL: http://www.cdstm.cn/museum/zphc/kpdpc/art/2019/art_ae42d0b7cc9b4734b729ebbad8c383e1.html
+  final: https://www.cdstm.cn/museum/zphc/kpdpc/art/2019/art_ae42d0b7cc9b4734b729ebbad8c383e1.html html 88974 text 440 cjk 351
+  head: 三原色 / 科技馆 / 首页 > / 科普服务 > / 展品荟萃 > / 科普大篷车 / 三原色 / 分享到： / × / 分享到微信朋友圈 / 打开微信，点击底部的"发现"， / 使用"扫一扫"即可将网页分享至朋友圈。 / 展品信息 / 关 键 词 / 三原色 / 所属场馆 / 科普大篷车 / 所在展厅 / 物理, / 展品简介 / 色板的叠加或分开，为什么会发生颜色的变化呢？ / 试一试 / 左右推动
+
+URL: http://www.cdstm.cn/museum/zphc/dgkxg/art/2024/art_69bfb746bb7547828bb83159b85fb2be.html
+  final: https://www.cdstm.cn/museum/zphc/dgkxg/art/2024/art_69bfb746bb7547828bb83159b85fb2be.html html 88877 text 428 cjk 349
+  head: 寂静的真空 / 科技馆 / 首页 > / 科普服务 > / 展品荟萃 > / 东莞科学馆 / 寂静的真空 / 分享到： / × / 分享到微信朋友圈 / 打开微信，点击底部的"发现"， / 使用"扫一扫"即可将网页分享至朋友圈。 / 展品信息 / 关 键 词 / 抽真空,声音传播,气压 / 所属场馆 / 东莞科学馆,声光展区 / 所在展厅 / 基础科学展厅声光展厅 / 其他, / 展品简介 / 展项由
+
+URL: http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_48b013bcec814995bd1dc75a3387bdfb.html FAIL URLError <urlopen error [Errno 11001] getaddrinfo failed>
+
+URL: http://neo.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2384d3f53dfc455d8fb6b36cb9a97923.html FAIL URLError <urlopen error [Errno 11001] getaddrinfo failed>
+
+URL: http://www.cdstm.cn/museum/zphc/zbskjg/art/2022/art_53d919081f5c4861af9f323418ce984f.html
+  final: https://www.cdstm.cn/museum/zphc/zbskjg/art/2022/art_53d919081f5c4861af9f323418ce984f.html html 89376 text 488 cjk 404
+  head: 看得见的声波 / 科技馆 / 首页 > / 科普服务 > / 展品荟萃 > / 淄博市科技馆 / 看得见的声波 / 分享到： / × / 分享到微信朋友圈 / 打开微信，点击底部的"发现"， / 使用"扫一扫"即可将网页分享至朋友圈。 / 展品信息 / 关 键 词 / 声波,透镜,音调 / 所属场馆 / 淄博市科技馆,科技探索展厅,声光魅力 / 所在展厅 / 物理, / 展品简介 / 我们常说，“
+

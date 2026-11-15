@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    
+    
+    
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="UTF-8">
+    <title>
+        中国科普博览
+    </title>
+    <meta name="referrer" content="same-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no, email=no" />
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10;IE=9; IE=8; IE=7; IE=EDGE">
+    <link rel="icon" href='/irs-c-web-config/182109db521/images/favicon.ico
+' sizes="32x32" />
+    <link rel="stylesheet" type="text/css" href="./libs/obox/obox.css" />
+    <link rel="stylesheet" type="text/css" href="./libs/tagsinput/bootstrap-tagsinput.css">
+
+    <script src="./libs/css-vars-ponyfill.js"></script>
+    <script src="./libs/svg-inject.js"></script>
+    <script src="./theme.js"></script>
+    <script type="text/javascript">
+var theme = {
+    // 主题色
+    "--main-color": "#025293", // 主题色
+    "--main-color-light": "#116FBB", // 浅主题色
+    "--tab-color1": "#025293", // tab渐变色1
+    "--tab-color2": "#0b447a", // tab渐变色2
+    "--font-color": "#333", // 字体颜色-黑
+    "--font-color-red": "#E02020", // 字体颜色-红
+
+    // 字号
+    "--font-size-small": "12px", // 全局-小
+    "--font-size-normal": "14px", // 全局-正常
+    "--font-size-large": "16px", // 全局-大
+    "--font-tab": "18px", // 导航
+}
+</script>
+    <script src="./libs/jQuery.min.js?v20210104"></script>
+    <script type="text/javascript">
+        // css变量兼容IE浏览器
+        if (theme) {
+            cssVars({ variables: theme });
+        }
+        // svg元素注入
+        SVGInject(document.querySelectorAll("img.injectable"));
+
+        function isMobile() {
+            return navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+        }
+
+        if (isMobile()) {
+            window.location.href = window.location.origin + '/irs-c-mobile/search-result' + window.location.search
+        }
+    </script>
+<link href="search.css?e768e6676121fee876a1" rel="stylesheet"></head>
+
+<body>
+    <div class="search-flex">
+        <div class="o_body search-body">
+            <div class="search-main">
+                <!-- 检索头部start -->
+                <iframe src="./kepubolan/indexjshkepu.html" width="100%" height="200" frameborder="0" marginheight="0" marginwidth="0" scrolling="no" > </iframe>
+
+
+
+
+                <!-- 背景个性化start -->
+                <div class="header-bg">
+    <style>
+        .header-bg {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 114px;
+	    background-color: #ffffff; 
+            z-index: -1;
+        }
+    </style>
+</div>
+
+                <!-- 背景个性化end -->
+
+                <!-- tab start 分类模板 display by lvps 20220114-->
+                <div class="tab" style="display:none">
+                    <ul class="js_tab">
+                    </ul>
+                </div>
+                <!-- tab end -->
+
+                <!-- 搜索条件筛选 start  -->
+                <div class="main_content search_filter">
+                        <!-- add by lvps 20220114 start -->
+                        <div class="main_content header" style="text-align: center;">
+                            <!-- 右侧检索框样式 -->
+                            <div class="right_content" style="float: none;display: inline-block;">
+                                <div class="search_input js_search">
+                                    <div class="input_box js_input_box">
+                                        <!-- 输入框 -->
+                                        <input type="text" class="js_search_input" placeholder="">
+                                        <!-- 历史搜索词下拉面板 -->
+                                        <div class="list_box history_list_box js_list_downbox">
+                                            <ul class="js_history_list"></ul>
+                                            <div class="clear_history js_clear_history">
+                                                清空历史
+                                            </div>
+                                        </div>
+                                        <!-- 推荐词下拉面板 -->
+                                        <div class="list_box lenovo_list_box js_list_downbox">
+                                            <ul class="js_lenovo_list"></ul>
+                                        </div>
+                                        <!-- 暗文搜索滚动 -->
+                                        <div class="input-tips-box" style="display: none;">
+                                            <div class="input-tips-content"></div>
+                                        </div>
+                                    </div>
+                                    <!-- 放大镜 -->
+                                    <div class="search_icon js_search_button">
+                                        <img src="./images/search_icon.png" alt="" width="25">
+                                    </div>
+                                </div>
+                                <div class="advanced_search js_advanced_search">高级检索</div>
+                            </div>
+                        </div>
+                        <!-- add by lvps 20220114  end -->                   
+                    <div class="seach_result_num js_seach_result_num">                        
+                     已为您找到约<span class="count">0</span>条相关结果
+                    </div>
+                    <div class="search_filter_content">
+                        <div class="search_filter_item js_search_filter_item_sort">
+                            <div class="label">
+                                排序方式：
+                            </div>
+                            <span class="ui_radio o_radio first_radio" required name="sort" data-checked="related">
+                                按相关度
+                            </span>
+                            <span class="ui_radio o_radio" required name="sort" data-checked="time">
+                                按时间
+                            </span>
+                        </div>
+                        <div class="search_filter_item js_search_filter_item_searchway">
+                            <div class="label">
+                                检索方式：
+                            </div>
+                            <span class="ui_radio o_radio first_radio" required name="searchway" data-checked="all">
+                                全文
+                            </span>
+                            <span class="ui_radio o_radio " required name="searchway" data-checked="title">
+                                标题
+                            </span>
+                        </div>
+                        <div class="search_filter_item search_filter_item_appendix js_search_filter_item_appendix">
+                            <span>附件类型</span>
+                            <div class="appendix_list js_appendix_list">
+                                <ul>
+                                    <li>不限</li>
+                                    <li>word</li>
+                                    <li>excel</li>
+                                    <li>ppt</li>
+                                    <li>pdf</li>
+                                    <li>txt</li>
+                                    <li>zip</li>
+                                    <li>rar</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="search_filter_item search_filter_item_time js_search_filter_item_time">
+                            <span>选择时间</span>
+                            <div class="time_list js_time_list">
+                                <ul>
+                                    <li data-time="ALL">时间不限</li>
+                                    <li data-time="LAST_WEEK">一周内</li>
+                                    <li data-time="LAST_MONTH"> 一月内</li>
+                                    <li data-time="LAST_YEAR"> 一年内</li>
+                                </ul>
+                                <div class="line"></div>
+                                <div class="bottom">
+                                    <div class="custom_time_title">自定义</div>
+                                    <div class="custom_time custom_time_start">
+                                        <div class="cong">从</div>
+                                        <div class="custom_time_input">
+                                            <input type="text" id="startTime" autocomplete="off" readonly>
+                                            <i></i>
+                                        </div>
+                                    </div>
+                                    <div class="custom_time custom_time_end">
+                                        <div class="cong">从</div>
+                                        <div class="custom_time_input">
+                                            <input type="text" id="endTime" autocomplete="off" readonly>
+                                            <i></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="btn js_time_btn">确定</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 搜索条件筛选 end -->
+
+                <!-- 筛选结果关键字start -->
+                <div class="main_content search_error_tip js_search_error_tip">
+                    已显示“<i class="hit-word"></i>”的搜索结果。仍然搜索：<span class="search-word"></span>
+                </div>
+                <!-- 筛选结果关键字end -->
+
+                <!-- 筛选结果 start -->
+                <div class="main_content basic_result js_result">
+
+                    <!-- 左侧 start  -->
+                    <div class="left js_basic_result_left">
+                        <!-- 附加筛选 start -->
+                        <div class="additional_filter">
+                            <div class="selected_top js_selected_top">
+                                <span class="selected_label">已选：</span>
+                                <ol class="js_additional_selected">
+                                </ol>
+                                <div class="clearAll js_clearAll">
+                                    清空
+                                </div>
+                            </div>
+                            <div class="additional_filter_table js_additional_filter"></div>
+                        </div>
+                        <!-- 附加筛选 end -->
+
+                        <!-- 内容区start -->
+                        <div class="basic_result_content js_basic_result_content clearfix">
+
+                        </div>
+                        <!-- 内容区end -->
+
+                        <!-- 内容区懒加载start -->
+                        <div class="lazyload_result_content js_lazyload_result_content clearfix">
+                        
+                        </div>
+                        <!-- 内容区懒加载end -->
+
+                        <!-- 搜索无结果 start -->
+                        <div class="search_noResult js_search_noResult1">
+                            <div class="title">
+                                很抱歉！未能搜到<span class="keyword"></span>相关的数据。
+                            </div>
+                            <div class="suggest">
+                                建议您：
+                                <ul>
+                                    <li>
+                                        <i></i>
+                                        <span>看看输入的文字是否有错误</span>
+                                    </li>
+                                    <li>
+                                        <i></i>
+                                        <span>去掉可能不必要的词或条件</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- 搜索无结果end  -->
+
+                        <!-- 分页start -->
+                        <div class="js_listPager listPager"></div>
+                        <!-- 分页end -->
+
+                        <!-- loading效果 start -->
+                        <div class="lazyload_result_loading js_lazyload_result_loading"></div>
+                        <!-- loading效果 end -->
+                    </div>
+                    <!-- 左侧 end -->
+
+                    <!-- 右侧框应用start -->
+                    <div class="right js_basic_result_right">
+
+                    </div>
+                    <!-- 右侧框应用end -->
+                </div>
+                <!-- 筛选结果 end -->
+
+                <!-- 搜索反馈start -->
+                <!--
+                <div class="feedback js_feedback">
+                    <div class="feedback_title">搜索反馈</div>
+                    <div class="feedback_button js_satisfied">
+                        <img src="./images/search_manyi.svg" alt="" class="unchecked" width="28" height="24"
+                            onload="SVGInject(this)">
+                        <img src="./images/search_manyi_checked.svg" alt="" class="checked" width="28" height="24"
+                            onload="SVGInject(this)">
+                        <p>满意</p>
+                    </div>
+                    <div class="line_box">
+                        <div class="line"></div>
+                    </div>
+                    <div class="feedback_button js_notSatisfied">
+                        <img src="./images/search_bumanyi.svg" alt="" class="unchecked" width="28" height="24"
+                            onload="SVGInject(this)">
+                        <img src="./images/search_bumanyi_checked.svg" alt="" class="checked" width="28" height="24"
+                            onload="SVGInject(this)">
+                        <p>不满意</p>
+                    </div>
+                    <div class="line_box">
+                        <div class="line"></div>
+                    </div>
+                    <div class="feedback_button goto-top">
+                        <img src="./images/goto-top.svg" alt="" class="unchecked" width="24" style="margin-top: 15px;"
+                            onload="SVGInject(this)">
+                        <img src="./images/goto-top-active.svg" alt="" class="checked" width="24"
+                            style="margin-top: 15px;" onload="SVGInject(this)">
+                        <p>返回顶部</p>
+                    </div>
+                    -->
+
+                    <!-- 搜索反馈弹窗start -->
+                    <div class="feedback_dialog js_notSatisfied_dialog">
+                        <div class="title">搜索结果差评意见反馈</div>
+                        <div class="feedback_dialog_content">
+                            <div class="question">
+                                请问您遇到了什么问题？<em>（必选项）</em>
+                            </div>
+                            <ul class="js_question clearfix">
+                                <li>搜索结果与搜索词无关</li>
+                                <li>想要找的内容太靠后</li>
+                                <li>找不到想要的内容</li>
+                                <li>页面错乱</li>
+                                <li>其它问题</li>
+                            </ul>
+                            <div class="error js_error problem">请选择遇到的问题</div>
+                            <div class="item_input">
+                                <div class="form_title">
+                                    问题具体描述
+                                </div>
+                                <div class="form_input js_question_description">
+                                    <textarea name="" id="" cols="30" rows="10" value="" maxlength="200"
+                                        placeholder="请详细说明，限200字以内"></textarea>
+                                </div>
+                            </div>
+                            <div class="item_input js_question_phone">
+                                <div class="form_title">
+                                    联系方式
+                                </div>
+                                <div class="form_input">
+                                    <input type="text" maxlength="200" placeholder="请留下手机号，方便工作人员跟进问题">
+                                </div>
+                                <div class="error js_error phone">请输入正确的手机号</div>
+                            </div>
+                            <div class="buttons">
+                                <div class="button submit_button">
+                                    确定
+                                </div>
+                                <div class="button cancle_button">
+                                    取消
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 搜索反馈弹窗end -->
+
+                    <!-- 提示弹窗start -->
+                    <div class="tip_dialog js_tip_dialog">
+                        <img src="./images/search_icon_tip.png" alt="" width="16">
+                        <span>您的反馈会让我们做的更好！</span>
+                    </div>
+                    <!-- 提示弹窗end -->
+                </div>
+                <!-- 搜索反馈end -->
+
+                <!-- 高级检索弹窗start -->
+                <div class="advanced_search_dialog js_advanced_search_dialog">
+                    <div class="advanced_search_dialog_content">
+                        <div class="tab_top main_content">
+                            <i class="icon-close js_iconclose"></i>
+                            <ol class="js_advanced_ol">
+                                <li class="cur">高级搜索</li>
+                            </ol>
+                        </div>
+                        <div>
+                            <div class="tab-cont">
+                                <div class="item js_advanced_item">
+                                    <div class="search_top">
+                                        <div class="main_content">
+                                            <div class="title">
+                                                搜索结果：
+                                            </div>
+                                            <div class="search_top_content">
+                                                <div class="search_input_item">
+                                                    <div class="input_label">
+                                                        包含全部关键词
+                                                    </div>
+                                                    <span class="ui_input o_animate">
+                                                        <input class="search-input" type="text" placeholder="按回车完成输入"
+                                                            data-fieldname="containsAll">
+                                                    </span>
+                                                </div>
+                                                <div class="search_input_item">
+                                                    <div class="input_label">
+                                                        包含任一关键词
+                                                    </div>
+                                                    <span class="ui_input o_animate">
+                                                        <input class="search-input" type="text" placeholder="按回车完成输入"
+                                                            data-fieldname="containsOne">
+                                                    </span>
+                                                </div>
+                                                <div class="search_input_item">
+                                                    <div class="input_label">
+                                                        不包含关键词
+                                                    </div>
+                                                    <span class="ui_input o_animate">
+                                                        <input class="search-input" type="text" placeholder="按回车完成输入"
+                                                            data-fieldname="none">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p class="error-tip">请至少填写一个包含的关键词</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="main_content">
+                                <li class="fixed_width appendix-type">
+                                    <div class="label">
+                                        文档格式：
+                                    </div>
+                                    <span class="ui_radio o_radio cur" required="" name="format" data-value="">
+                                        全部格式
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="word">
+                                        WORD
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="ppt">
+                                        PPT
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="excel">
+                                        EXCEL
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="pdf">
+                                        PDF
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="txt">
+                                        TXT
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="format" data-value="zip">
+                                        ZIP
+                                    </span>
+                                </li>
+                                <li class="fixed_width granularity">
+                                    <div class="label">
+                                        时间范围：
+                                    </div>
+                                    <span class="ui_radio o_radio cur" required="" name="scope" data-value="ALL">
+                                        全部时间
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="scope" data-value="LAST_YEAR">
+                                        一年内
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="scope" data-value="LAST_MONTH">
+                                        一月内
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="scope" data-value="LAST_WEEK">
+                                        一周内
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="scope" data-value="CUSTOM">
+                                        自定义
+                                    </span>
+                                    <div class="time-select">
+                                        <div class="custom_time_input">
+                                            <input type="text" id="start-time" autocomplete="off" readonly>
+                                            <i></i>
+                                        </div>
+                                        <span class="time-split">至</span>
+                                        <div class="custom_time_input">
+                                            <input type="text" id="end-time" autocomplete="off" readonly>
+                                            <i></i>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="order-by">
+                                    <div class="label">
+                                        排序方式：
+                                    </div>
+                                    <span class="ui_radio o_radio cur" required="" name="sorting" data-value="related">
+                                        按相关度排序
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="sorting" data-value="time">
+                                        按时间排序
+                                    </span>
+                                </li>
+                                <li class="search-by">
+                                    <div class="label">
+                                        搜索位置：
+                                    </div>
+                                    <span class="ui_radio o_radio cur" required="" name="location" data-value="all">
+                                        全文
+                                    </span>
+                                    <span class="ui_radio o_radio" required="" name="location" data-value="title">
+                                        仅标题
+                                    </span>
+                                </li>
+                            </ul>
+                            <div class="advanced_button main_content">
+                                <div class="button">
+                                    开始检索
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 高级检索弹窗end -->
+            </div>
+
+            <!-- 页脚start -->
+            <div class="irs-footer">
+                
+                <iframe src="./kepubolan/indexjsw.html" width="100%" height="400" frameborder="0" marginheight="0" marginwidth="0" scrolling="no" > </iframe>
+
+
+            </div>
+            <!-- 页脚end -->
+        </div>
+    </div>
+
+    <!--                                       左侧框应用                                                             -->
+    <!-- iframe框应用 -->
+    <script id="left-iframe-tpl" type="text/html">
+        <div class="main_application_item noBorder" name="{{ name }}">
+            <iframe src="{{ linkUrl }}" height="{{ height }}" width="100%" scrolling="no"></iframe>
+        </div>
+    </script>
+    <!-- 领导人框应用模板 -->
+    <script id="leader-tpl" type="text/html">
+        <div class="main_application_item"  name="{{ name }}">
+            <a class="character_introduction clearfix" target="_blank" name="{{ name }}" href="{{ linkUrl }}">
+                <p class="name-block">
+                    <span class="name">{{ title }}</span>
+                </p>
+                <div class="clearfix">
+                    <div class="img">
+                        <img src="{{ sourceUrl }}" alt="">
+                    </div>
+                    <div class="detail">
+                      <table>
+                        <tr>
+                          <td class="desc">职务</td>
+                          <td class="value js_limit_text">
+                            <span class="js_text" data-content="{{ duty }}">{{ duty }}</span>
+                          </td>
+                        </tr>
+                        <% for(var i = 0; i < introduction.length; i++){ %>
+                          <tr>
+                            <td class="desc">{{ introduction[i].name }}</td>
+                            <td class="value js_limit_text">
+                              <span class="js_text" data-content="{{ introduction[i].value }}">{{ introduction[i].value }}</span>
+                            </td>
+                          </tr>
+                          <% } %>
+                      </table>
+                    </div>
+                </div>
+                <div class="split-line"></div>
+                <p class="profile">{{ title }}同志的简历</p>
+            </a>
+        </div>
+    </script>
+    <!-- 地理位置模板 -->
+    <script id="location-tpl" type="text/html">
+        <div class="main_application_item noBorder"  name="{{ name }}">
+            <p class="location-box-title">地理位置</p>
+            <iframe src="{{ linkUrl }}" height="{{ height }}" width="100%"></iframe>
+        </div>
+    </script>
+    <!-- 系统名片、机构名片模板 -->
+    <script id="organization-tpl" type="text/html">
+        <div class="main_application_item"  name="{{ name }}">
+            <div class="fund_innerbox organization">
+                <div class="fund_top">
+                    <a href="{{ linkUrl }}" name="{{ name }}" target="_blank">{{ title }}</a>
+                </div>
+                <a class="fund_bottom clearfix" href="{{ linkUrl }}" target="_blank">
+                    <img src="{{ sourceUrl }}" alt="">
+                    <p class="js_limit_text organization_introduction">
+                      <span class="js_text" data-content="{{ introduction }}">{{ introduction }}</span>
+                    </p>
+                    <table>
+                      <% for(var i = 0; i < other.length; i++){ %>
+                        <tr>
+                          <% for(var j = 0; j < other[i].length; j++){ %>
+                            <td colspan="{{ 3 - other[i].length }}" class="value js_limit_text">
+                              <span class="js_text" data-content="{{ other[i][j] }}">{{@ other[i][j] }}</span>
+                            </td>
+                          <% } %>
+                        </tr>
+                      <% } %>
+                      {{if boxType === 'organization'}}
+                      <tr>
+                        <td colspan="2" class="td-map"><iframe src="{{ '/irs-c-mobile/map.html?locations=' + location + '&searchWord=' + title }}" height="304px" width="100%"></iframe></td>
+                      </tr>
+                      {{/if}}
+                    </table>
+                </a>
+            </div>
+        </div>
+    </script>
+    <!-- 最新消息框应用 -->
+    <script id="news-box-tpl" type="text/html">
+        <div class="main_application_item igs-top-news" name="{{ name }}">
+            <a class="title" href="{{ list[0] | visitUrl }}"><em>{{ hitWord || searchWord }}</em>的最新相关新闻</a>
+            <ul>
+                {{each list $value $index}}
+                <li class="clearfix">
+                    <a class="title" target="_blank" title="{{ $value.title_no_tag }}" href="{{ $value.url }}">{{@ $value.title }}</a>
+                    {{if $index === 0}}
+                    <div class="content js_limit_text">
+                        <span class="js_text" data-content="{{ $value.content }}" title="{{ $value.content }}">{{@ $value.content | spaceFilter }}</span>
+                    </div>
+                    {{/if}}
+                    {{if $value.source}}
+                    <span class="source">{{ $value.source }}</span>
+                    {{/if}}
+                    <span class="time">{{ $value.time | timeAgo }}</span>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+    <!-- 抖音框应用 -->
+    <script id="douyin-box-tpl" type="text/html">
+        <div class="main_application_item igs-relate-douyin-wrap clearfix" name="{{ name }}">
+            <div class="title">
+                <span class="fl"><em>{{hitWord || searchWord}}</em>-短视频</span>
+                <a href="{{ list[0] | visitUrl }}" class="visit-url">
+                    <span>查看全部</span>
+                </a>
+            </div>
+
+            <div class="outer">
+                <div class="inner">
+                    {{each list}}
+                    <a class="igs-relate-douyin scale-item" href="{{ $value.url }}" target="_blank" title="{{ $value.title_no_tag }}">
+                        <img class="cover-pic" src="{{ $value.imgUrl | imgFilter }}" alt=""/>
+                        <p class="title" title="{{ $value.title_no_tag }}">{{@ $value.title }}</p>
+                        <div class="channel">
+                            <img src="./images/search_douyin_channel.png" alt="" width="24"/>
+                            <span title="抖音号-{{ $value.source }}">抖音号-{{ $value.source }}</span>
+                        </div>
+                    </a>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="turn-btn next"></div>
+            <div class="turn-btn prev"></div>
+        </div>
+    </script>
+    <!-- 视频框应用 -->
+    <script id="video-box-tpl" type="text/html">
+        <div class="main_application_item igs-relate-video" name="{{ name }}">
+            <div class="title">
+                <span>
+                    <em>{{ hitWord || searchWord }}</em>-视频
+                </span>
+                <a href="{{ list[0] | visitUrl }}" class="visit-url">
+                    <span>查看全部</span>
+                </a>
+            </div>
+            <ul class="clearfix">
+                {{each list}}
+                <li class="fl scale-item">
+                    <a href="{{ $value.url }}" target="_blank" title="{{ $value.title_no_tag }}">
+                        <img src="{{ $value.imgUrl | imgFilter }}" />
+                        <p class="title" title="{{ $value.title_no_tag }}">{{@ $value.title }}</p>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+    <!-- 图片框应用 -->
+    <script id="picture-box-tpl" type="text/html">
+        <div class="main_application_item igs-relate-picture" name="{{ name }}">
+            <div class="title">
+                <span><em>{{ hitWord || searchWord }}</em>-图片</span>
+                <a href="{{ list[0] | visitUrl }}" class="visit-url">
+                    <span>查看全部</span>
+                </a>
+            </div>
+            <div class="img-wrap clearfix">
+                <div class="box-1">
+                    <div class="img-box">
+                        {{if list[0]}}
+                        <a href="{{ list[0].url }}" target="_blank" class="scale-item" title="{{ list[0].title_no_tag }}">
+                            <img src="{{ list[0].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[0].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="box-2">
+                    <div class="img-box">
+                        {{if list[1]}}
+                        <a href="{{ list[1].url }}" target="_blank" class="scale-item" title="{{ list[1].title_no_tag }}">
+                            <img src="{{ list[1].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[1].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                    <div class="img-box">
+                        {{if list[2]}}
+                        <a href="{{ list[2].url }}" target="_blank" class="scale-item" title="{{ list[2].title_no_tag }}">
+                            <img src="{{ list[2].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[2].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="box-3">
+                    <div class="img-box">
+                        {{if list[3]}}
+                        <a href="{{ list[3].url }}" target="_blank" class="scale-item" title="{{ list[3].title_no_tag }}">
+                            <img src="{{ list[3].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[3].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                    <div class="img-box">
+                        {{if list[4]}}
+                        <a href="{{ list[4].url }}" target="_blank" class="scale-item" title="{{ list[4].title_no_tag }}">
+                            <img src="{{ list[4].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[4].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="box-4">
+                    <div class="img-box">
+                        {{if list[5]}}
+                        <a href="{{ list[5].url }}" target="_blank" class="scale-item" title="{{ list[5].title_no_tag }}">
+                            <img src="{{ list[5].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[5].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                    <div class="img-box">
+                        {{if list[6]}}
+                        <a href="{{ list[6].url }}" target="_blank" class="scale-item" title="{{ list[6].title_no_tag }}">
+                            <img src="{{ list[6].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[6].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                    <div class="img-box">
+                        {{if list[7]}}
+                        <a href="{{ list[7].url }}" target="_blank" class="scale-item" title="{{ list[7].title_no_tag }}">
+                            <img src="{{ list[7].imgUrl | imgFilter }}" alt="" />
+                            <p class="title">{{ list[7].title_no_tag }}</p>
+                        </a>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    <!-- 图片框应用-瀑布流 -->
+    <script id="picture-waterfall-box-tpl" type="text/html">
+        <div class="main_application_item igs-relate-picture" name="{{ name }}">
+            <div class="title">
+                <span><em>{{ hitWord || searchWord }}</em>-图片</span>
+                <a href="{{ list[0] | visitUrl }}" class="visit-url">
+                    <span>查看全部</span>
+                </a>
+            </div>
+            <div class="img-wrap img-waterfall-wrap clearfix">
+                {{each list}}
+                <div class="img-box">
+                    <a href="{{ $value.url }}" target="_blank" class="scale-item" title="{{ $value.title_no_tag }}">
+                        <img src="{{ $value.imgUrl | imgFilter }}" alt="" />
+                        <p class="title">{{ $value.title_no_tag }}</p>
+                    </a>
+                </div>
+                {{/each}}
+                <div class="bottom-mask"></div>
+            </div>
+        </div>
+    </script>
+    <!-- 图片链接框应用 -->
+    <script id="image-tpl" type="text/html">
+        <ul class="igs-image-box clearfix">
+            {{each list}}
+            <li class="fl image-item">
+                <a href="{{ $value.url }}" target="_blank">
+                    <img src="{{ $value.path }}" />
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+    </script>
+    <!-- 相关搜索 -->
+    <script id="related-search-tpl" type="text/html">
+        <div class="item related-search-box clearfix" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            <ul>
+                {{each list}}
+                <li>
+                    <a href="{{ $value | relateSearchUrl }}" class="relate-search-url">
+                        <span>{{@ $value.title }}</span>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+
+    <!--                                       左侧消息列表                                                           -->
+    <!-- 新闻 -->
+    <script id="news-tpl" type="text/html">
+        <div class="item hasImg is-news" data-documentId="{{ documentId }}">
+            {{if fields.title}}
+            <a class="title log-anchor" title="{{ title_no_tag }}" href="{{ url }}" target="_blank">
+                {{if fields.label}}
+                <span class="type_title">{{ fields.label.cnName }}</span>
+                {{/if}}
+                {{@ title }}
+            </a>
+            {{/if}}
+
+            <div class="description">
+                {{if fields.imgUrl && imgUrl && imgUrl !== '[]' }}
+                <img src="{{ imgUrl | imgFilter }}">
+                {{/if}}
+
+                {{if fields.content}}
+                <div class="detail js_limit_text">
+                    <p class="js_text" data-content="{{ content }}">{{@ content || ''}}</p>
+                </div>
+                {{/if}}
+            </div>
+
+            {{if fields.source}}
+            <a href="{{ url }}" class="source" target="_blank">{{ source }}</a>
+            {{/if}}
+
+            {{if fields.time}}
+            <span class="sourceTime">发布时间：{{ time }}</span>
+            {{/if}}
+        </div>
+    </script>
+    <!-- 图片 -->
+    <script id="pic-tpl" type="text/html">
+        <div class="pic-item item grid-item" >
+            <a href="{{ url }}" target="_blank" title="{{ title_no_tag }}" class="scale-item log-anchor">
+                <img src="{{ imgUrl | imgFilter }}" onload="rowGrid()">
+                <p class="img-title">{{ title_no_tag }}</p>
+            </a>
+        </div>
+    </script>
+    <!-- 图片-瀑布流 -->
+    <script id="pic-waterfall-tpl" type="text/html">
+        <div class="pic-waterfall-item item" >
+            <a href="{{ url }}" target="_blank" title="{{ title_no_tag }}" class="log-anchor">
+                <img src="{{ imgUrl | imgFilter }}">
+                <p class="img-title">{{@ title }}</p>
+            </a>
+        </div>
+    </script>
+    <!-- 政策 -->
+    <script id="policy-tpl" type="text/html">
+        <div class="item" data-documentId="{{ documentId }}">
+            {{if fields.title}}
+            <a class="title log-anchor" title="{{ title_no_tag }}" href="{{ url }}" target="_blank">
+                <span class="type_title">{{ fields.label.cnName }}</span>{{@ title }}
+            </a>
+            {{/if}}
+
+            {{if isShowTable}}
+            <table>
+                <tbody>
+                {{each tableFields}}
+                <tr>
+                    {{each $value}}
+                    <td class="td-title" colspan="1">{{ fields[$value.enName].cnName }}</td>
+                    <td class="td-content" colspan="{{ $value.colSpan }}">{{@ $data[$value.enName] || '' }}</td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+                </tbody>
+            </table>
+            {{/if}}
+
+            {{if fields.source}}
+            <a href="{{ url }}" target="_blank" class="source">{{ source }}</a>
+            {{/if}}
+
+            {{if fields.time}}
+            <span class="sourceTime">发布时间：{{time}}</span>
+            {{/if}}
+        </div>
+    </script>
+    <!-- 办事服务 -->
+    <script id="service-tpl" type="text/html">
+        <div class="item" data-documentId="{{ documentId }}">
+            {{if fields.title}}
+            <a class="title log-anchor" title="{{ title_no_tag }}" href="{{ url }}" target="_blank">
+                <span class="type_title">{{ fields.label.cnName }}</span>{{@ title}}
+            </a>
+            {{/if}}
+
+            <ol class="ol_tab js_ol_tab">
+                {{if tableFields}}
+                <li class="cur">基本信息</li>
+                {{/if}}
+
+                {{if fields.handleInformation_information}}
+                <li>办理材料</li>
+                {{/if}}
+
+                {{if fields.handlePlace_place}}
+                <li>办理地点</li>
+                {{/if}}
+
+                {{if fields.applyCondition_condition}}
+                <li>申请条件</li>
+                {{/if}}
+
+                {{if fields.handleFlow_flow}}
+                <li>办理流程</li>
+                {{/if}}
+
+                {{if fields.chargeStandard}}
+                <li>收费标准</li>
+                {{/if}}
+                <li></li>
+            </ol>
+
+            <ul class="ul_tab js_ul_tab">
+                <li>
+                    {{if tableFields}}
+                    <table>
+                        <tbody>
+                        {{each tableFields}}
+                        <tr>
+                            {{each $value}}
+                            <td class="td-title" colspan="1">{{ fields[$value.enName].cnName }}</td>
+                            <td class="td-content" colspan="{{ $value.colSpan }}">{{@ $data[$value.enName] || '' }}</td>
+                            {{/each}}
+                        </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+                <li>
+                    {{if fields.handleInformation_information}}
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="table-title">办理材料</td>
+                            <td class="table-content" colspan="3">{{ handleInformation_information }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+                <li>
+                    {{if fields.handlePlace_place}}
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="table-title">办理地点</td>
+                            <td class="table-content" colspan="3">{{ handlePlace_place }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+                <li>
+                    {{if fields.applyCondition_condition}}
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="table-title">申请条件</td>
+                            <td class="table-content" colspan="3">{{ applyCondition_condition }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+                <li>
+                    {{if fields.handleFlow_flow}}
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="table-title">办理流程</td>
+                            <td class="table-content" colspan="3">{{ handleFlow_flow }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+                <li>
+                    {{if fields.chargeStandard}}
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="table-title">收费标准</td>
+                            <td class="table-content" colspan="3">{{ chargeStandard }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    {{/if}}
+                </li>
+            </ul>
+
+            {{if fields.source}}
+            <a href="{{ url }}" target="_blank" class="source">{{ source }}</a>
+            {{/if}}
+
+            {{if fields.time }}
+            <span class="sourceTime">发布时间：{{ time }}</span>
+            {{/if}}
+        </div>
+    </script>
+    <!-- 微博 -->
+    <script id="weibo-tpl" type="text/html">
+        <div class="item weixin_center weibo-item" data-documentId="{{ documentId }}">
+            {{if fields.title}}
+            <a class="title log-anchor" href="{{ url }}" target="_blank">
+                <img width="24" src="./images/search_weibo.png" alt="" class="icon_weixin">{{@ title }}
+            </a>
+            {{/if}}
+
+            {{if fields.imgUrl && imgs}}
+            <a class="description log-anchor {{ 'img-total-' + imgsLength}}" href="{{ url }}" target="_blank">
+                {{each imgs}}
+                <span class="{{ $value.imgClass }}">
+                    <img src="{{ $value.url }}">
+                </span>
+                {{/each}}
+
+                {{if imgsLength > 9}}
+                <span class="extra-num">+{{ imgsLength - 9 }}</span>
+                {{/if}}
+            </a>
+            {{/if}}
+
+            {{if fields.time}}
+            <span class="sourceTime">发布时间：{{ time }}</span>
+            {{/if}}
+        </div>
+    </script>
+    <!-- 微信 -->
+    <script id="wechat-tpl" type="text/html">
+        <div class="item weixin_center" data-documentId="{{ documentId }}">
+            {{if fields.title}}
+            <a class="title log-anchor" href="{{ url }}" target="_blank">
+                <img width="24" src="./images/search_weixin.png" alt="" class="icon_weixin">{{@ title }}
+            </a>
+            {{/if}}
+
+            {{if fields.content}}
+            <div class="description">
+                <div class="detail js_limit_text">
+                    <p class="js_text" data-content="{{ content }}">{{@ content }}</p>
+                </div>
+            </div>
+            {{/if}}
+
+            {{if fields.time}}
+            <span class="sourceTime">发布时间：{{ time }}</span>
+            {{/if}}
+        </div>
+    </script>
+    <!-- 抖音 -->
+    <script id="douyin-tpl" type="text/html">
+        <a class="item douyin-item scale-item log-anchor" data-documentId="{{ documentId }}" href="{{ url }}" target="_blank" title="{{ title_no_tag }}">
+            <img class="cover-pic" src="{{ imgUrl | imgFilter }}" alt="">
+            <p class="title" title="{{ title_no_tag }}">{{@ title }}</p>
+            <div class="channel">
+                <img src="./images/search_douyin_channel.png" alt="" width="32" height="32">
+                <span title="抖音号-{{ source }}">抖音号-{{ source }}</span>
+            </div>
+        </a>
+    </script>
+    <!-- 附件 -->
+    <script id="appendix-tpl" type="text/html">
+        <div class="item" data-documentId="{{ documentId }}">
+            <a class="title log-anchor" title="{{ title_no_tag }}" href="{{ url }}" target="_blank" download="{{ title_no_tag }}">
+                <span class="appendix-type-icon {{ iconClass }}"></span>{{@ title }}
+            </a>
+
+            {{if content}}
+            <div class="description">
+                <div class="detail js_limit_text">
+                    <p class="js_text" data-content="{{ content }}">{{@ content}}</p>
+                </div>
+            </div>
+            {{/if}}
+
+            {{if source}}
+            <p class="source">{{ source }}</p>
+            {{/if}}
+
+            <span class="sourceTime">发布时间：{{ time }}</span>
+        </div>
+    </script>
+    <!-- 视频 -->
+    <script id="video-tpl" type="text/html">
+        <div class="video-item item grid-item">
+            <a class="scale-item log-anchor" data-documentId="{{ documentId }}" href="{{ url }}" target="_blank" title="{{ title_no_tag }}">
+                 {{each imgs}}
+                       <img src="{{url.slice(0,url.lastIndexOf('/')) +  $value.APPURL.slice($value.APPURL.lastIndexOf('/'))}}" alt="" onload="rowGrid()">
+                 {{/each}}
+
+                {{if fields.title}}
+                <p class="video-title" title="{{ title_no_tag }}">{{@ title }}</p>
+                {{/if}}
+            </a>
+        </div>
+    </script>
+
+
+    <!--                                       右侧框应用                                                             -->
+    <!-- 自定义框应用 -->
+    <script id="right-iframe-tpl" type="text/html">
+        <div class="item" name="{{ name }}">
+            <div class="main_application_item noBorder">
+                {{each list}}
+                <iframe src="{{ $value.linkUrl }}" height="{{ $value.height }}" width="100%"></iframe>
+                {{/each}}
+            </div>
+        </div>
+    </script>
+    <!-- 智能推荐 -->
+    <script id="ai-recommend-tpl" type="text/html">
+        <div class="item intelligent_recommendation js_intelligent_recommendation" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            <dl>
+                <dt>{{ recommendGroup }}</dt>
+                {{each list}}
+                <dd><span data-searchword="{{ $value.title }}">{{ $value.title }}</span></dd>
+                {{/each}}
+            </dl>
+        </div>
+    </script>
+    <!-- 你可能感兴趣 -->
+    <script id="interest-tpl" type="text/html">
+        <div class="item interested" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            <ul>
+                {{each list}}
+                <li><a href="{{ $value.linkUrl }}" class="interesting" target="_blank">{{ $value.title | spaceFilter }}</a> </li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+    <!-- 相关领导 -->
+    <script id="related-leader-tpl" type="text/html">
+        <div class="item relevant_leaders js_relevant_leaders" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            <div class="relevant_leaders_content">
+                {{each list}}
+                <div class="relevant_leaders_item">
+                    <img data-searchword="{{ $value.title }}" src="{{ $value.sourceUrl }}" alt="">
+                    <span data-searchword="{{ $value.title }}">{{ $value.title }}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </script>
+    <!-- 相关机构、系统 -->
+    <script id="related-organization-tpl" type="text/html">
+        <div class="item related_systems" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            {{each list}}
+            <a href="{{ $value.linkUrl }}">
+                <img src="{{ $value.sourceUrl }}" alt="">
+            </a>
+            {{/each}}
+        </div>
+    </script>
+    <!-- 搜索排行 -->
+    <script id="search-rank-tpl" type="text/html">
+        <div class="item search_rankings js_searchRank" name="{{ name }}">
+            <h2>{{ name }}</h2>
+            <ol>
+                <% for(var i = 0; i < list.length; i++){ %>
+                <li class="li-<%= i %>">
+                    <i>{{ i+1 }}</i>
+                    <span data-searchword="{{ list[i].title }}">{{ list[i].title }}</span>
+                </li>
+                <% } %>
+            </ol>
+        </div>
+    </script>
+
+    <script src="./libs/ofi.min.js?v20210104"></script>
+    <script src="./libs/jquery.placeholder.min.js?v20200104"></script>
+    <script src="./libs/tagsinput/bootstrap-tagsinput.min.js?v20200104"></script>
+    <script src="./libs/obox-min.js?v20210104"></script>
+    <script src="./libs/jquery.cookie.js?v20210104"></script>
+    <script src="./libs/jquery.row-grid.min.js?v20210104"></script>
+    <script src="./libs/laydate/laydate.min.js?v20210104"></script>
+    <script src="./libs/template-web.js?v20210104"></script>
+<script src="runtime.js?e768e6676121fee876a1"></script><script src="search.js?e768e6676121fee876a1"></script></body>
+
+</html>

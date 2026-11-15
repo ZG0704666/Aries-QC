@@ -1,0 +1,45 @@
+﻿--- scripts
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/jquery.min.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/jquery-migrate-1.4.1.min.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/jquery.SuperSlide.2.1.1.js
+/cms_files/filemanager/396489973/script/20259/3BE4B8B05968EE0145AB66BAEF620538.js
+/cms_files/filemanager/396489973/script/20259/893E91626E94F63D21DD8C222729795B.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/top/proviSwitch.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/util1.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/common.js
+/jsearch_files/website.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/provi.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/new_top.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/leftTab.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/hotword/hotword.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/autocomplete/autocomplete.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/autocomplete/jquery.autocomplete.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/condition/condition.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/plugins/moment.min.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/datepicker.all.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/datepicker.en.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/date.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/myPagination/myPagination.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/weidu/weidu1.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/webinit.js
+/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/search/search1.js
+--- inline mentions of "search" + "?"
+   ");
+    var data = window.location.search;
+    data =  replaceUrl(
+        data,
+        ["
+   ", function (e) {
+    var data = window.location.search;
+    e.stopPropagation();
+    var sie=$(this).attr("
+   ", function (e) {
+    var data = window.location.search;
+    e.stopPropagation();
+    var sie=$(this).attr("
+   ')){
+                attachSearchType = 1
+            }else{
+                attachSearchType = 0
+            }
+            var q = $('

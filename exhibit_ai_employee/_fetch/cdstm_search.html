@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国数字科技馆</title>
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/hanweb.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/style.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/znjszskp.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/attach.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//css/newinfo.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/sjjg.css">
+    <script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/jquery.min.js"></script>
+    <script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/jquery-migrate-1.4.1.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//css/websitechange/provi.css">
+    <link rel="stylesheet" type="text/css" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//css/hortWord.css">
+
+    <link rel="stylesheet" type="text/css" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/autocomplete/autocomplete.css">
+    <!-- <link rel="stylesheet" type="text/css" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//css/condition.css"> -->
+    <link rel="stylesheet" type="text/css" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/weidu/weidu.css">
+
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/css/datepicker.css">
+
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/myPagination/myPagination.css">
+    <link rel="stylesheet" href="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//css/common.css">
+<style>
+    .content_wrap{background:#f7f7f7;padding-top:15px;}
+    .content_wrap .contentBox,.content_wrap .content{background:none;}
+    #jsearch-condition-box-content{background:#fff;}
+.content_title_left , .content_right , .content_title_left , .content_title_right,.delete-icon { display:none !important;}
+.content_cate{background:#fff;padding-bottom: 20px}
+.jgqsearch{top:50px;left:830px;font-size:16px;}
+.search_wrap .search .spiltsearch{right: 155px;font-size: 16px;top:52px;}
+.search_wrap .search .gaoji{right: 75px;top: 53px;font-size: 16px;}
+.search_wrap .search .reci span{margin-right: 10px;}
+.search_wrap .search .reci{font-size:16px;}
+.content_left{ width:100% !important;}
+.content_wrap .content_title{ padding-top:0;}
+.content_wrap .content .content_left{ margin-left:0px !important;margin-top:15px;}
+.comprehensiveItem{ padding:20px !important;margin-bottom: 0;}
+.jsearch-attachs{ display:none;}
+.nav_s1, .searchbtn{display:none !important;}
+.search_wrap .search{width:1120px;}
+.ui-placehoder{height: 60px;line-height: 60px;font-size: 16px;}
+.search_wrap .search .input1{width: 675px;height:60px;line-height: 60px;border-top-left-radius: 8px;border-bottom-left-radius: 8px;}
+.search_wrap .search .input2{width: 120px;height: 60px;line-height: 60px;border-top-right-radius: 8px;border-bottom-right-radius: 8px;background:#efbe02;font-size: 20px;}
+.skerls dl dt{line-height: 34px;}
+.comprehensiveItem .newsDescribe{  display: -webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;}
+.comprehensiveItem .newsDescribe,.comprehensiveItem .sourceTime > span{font-size:16px;}
+.jgq{line-height: 60px;height:60px;}
+.comprehensiveItem .newsDescribe > a{line-height: 2;}
+.content_wrap .content .content_left .fanwei{width: auto;position: inherit;display: block !important;box-shadow: none;background: none;
+height: auto;float: left;width:270px !important;}
+ .content_wrap .content .content_left .fanwei ul{display: block !important;width:100% !important;}
+ .content_wrap .content .content_left .range{height:60px;line-height: 60px;}
+.content_wrap .content .content_left .range span{font-size: 16px;}
+.content_wrap .content .content_left .fanwei li,.content_wrap .content .content_left .paixu ul li{width: auto;border-bottom: none;line-height: 60px;font-size: 16px;float: left;
+margin-left:0;margin-right: 25px;}
+#od-box{width:320px !important;}
+.content_wrap .content .content_left .paixu{position: inherit;box-shadow: none;background: none;
+height: auto;width:220px !important;float: left;}
+.content_wrap .content .content_left .paixu,.content_wrap .content .content_left .paixu ul{display: block !important;}
+.content_wrap .content .content_left .paixu ul{width:auto !important;}
+.comprehensiveItem .firstpic{width:240px;display: flex;flex-wrap: wrap;align-items: center; justify-content: center;max-height: 140px;margin-right: 25px;overflow: hidden;border-radius: 10px;}
+.comprehensiveItem .firstpic img{width: 100%;height: auto;}
+.comprehensiveItem .content{width: calc(100% - 265px)}
+.content_title_item{width:1120px !important; background:#fff;}
+.skerls{width:1120px;margin:0 auto;background:#fff;font-size:16px;padding:15px;position: relative;}
+.skerls dl {margin-bottom: 20px;overflow: hidden;}
+.skerls dl.zh{margin-bottom:0;}
+.skerls dl dt{width: 90px;float: left}
+.skerls dl dd{float: left;width:calc(100% - 90px);height: 34px;padding-right: 35px;position: relative;}
+.skerls dl dd .more{cursor: pointer;  display: inline-block;
+    position: absolute;right: 20px;top:10px;
+  width: 30px;
+  height: 15px;
+  }
+  .skerls dl dd .more:before{position: absolute;width: 15px;height: 2px;background:#888;transform: rotate(45deg);left:3px;top:50%;content:""}
+  .skerls dl dd .more:after{position: absolute;width: 15px;height: 2px;background:#888;transform: rotate(135deg);right:3px;top:50%;content:""}
+  .skerls dl dd.act{height: auto;transition:all 0.5s;}
+
+  .skerls dl dd.act .more:before{transform: rotate(135deg);left:3px;}
+  .skerls dl dd.act .more:after{transform: rotate(45deg);right:3px;}
+.skerls dl dd ul li{cursor: pointer;display: inline-block;padding:5px 10px;margin-right:10px;}
+.skerls dl dd ul li.active{border-radius: 20px;color: #fff;background:#376ce3;}
+.rsc{background:url(/cms_files/filemanager/396489973/picture/20261/079B16FA69030E988473D63E90C9AA9C.png) no-repeat left center;padding-left:25px;}
+.search_wrap{background: url(/cms_files/filemanager/396489973/picture/20261/11F479E6D8BABAF9D56252E395DFA1A7.png) no-repeat center center;background-size: 100% 100%;height: 200px;padding-top:20px;}
+.weidu_content ul li{float: left;cursor: pointer}
+.weidu_content ul li.on{border-radius: 20px;color: #fff;background: #376ce3;}
+.countnumber{color:#999;font-size:16px;position: absolute;right: 30px;top:30px;}
+.countnumber span{color: #3784e3}
+.search_wrap .search .reci{color:#fff}
+@media screen and (min-width: 1599px) {
+    .content_wrap .contentBox {
+        width: 1120px;
+    }
+}
+@media screen and (max-width: 768px) {
+.search_wrap .search{width:100%}
+.search_wrap .search .input1{width:65%;margin-left:5%}
+.content_wrap .contentBox{width:100%}
+.delete-icon,.slee,.comprehensiveItem .newsDescribe{display:none !important}
+.menubtn{float:right !important}
+.search_wrap .search .input2{width:25%}
+#pagination{height:auto}
+
+.attachsearchtypebutton1{ display:none !important;}
+.search_wrap .search .reci { padding: 20px; line-height: 24px;}
+.skerls{ width:100% !important;}
+.skerls dl dd { float: none; width: calc(100%); height: auto; padding-right: 15px;}
+.skerls dl dd ul li{ margin-bottom:15px;}
+.countnumber{ position:initial;}
+.content_wrap .content .content_left .range{ height:auto; overflow:hidden;}
+.comprehensiveItem .content { width: calc(100%);}
+}
+</style>
+
+        <script>
+            function getParameterByNamey(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        $(function(){
+$(".skerls dl dd .more").click(function(){
+     $(this).parent().toggleClass("act")
+
+})
+  $(".nianqh li").on("click", function (e) {
+    e.stopPropagation();
+    var begin = $(this).attr("res");
+    var end = $(this).attr("ret");
+    // begin = begin.replace(/-/g, "");
+    // end = end.replace(/-/g, "");
+    var data = window.location.search;
+    data =  replaceUrl(
+        data,
+        ["begin", "end","p"],
+        [begin, end,1]
+      )
+    window.location.href = "/api-gateway/jpaas-jsearch-web-server/search" + data;
+    return false;
+  });
+
+  $(".weidu_content1 li").on("click", function (e) {
+    var data = window.location.search;
+    e.stopPropagation();
+    var sie=$(this).attr("data-dimensionid");
+    var sii=$(this).attr("data-dimensionfieldname");
+     data =  replaceUrl(
+        data,
+        [sii,"p"],
+        [sie,1]
+      )
+     window.location.href = "/api-gateway/jpaas-jsearch-web-server/search" + data;
+    return false;
+  })
+  $(".weidu_content2 li").on("click", function (e) {
+    var data = window.location.search;
+    e.stopPropagation();
+    var sie=$(this).attr("data-dimensionid");
+    var sii=$(this).attr("data-dimensionfieldname");
+     data =  replaceUrl(
+        data,
+        [sii,"p"],
+        [sie,1]
+      )
+     window.location.href = "/api-gateway/jpaas-jsearch-web-server/search" + data;
+    return false;
+  })
+            $.each($('.clickWord'), function(i, clickWord){
+                            $(clickWord).click(function () {
+                                var text = $(this).text();
+                                var dataclick = "clickType=3&q=" + encodeURIComponent(text);
+                                statistiClick(dataclick);
+                                placeholder.hide();
+                                if($("#result-in").prop('checked')){
+                                    setCookie('_jsearchq', $('#q').val().substring(0,$('#q').val().length-1), 60 * 60 * 24 * 30);
+                                    var q = $('#q').val();
+                                    q = q.substring(0, q.length-1);
+                                    $("#jgq").val(text);
+                                    var jgq = $("#jgq").val();
+                                    var aq = q + " " + $("#jgq").val();
+                                    window.location.href = "./search?" + replaceUrl(window.location.search.substring(1), ["q", "yq", "jq"], [aq, q,jgq]);
+                                }else{
+                                    setCookie('_jsearchq', $('#q').val(), 60 * 60 * 24 * 30);
+                                    window.location.href = "./search?" + replaceUrl(window.location.search.substring(1), ["q", "yq", "jq"], [text, "", ""]);
+                                }
+                            })
+                            // if(i == 0 && !$("#q").val()){
+                            //     $("#q").val($(clickWord).html());
+                            //     image_init();
+                            // }
+                        });
+
+
+
+            var posrir=getParameterByNamey("pos");
+            if(posrir==null){
+                $("#radios2").prop("checked","checked")
+            }else{
+                if(posrir.indexOf("title")!=-1&&posrir.indexOf("content")!=-1&&posrir.indexOf("filenumber")!=-1){
+                    $("#radios2").prop("checked","checked")
+                }
+                 if(posrir=="title"){
+                    $("#radios3").prop("checked","checked")
+                }
+                 if(posrir=="content"){
+                    $("#radios4").prop("checked","checked")
+                }
+            }
+
+             var posrit=getParameterByNamey("sortType");
+            if(posrit==null){
+                $("#radior2").prop("checked","checked")
+            }else{
+                if(posrit==1){
+                    $("#radior2").prop("checked","checked")
+                }
+                 if(posrit==2){
+                    $("#radior3").prop("checked","checked")
+                }
+            }
+
+var postime1=getParameterByNamey("begin");
+var postime2=getParameterByNamey("end");
+
+var n2021begin=$(".nianqh .2021").attr("res")
+var n2021end=$(".nianqh .2021").attr("ret")
+
+var n2022begin=$(".nianqh .2022").attr("res")
+var n2022end=$(".nianqh .2022").attr("ret")
+
+var n2023begin=$(".nianqh .2023").attr("res")
+var n2023end=$(".nianqh .2023").attr("ret")
+
+var n2024begin=$(".nianqh .2024").attr("res")
+var n2024end=$(".nianqh .2024").attr("ret")
+
+var n2025begin=$(".nianqh .2025").attr("res")
+var n2025end=$(".nianqh .2025").attr("ret")
+
+var n2026begin=$(".nianqh .2026").attr("res")
+var n2026end=$(".nianqh .2026").attr("ret")
+
+
+if(postime1==n2021begin && postime2==n2021end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2021").addClass("active")
+}
+if(postime1==n2022begin && postime2==n2022end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2022").addClass("active")
+}
+
+if(postime1==n2023begin && postime2==n2023end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2023").addClass("active")
+}
+
+if(postime1==n2024begin && postime2==n2024end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2024").addClass("active")
+}
+
+if(postime1==n2025begin && postime2==n2025end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2025").addClass("active")
+}
+
+if(postime1==n2026begin && postime2==n2026end){
+    $(".nianqh .active").removeClass("active")
+    $(".nianqh .2026").addClass("active")
+}
+
+ var dimension=getParameterByNamey("xkzxjs");
+ var dimension1=getParameterByNamey("xs");
+ $(".weidu_content1 li").each(function(){
+    if($(this).attr("data-dimensionid").indexOf(dimension)!=-1){
+        $(".weidu_content1 .active").removeClass("active")
+        $(this).addClass("active")
+        $(this).parent().parent().parent().parent().addClass("act")
+    }
+ })
+ $(".weidu_content2 li").each(function(){
+    if($(this).attr("data-dimensionid").indexOf(dimension1)!=-1){
+        $(".weidu_content2 .active").removeClass("active")
+        $(this).addClass("active")
+        $(this).parent().parent().parent().parent().addClass("act")
+    }
+ })
+        })
+            document.onkeydown = function () {
+                var evt = window.event || arguments[0];
+                if (evt && evt.keyCode == 13) {
+                    if (typeof evt.cancelBubble != "undefined")
+                        evt.cancelBubble = true;
+                    if (typeof evt.stopPropagation == "function")
+                        evt.stopPropagation();
+                    return false;
+                }
+                return true;
+            }
+        </script>
+</head>
+
+<body>
+    <tag id='top'>
+        <!-- 通用头部 -->
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/jquery.SuperSlide.2.1.1.js"></script>
+        <script src="/cms_files/filemanager/396489973/script/20259/3BE4B8B05968EE0145AB66BAEF620538.js"></script>
+    </tag>
+    <tag id='middle'>
+        <!-- 搜索框 -->
+        <div class="search_wrap" style="margin-top: 53px;">
+
+            <div class="search">
+                <form action="" method="">
+                    <input type="text" name="q" id="q" class="ipt_txt input1" value="光的折射" onclick="gethistory()"
+                        onkeydown="doKeyDown();" maxlength="33" />
+                    <div class="delete-icon">
+                        <img src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/delete.png">
+                    </div>
+                    <div id="ui-placehoder" class="ui-placehoder">请输入您要搜索的内容</div>
+                    <input type="text" name="jgq" class="jgq" id="jgq" value="">
+                    <input type="button" value="搜索" class="input2 ipt_btn" id="ipt_btn">
+                    <div class="attachsearchtypebutton" style="display: none;"><input type="checkbox" name="attachsearchtype" id="attachsearchtype" />
+                        <label for="attachsearchtype" class="banner-checkbox">在正文中检索</label></div>
+                </form>
+                <div class="attachsearchtypebutton1" >
+                <div class="jgqsearch result-in"><input type="checkbox" style="vertical-align: middle; display: inline" class="checkbox"
+                        id="result-in"><label for="result-in"
+                        style="vertical-align: middle;margin-left: 5px;color: #ffffff;">在结果中搜索</label></div>
+                         <span class="spiltsearch">|</span>
+                <div class="gaoji" id="senior"><a>高级检索</a></div>
+               
+                <!--<div class="zcwjjs" id="policy"><a>政策文件检索</a></div>-->
+                </div>
+                <div class="reci" >
+                    <p><span style="color:#fff" class="rsc">热搜词：</span>
+                        <span id="jsearch-hotword">
+
+                           <!--<span class='clickWord' style='cursor:pointer'>天文</span>
+                           <span class='clickWord' style='cursor:pointer'>军事科技</span>
+                           <span class='clickWord' style='cursor:pointer'>科普读物</span>
+                           <span class='clickWord' style='cursor:pointer'>声明科学</span>-->  
+                        </span>
+                    </p>
+                </div>
+
+                <div class="historyWrap" id="historylist">
+
+                </div>
+                <div id="errorword" class="clearfix">
+                    
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.onkeydown = function () {
+                var evt = window.event || arguments[0];
+                if (evt && evt.keyCode == 13) {
+                    if (typeof evt.cancelBubble != "undefined")
+                        evt.cancelBubble = true;
+                    if (typeof evt.stopPropagation == "function")
+                        evt.stopPropagation();
+                    return false;
+                }
+                return true;
+            }
+        </script>
+
+        <!-- 搜索框 -->
+        <form id="search-form" action="search.do" method="get" data-needlay="0">
+            <input id="webid" name="webid" type="hidden" value="" />
+            <input id="pg" name="pg" type="hidden" value="" />
+            <input id="p" name="p" type="hidden" value="" />
+            <input id="websiteid" name="websiteid" type="hidden" value="" />
+            <input id="hotwordsize" name="hotwordsize" type="hidden" value />
+            <input id="tplpath" type="hidden" value="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c/" />
+            <input id="attachType" type="hidden" value="" />
+            <input id="searchid" name="serviceId" type="hidden" value="sT7I9StjJmJrznxcoft9c" />
+            <input id="dispatch_input" type="hidden" value="" />
+            <input id="cateLevel" type="hidden" value="" />
+            <input id="cateid" type="hidden" value="" />
+            <input id="attachFlag" name="attachFlag" type="hidden" value="">
+            <input id="maxPageNum" type="hidden" value="100" />
+            <input id="checkError" type="hidden" value="1" />
+            <input id="temporaryQ" type="hidden" value="" />
+            <input id="word" name="word" type="hidden" value="光的折射">
+
+            <input id="webSwitch" name="webSwitch" type="hidden" value="true">
+            <input id="filterDimension" name="filterDimension" type="hidden" value="true">
+            <input id="autocomplete" name="autocomplete" type="hidden" value="true">
+            <input id="searchHistory" name="searchHistory" type="hidden" value="true">
+            <input id="hotArt" name="hotArt" type="hidden" value="false">
+            <input id="userRecommend" name="userRecommend" type="hidden" value="true">
+            <input id="hotWord" name="hotWord" type="hidden" value="true">
+            <input id="voiceSearch" name="voiceSearch" type="hidden" value="true">
+            <input id="relatedWord" name="relatedWord" type="hidden" value="false">
+            <input id="attachSearch" name="attachSearch" type="hidden" value="">
+            <input id="attachSize" name="attachSize" type="hidden" value="15">
+            <input id="searchNews" name="searchNews" type="hidden" value="false">
+            <input id="groupCount" name="groupCount" type="hidden" value="true">
+            <input type="hidden" value="" id="districtiid">
+            <!-- 内容 -->
+            <div class="content_wrap">
+                <div class="contentBox">
+                    <!-- 左侧固定 -->
+                    <div class="menu menuBox">
+                        <ul>
+                        </ul>
+                    </div>
+                    <!-- 左侧固定 -->
+                    <div class="content_title" style="display:none !important">
+                        <div class="content_title_left"><div>&lt;</div></div>
+                        <div class="content_title_item">
+                            <ul >
+                            </ul>
+                        </div>
+                        <div class="content_title_right"><div>&gt;</div></div>
+                    </div>
+
+                    <div class="skerls">
+                        <dl>
+                            <dt>时<span style="display: inline-block;width: 36px;"></span>间：</dt>
+                            <dd> 
+                            
+                                <ul class="nianqh">
+                                    <li class="active" res=""  ret="">全部</li>
+                                    <li class="2026" res="2026-01-01"  ret="2026-12-31">2026</li>
+                                    <li class="2025" res="2025-01-01"  ret="2025-12-31">2025</li>
+                                    <li class="2024" res="2024-01-01"  ret="2024-12-31">2024</li>
+                                    <li class="2023" res="2023-01-01"  ret="2023-12-31">2023</li>
+                                    <li class="2022" res="2022-01-01"  ret="2022-12-31">2022</li>
+                                    <li class="2021" res="2000-01-01"  ret="2021-12-31">更早</li>
+                                </ul>
+                            </dd>
+                        </dl> 
+          
+                         <dl style="display:none !important">
+                            <dt>内容分类：</dt>
+                            <dd>
+                             <div class="weidu1">
+                             <div class="weidu_content1">
+                                   <ul>
+                                    <li class="number weidu_selectAll active"  data-dimensionid="" data-dimensionfieldname="xkzxjs">全部</li>
+                                    <li class="number weidu_select"  data-dimensionid="PUS4e85r1HgCNd59iJWtq,zm1cLD1ug3IAkp0rLkRX8,02zFkm7noCLJibaJwuCrU,cn5LNzn8pbYmmWq305Wae,hJvW9RMpGAeB7oEKLvr0M,kYn4KMPb7UHP4TcJodnIy,KspZRHpViAv3Yldb0eIdA" data-dimensionfieldname="xkzxjs">天文</li>
+                                    <li class="number weidu_select"  data-dimensionid="mlvD4tGn1ER3oUibNnurg,csVTgompQgL78o1L7X9ht,UF2tcLgu2LTdHJDtpgAfw,zfNn4NGp9SwSIYbPlANt2,DhbEhEjCLnhozOyJktdot,b7MUuYaXqud8Rv0vjWLgd,cn5LNzn8pbYmmWq305Wae" data-dimensionfieldname="xkzxjs">地理</li>
+                                    <li class="number weidu_select"  data-dimensionid="JF58dypD9RDgQmfkNREiD,pNGW907DfcEOUxry35mnj,UwsNx3ln911X9SMbztlsn,svTctGsWPUHOdeMhPg5Fl,H9wNlUIkY5B0Fr4UUlSJf" data-dimensionfieldname="xkzxjs">军事科技</li>
+                                    <li class="number weidu_select"  data-dimensionid="N74oGGmPnmZ2hmdLMjWQy,9Sl25sTTphnuwkR9Cxq2d,UuA52tR7LbxTbhsBbXZ5f,pGizVTfQeBQ2SZDLz0WJ5" data-dimensionfieldname="xkzxjs">数学</li>
+                                    <li class="number weidu_select"  data-dimensionid="te7zwBySdbybixCasvZmU,qM2st0W1NpsMkR0rF3BWZ,iCWtOomwp0il1QUFPpCFK,ZdwsZLt1jL8rRHD1KORqs" data-dimensionfieldname="xkzxjs">物理</li>
+                                    <li class="number weidu_select"  data-dimensionid="pUQn7nYtIUjhg1zx1kTh1,48fGxSGuJ5AZHL7UKkCKR,GDUwgkYFzHocrAUdI92V4,WYeAlOT4PeCYL8zwWkQcR,C3mRm8YQ61lKz8GFbPZJ5" data-dimensionfieldname="xkzxjs">化学化工</li>
+                                     <li class="number weidu_select"  data-dimensionid="6s9RBf0DFjVL0sOUedpuA,Cqp031D91tAaiDitSbyig,FOMXsvm0sWDL7dNhqXbg5,j8DLYCyOiMW5rrL1fTxOk,l1f9CQrHbJ2FeKwru8cOj,GCqVPm1Qn90D8irgFJ4AX" data-dimensionfieldname="xkzxjs">生命科学</li>
+                                    <li class="number weidu_select"  data-dimensionid="cVlkFI3zvkfj7x4t3lOn0,RzaoGueXMY7ks46W5l4XC,HWm2uqLKja6gFY7kdvV3I,p0vSs61l1xSQA0f3aovOx,0IWSIT95wEnDZCXHJrpCF,SacRaHEfCLORZ9kqTvfKs,jR6il0zPAr88qsj6IP32R,CzpaPFvpLp3WtOZosSFjq,FWsBAUVcDTYi9j3xgcClg,e3W9wpcD8q4qgB4bHXmxC,u3VSSNPM0lmwkA5XdOADX,3EoeysojJPIMdBfPDPUPL" data-dimensionfieldname="xkzxjs">健康管理</li>
+                                    <li class="number weidu_select"  data-dimensionid="GqXGKFWjoR8IVfzjRnwe5,Yh6EdxhXBNsU1b4ymeX4S,iF1Jqm3gveLgxinSQUxXs,NMyXGrs5lOyDkQzTwp8GN,rmbMJZhiaL0Wz5WFXcPZz,gUlUvHuC6PR8mOBa5lZI2,gOj68WfSho0wnXXhGVTS5,3EoeysojJPIMdBfPDPUPL" data-dimensionfieldname="xkzxjs">医药医疗</li>
+                                    <li class="number weidu_select"  data-dimensionid="LqYNOj5k2trk6jyurrsAO,SEAvErYdkAk0Ev3ikYOmk,Em107tO3Ah2f6YtIcuEHX,qu6aiRGpGhixkZCUmp8Ue,FzQCSwC8Llk71DjYGEQxU,YiK9QRtJfTrAjMqloujKC" data-dimensionfieldname="xkzxjs">传统医药</li>
+                                    <li class="number weidu_select"  data-dimensionid="f36212JEQP8eMApUKsvdi,PPxl3OxT4T98ki9KdkvHv,E9AXquk8QV0Ma4lKsbWPE,uiJP9DGBzd82gYnBd6deS,dZ87uFastKd5lTYQEU65f,q7ugUoZvV5pfBi6pockoA,LPe7oIyXXHZi6geOFbKlu,3NvQRQlGSAKdz7JsVEdMj,0l9u7NAoSOK0yJi3fIjNl" data-dimensionfieldname="xkzxjs">安全科技</li>
+                                    <li class="number weidu_select"  data-dimensionid="ULIykGlOKcE8eqkr6XVkl,qxC6az1klCOD3JNcQjZAt,m7nH0L8FLZI0ZpFJdZNRX,i6JbNVVadPhvjONSQQnuo,7KOkH8lud8j8CyWbwE4Jg,YdkDDIZQoYK83X4I5UXmz,7LV4QzXk9qE5CYIJW6lPq,xI2EgqbjoqWZTvN4HCDZx" data-dimensionfieldname="xkzxjs">基础信息技术</li>
+                                    <li class="number weidu_select"  data-dimensionid="CM0YqG3XJo0kYNMjhdbXO,c8jzxbMpNIISlJDp0APIG,AGW8zpWYECeyYbQxfzLKN,ZH9eLvwdJaRbhNBu2DMER,NRP5RV4CMycAkhClvTXzF,99UcLTTKOCAzFZa7Fn8t7,srptyjxIkQ7m7E0Ti3g7M,l6JST8c41553TmTJjeOfA" data-dimensionfieldname="xkzxjs">环境科学</li>
+                                    <li class="number weidu_select"  data-dimensionid="cAwZ511vMW3OHgLfQWEQd,JwPToKBwr8zvJ3a7vlfqw,VYa9XQOgvzqKOmanIihhq,cU7XUK4VlGI6DRXkPn7jt,0I3DAXpo9DVydFKScu5py" data-dimensionfieldname="xkzxjs">能源科技</li>
+                                    <li class="number weidu_select"  data-dimensionid="OAwV4bki5rm9gX6klxj0a,pBY1srrBAuFpSZe86IzyE,Vu0E2hMcYDmJzQqHwv8dm,gUQuZk2bPyuObspxvCptF,ZvamAudgDMjNZYf8xoQ9P" data-dimensionfieldname="xkzxjs">航空航天航海</li>
+                                    <li class="number weidu_select"  data-dimensionid="Uhz9T8V75NfjGmTuV10KP,vE4pse9CvcYq3uZYo50nx,jknkEuJS93FcpKcolHm2O,sibRxhw5cbsxSvBBTh8yn" data-dimensionfieldname="xkzxjs">建筑水利</li>
+                                    <li class="number weidu_select"  data-dimensionid="RIQBN12C5ibtqeA9c9yz7,EjEgTJz0NX7ktkQDA69LU,SJeJhySs0oDzHQcCORkph,UrdVTEmqmD6HZCGUwiHMe" data-dimensionfieldname="xkzxjs">交通运输</li>
+                                    <li class="number weidu_select"  data-dimensionid="MX5ZPpwI8CzONU94ODud7,inc5gguI6s50T8rQh3gIN,4EUsh4BtmrH5T4HLjbILI,QJQf19MhaH3GULuWHx5Q0" data-dimensionfieldname="xkzxjs">农林牧渔</li>
+                                    <li class="number weidu_select"  data-dimensionid="u0mi98syYDxjKO4PGYX6G,28P5gtc1RggpRwdzrEjAK,olYh3xI7oPH9Fg6Mzc5kw,mefpJnu93BqsXFzMHzpYV,FYMY7PA20QvQlL6n742g6,PTV3qXDZiEI90vsaJ5AwU,rTfAS2HwBnZ6mprDAiSNk,ofW6pcffQZPalW6oBiNRD" data-dimensionfieldname="xkzxjs">基础工业技术</li>
+                                    <li class="number weidu_select"  data-dimensionid="cbbzLFMDg5T15ps2azPYq,Ik7cjIBfzsYWqyqoq5y1f,UtsPUd2nb1XauCtlQx3BL,0UZhKjSULnetlqWMKz1FK,1561ALln6egv1NV5cOgFp,DhuIlXRpN8JV7eY3AtNnJ,GjYNEoNsggv0ZfRSlp8sJ" data-dimensionfieldname="xkzxjs">材料科学</li>
+                                    <li class="number weidu_select"  data-dimensionid="vRjzshf1dF9ZYKSz048rm,b1nYyXm3rgcKBgeXELlaf,89BTYhkjKaTq9jGDxpoJr,cYaeQNoVzMTkIZe0UHyel,WDc81bbr9UMxh5eE75Kqz,y7gY3UNaG81F32ezm1EvG" data-dimensionfieldname="xkzxjs">科学技术史</li>
+                                    <li class="number weidu_select"  data-dimensionid="xF3LQLDw1SVXoPQYLFszi,PLpymI1ZJlOYG6dgBjF9P,zjwMYVmD7cmux4pDnlXZs,89sv3RgVbtHxScsNGTxPI,TmGRWX3ZDPPeKTcR6nvni,E5rjBBhtKKs4wAFmbwwiw,clMBehOLRAAy3HDFxXSDl,kvMhw3ONgirlTyQFKuNss,EVuH4lznrKTPEn5NckPjD" data-dimensionfieldname="xkzxjs">交叉学科</li>
+                                    <li class="number weidu_select"  data-dimensionid="VFPXaLHNdZnncaq88jU5S" data-dimensionfieldname="xkzxjs">其他</li>
+                                   </ul>
+                                  </div>
+                                  
+                               </div> 
+                               <div class="more"></div>  
+                            </dd>
+                        </dl>
+                         <dl class="zh" style="display:none !important">
+                            <dt>形式分类：</dt>
+                            <dd>
+                             <div class="weidu2">
+                             <div class="weidu_content2">
+                                   <ul>
+                                    <li class="number weidu_selectAll active"  data-dimensionid="" data-dimensionfieldname="xs">全部</li>
+                                    <li class="number weidu_select"  data-dimensionid="w4p69q0tBL0fhRIOy10C9" data-dimensionfieldname="xs">科普读物</li>
+                                    <li class="number weidu_select"  data-dimensionid="vdeozy9iCsgRxJ9c1K9tb" data-dimensionfieldname="xs">科普图片</li>
+                                    <li class="number weidu_select"  data-dimensionid="TPj9xUA25RSf7L1olnplE" data-dimensionfieldname="xs">科普图解</li>
+                                    <li class="number weidu_select"  data-dimensionid="jdB3hiMsLRw0eTFtmMqs1" data-dimensionfieldname="xs">科普海报</li>
+                                    <li class="number weidu_select"  data-dimensionid="X1sAAfP3DL98cVR3RMurT" data-dimensionfieldname="xs">长篇科普视频</li>
+                                    <li class="number weidu_select"  data-dimensionid="DSrvuhLBSCHSVT1GrkTWe" data-dimensionfieldname="xs">中篇科普视频</li>
+                                    <li class="number weidu_select"  data-dimensionid="Oiwn5FB9aI5sBsZOl7bv0" data-dimensionfieldname="xs">短篇科普视频</li>
+                                    <li class="number weidu_select"  data-dimensionid="t30mskIOzWab71WoOf2We" data-dimensionfieldname="xs">科普音频</li>
+                                    <li class="number weidu_select"  data-dimensionid="gekzuAgJCfXYeHnPAdyxP" data-dimensionfieldname="xs">特殊视频</li>
+                                    <li class="number weidu_select"  data-dimensionid="Kp4MKqsSmGEYhvpqjUqN7" data-dimensionfieldname="xs">电脑端应用程序</li>
+                                    <li class="number weidu_select"  data-dimensionid="jsHZGBUDFJHdnoX1SF0JW" data-dimensionfieldname="xs">移动端应用程序</li>
+                                    <li class="number weidu_select"  data-dimensionid="zhishsIDyTLFFndIRCXa4" data-dimensionfieldname="xs">专用设备端应用程序</li>
+                                    <li class="number weidu_select"  data-dimensionid="mPmzUcHuffjmwFjqAQGav" data-dimensionfieldname="xs">数字化展览</li>
+                                    <li class="number weidu_select"  data-dimensionid="Jl6r28ELYuKHR1Vs3IXdW" data-dimensionfieldname="xs">数字科普资源其他形式</li>
+                                   </ul>
+                                  </div>
+                                  
+                               </div> 
+                               <div class="more"></div>  
+                            </dd>
+                        </dl>
+                         <div class="countnumber">
+
+                                
+                            </div>  
+                    </div>
+                    <div class="content">
+
+                        <div class="content_left">
+
+                            <div class="range" id="jsearch-condition-box-content">
+                                <span class="jsearch-condition-box chaxun" id="pos-box">
+                                    <input id="pos" name="pos" type="hidden" value="">
+                                    <span><span class="jsearch-condition-box-title" style="float: left">查询范围：<!--<span>默认</span>--></span>
+                                        <div class="fanwei">
+                                            <ul class="jsearch-condition-box-items">
+                                                <!--<li class="jsearch-condition-box-item" data-value="">默认</li>-->
+                                                <li class="jsearch-condition-box-item" data-value="title,content,filenumber"><input type="radio" style="vertical-align: middle;width:18px;height:18px;margin-right: 10px;display:inline-block;margin-top:-2px" id="radios2">全部</li>
+                                                <li class="jsearch-condition-box-item" data-value="title"><input type="radio" style="vertical-align: middle;width:18px;height:18px;margin-right: 10px;display:inline-block;margin-top:-2px;margin-top:-2px" id="radios3">标题</li>
+                                                <li class="jsearch-condition-box-item" data-value="content"><input type="radio" style="vertical-align: middle;width:18px;height:18px;margin-right: 10px;display:inline-block;margin-top:-2px" id="radios4">正文</li>
+                                            </ul>
+                                        </div>
+                                    </span>
+                                </span>
+
+                                <span class="jsearch-condition-box pailie" id="od-box" style="width: 151px;float: left;">
+                                    <input id="sortType" name="sortType" type="hidden" value="">
+                                    <span><span class="jsearch-condition-box-title"  style="float: left">排序方式：<!-- <span>默认</span> --></span>
+                                        <div class="paixu">
+                                            <ul class="jsearch-condition-box-items">
+                                                <!-- <li class="jsearch-condition-box-item" data-value="">默认</li>-->
+                                                <li class="jsearch-condition-box-item" data-value="1"><input type="radio" style="vertical-align: middle;width:18px;height:18px;margin-right: 10px;display:inline-block;margin-top:-2px" id="radior2">按相关度</li>
+                                                <li class="jsearch-condition-box-item" data-value="2" style="border: none;"><input type="radio" style="vertical-align: middle;width:18px;height:18px;margin-right: 10px;display:inline-block;margin-top:-2px" id="radior3">按时间</li>
+                                            </ul>
+                                        </div>
+                                    </span>
+                                </span>
+                                <span>
+                                    <div style="display: inline-block;float: left;" class="slee">
+                                        时间范围：
+                                        <div class="mt40" style="display: inline-block;">
+                                            <div class="c-datepicker-date-editor  J-datepicker-range-day mt10">
+                                                <i class="c-datepicker-range__icon kxiconfont icon-clock"></i>
+                                                <input placeholder="开始日期" class="c-datepicker-data-input only-date"
+                                                    id="date_start" readonly="" type="text" data-date-end="date_end"
+                                                    class="jsearch-widget-calendar Wdate" name="begin" value="">
+                                                <span class="c-datepicker-range-separator">-</span>
+                                                <input placeholder="结束日期" class="c-datepicker-data-input only-date"
+                                                    id="date_end" readonly="" type="text"
+                                                    class="jsearch-widget-calendar Wdate" name="end"
+                                                    data-date-start="date_start" value="">
+                                            </div>
+                                        </div>
+                                        <!--<img class="slee" src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/rili.png" alt="点击输入框，选择时间范围">-->
+                                    </div>
+                                </span>
+                            </div>
+
+                           
+                            <!-- <div class="matter_weidu" style="display: none;">
+                                <div class="leixing clearfix">
+                                    <div class="weidu_title" style="float: left;">服务对象：</div>
+                                    <div style="float: left; width: 549px;" class="weidu_content">
+                                        <ul>
+                                            <li class="number"  data-dimensionid="" data-dimensionfieldname="taskServiceObj">全部</li>
+                                            <li class="number"  data-dimensionid="个人" data-dimensionfieldname="taskServiceObj">个人</li>
+                                            <li class="number"  data-dimensionid="法人" data-dimensionfieldname="taskServiceObj">法人</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="leixing clearfix">
+                                    <div class="weidu_title" style="float: left;">事项类型：</div>
+                                    <div style="float: left; width: 549px;" class="weidu_content">
+                                        <ul>
+                                            <li class="number"  data-dimensionid="" data-dimensionfieldname="itemType">全部</li>
+                                            <li class="number"  data-dimensionid="行政许可" data-dimensionfieldname="itemType">行政许可</li>
+                                            <li class="number"  data-dimensionid="行政给付" data-dimensionfieldname="itemType">行政给付</li>
+                                            <li class="number"  data-dimensionid="行政奖励" data-dimensionfieldname="itemType">行政奖励</li>
+                                            <li class="number"  data-dimensionid="行政裁决" data-dimensionfieldname="itemType">行政裁决</li>
+                                            <li class="number"  data-dimensionid="公共服务" data-dimensionfieldname="itemType">公共服务</li>
+                                            <li class="number"  data-dimensionid="其他" data-dimensionfieldname="itemType">其他</li>
+                                        </ul>
+                                    </div>
+                                    <div style="float: left; padding: 0px 5px; cursor: pointer;" class="weidu_more">更多</div>
+                                </div>
+                            </div> -->
+                            <!-- 便民服务 -->
+                            <div class="ui-noresult-box" style="display: none;margin-top:20px;margin-bottom:40px;">
+                                <div style="margin-bottom: 15px;font-size: 17px">抱歉，在当前分类下均未找到与<span
+                                        id="none_q"></span>相关的信息。
+                                </div>
+                                <div style="margin-bottom:5px;font-size:17px;font-weight: bold;">建议：</div>
+                                <div>1、检查输入是否正确</div>
+                                <div>2、简化输入词</div>
+                                <div>3、尝试其他相关词，如同义、近义词等</div>
+                            </div>
+
+                            <!-- 最新信息 -->
+                            <div class="content_new">
+                                
+                            </div>
+                            <div class="knowledgecard">
+                                
+                            </div>
+                            <div class="content_cate">
+                                
+                            </div>
+
+                            <!-- 相关搜索 -->
+                            <div class="queryAbout">
+                                <div class="queryAboutTitle">
+                                    <span>相关搜索</span>
+                                </div>
+                                <div class="queryAboutList">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content_right">
+
+                            <!-- 搜索评价 -->
+                            <div class="queryAssess">
+                                <b>搜索评价</b>
+                                <div class="assessBtn clearfix">
+                                    <div class="my lf">
+                                        <span>满意</span>
+                                    </div>
+                                    <div class="bmy rf">
+                                        <span>不满意</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 问题反馈页面 -->
+                            <div class="feedbackContent">
+                                <div class="feedbackTitle">
+                                    <span>搜索结果问题反馈</span>
+                                </div>
+                                <div class="feedbackItem">
+                                    <p class="questionp">【必选】您遇到了什么问题?</p>
+                                    <input type="hidden" value="" id="questionvalue">
+                                    <input type="text" value="页面结果与搜索词无关" id="question" readonly="readonly">
+                                    <div class="questionList">
+                                        <ul>
+                                            <li data-value="2">页面结果与搜索词无关</li>
+                                            <li data-value="3">我想要找的内容太靠后</li>
+                                            <li data-value="4">找不到想搜的内容</li>
+                                            <li data-value="5">页面错乱</li>
+                                            <li data-value="0">其他问题</li>
+                                        </ul>
+                                    </div>
+                                    <div class="result_feedback_question_describe">
+                                        <p>问题具体描述</p>
+                                        <textarea id="feedback_question" maxlength="200"
+                                            placeholder="请详细说明，以便于我们定位和解决问题（限200字以内）"></textarea>
+                                    </div>
+                                    <div class="qsubmit">
+                                        <button class="tjfk">提交反馈</button>
+                                        <button class="closes">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relevant_img">
+                                <div class="znjs">
+                                    <div class="znjsName">智能推荐</div>
+                                    <div class="znjs_content clearfix">
+                                      <div class="znjs_xian left"></div>
+                                      <div class="znjs_content_list left">
+                                          
+                                      </div>
+                                    </div>
+                               </div>
+                                <div class="relevant_list">
+                                    <b>相关图片</b>
+                                    <div class="hr"></div>
+                                    <ul class="clearfix" id="relevant_list">
+                                    </ul>
+                                </div>
+                                <!-- 侧边栏 -->
+                                <div class="cbl">
+
+                                </div>
+                                <!-- 热门搜索 -->
+                                <div class="hot_search">
+                                    <div class="hot_search_title">
+                                        <b>热门搜索</b>
+                                    </div>
+                                    <div class="hr"></div>
+                                    <div class="hot_search_list">
+                                        <ul>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div style="height: 50px;width: 100%;background-color: #f9f9f9;" class="slee"></div>
+    </tag>
+    <tag id='bottom'>
+        <script src="/cms_files/filemanager/396489973/script/20259/893E91626E94F63D21DD8C222729795B.js"></script>
+    </tag>
+
+    <div class="highLevelSearchSelectModal">
+        <div class="modelWrap contentWidth">
+            <div class="tabselect clearfix">
+                <div class="tabselectList lf">
+                    <span class="senior active">高级检索</span>
+                    <!--<span class="policy">政策文件检索</span>-->
+                </div>
+                <div class="closeBtn rf">
+                    <img src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/close.png">
+                </div>
+            </div>
+            <div class="tabselectContent">
+                <div class="highLevelSearchContent">
+                    <div class="searchKeyword clearfix">
+                        <div class="searchKeywordInput lf">
+                            <p>
+                                <label for="gq" id="gql">搜索以下关键词：</label>
+                                <input type="text" id="gq" autocomplete="off" style="margin-bottom: 0">
+                                <div style="height: 20px;margin-left: 149px;">
+                                    <span class="gqvali" style="color: red;">请输入关键词</span>
+                                </div>
+                            </p>
+                            <p>
+                                <label for="eq">不搜索以下关键词：</label>
+                                <input type="text" id="eq" name="eq" autocomplete="off">
+                            </p>
+                        </div>
+                    </div>
+                    <div class="wordType clearfix">
+                        <div class="wordTypeTitle lf">
+                            <p>文档格式：</p>
+                        </div>
+                        <div class="wordTypeList lf">
+                            <ul class="clearfix">
+                                <li class="wordTypeListItem selectOn clearfix" data-value="0">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">全部格式</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="doc">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">WORD</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="ppt">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">PPT</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="excel">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">EXCEL</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="pdf">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">PDF</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="txt">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">TXT</p>
+                                </li>
+                                <li class="wordTypeListItem clearfix" data-value="zip">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="wordTypeListTitle lf">ZIP</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeFrame clearfix">
+                        <div class="timeFrameTitle lf">
+                            <p>时间范围：</p>
+                        </div>
+                        <div class="timeFrameList lf">
+                            <ul class="clearfix">
+                                <li class="timeFrameListItem selectOn clearfix" data-value="0">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">全部时间</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="4">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一年内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="3">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一月内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="2">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一周内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix timeFrameListTime" data-value="5">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">
+                                        自定义
+                                        <div class="mt40 customtime"
+                                            style="margin-top: -13px; margin-left: 4px;">
+                                            <div class="c-datepicker-date-editor  J-datepicker-range-day mt10">
+                                                <i class="c-datepicker-range__icon kxiconfont icon-clock"></i>
+                                                <input placeholder="开始日期" class="c-datepicker-data-input only-date"
+                                                    id="date_start2" readonly="" type="text" data-date-end="date_end"
+                                                    class="jsearch-widget-calendar Wdate" name="begin" value="">
+                                                <span class="c-datepicker-range-separator">-</span>
+                                                <input placeholder="结束日期" class="c-datepicker-data-input only-date"
+                                                    id="date_end2" readonly="" type="text"
+                                                    class="jsearch-widget-calendar Wdate" name="end"
+                                                    data-date-start="date_start" value="">
+                                            </div>
+                                        </div>
+                                    </p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sortOrder clearfix">
+                        <div class="sortOrderTitle lf">
+                            <p>排序方式：</p>
+                        </div>
+                        <div class="sortOrderList lf">
+                            <ul class="clearfix">
+                                <li class="sortOrderListItem selectOn clearfix" data-value="">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">默认</p>
+                                </li>
+                                <li class="sortOrderListItem clearfix" data-value="1">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">按相关度</p>
+                                </li>
+                                <li class="sortOrderListItem clearfix" data-value="2">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">按时间</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="keyWordSite clearfix">
+                        <div class="keyWordSiteTitle lf">
+                            <p>关键词位置：</p>
+                        </div>
+                        <div class="keyWordSiteList lf">
+                            <ul class="clearfix">
+                                <li class="keyWordSiteListItem selectOn clearfix" data-value="">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">默认</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="title,content,filenumber">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">全部</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="title">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">标题</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="content">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">正文</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="beginSearchBtn">
+                        <button>开始检索</button>
+                    </div>
+                </div>
+                <!--<div class="policyContent">
+                    <div class="searchKeyword clearfix">
+                        <div class="searchKeywordInput lf">
+                            <p>
+                                <label for="Keyword">关键词:</label>
+                                <input type="text" id="Keyword" style="margin-bottom: 0">
+                                <div style="height: 20px;margin-left: 131px;">
+                                    <span class="gqvali1" style="color: red;">请输入关键词</span>
+                                </div>
+                            </p>
+                            <p>
+                                <label for="dispatch">发文机构:</label>
+                                <input type="text" id="dispatch">
+                            </p>
+                            <p>
+                                <label for="messageNum">发文字号:</label>
+                                <input type="text" id="messageNum1">
+                                <input type="text" id="messageNum2">
+                                <input type="text" id="messageNum3">
+                            </p>
+                        </div>
+                    </div>
+                    <div class="timeFrame clearfix">
+                        <div class="timeFrameTitle lf">
+                            <p>时间范围：</p>
+                        </div>
+                        <div class="timeFrameList lf">
+                            <ul class="clearfix">
+                                <li class="timeFrameListItem selectOn clearfix" data-value="0">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">全部时间</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="4">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一年内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="3">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一月内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix" data-value="2">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">一周内</p>
+                                </li>
+                                <li class="timeFrameListItem clearfix timeFrameListTime" data-value="5">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="timeFrameListTitle lf">
+                                        自定义
+                                        <div class="mt40 customtime"
+                                            style="margin-top: -13px; margin-left: 4px;">
+                                            <div class="c-datepicker-date-editor  J-datepicker-range-day mt10">
+                                                <i class="c-datepicker-range__icon kxiconfont icon-clock"></i>
+                                                <input placeholder="开始日期" class="c-datepicker-data-input only-date"
+                                                    id="date_start1" readonly="" type="text" data-date-end="date_end"
+                                                    class="jsearch-widget-calendar Wdate" name="begin" value="">
+                                                <span class="c-datepicker-range-separator">-</span>
+                                                <input placeholder="结束日期" class="c-datepicker-data-input only-date"
+                                                    id="date_end1" readonly="" type="text"
+                                                    class="jsearch-widget-calendar Wdate" name="end"
+                                                    data-date-start="date_start" value="">
+                                            </div>
+                                        </div>
+                                    </p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sortOrder clearfix">
+                        <div class="sortOrderTitle lf">
+                            <p>排序方式：</p>
+                        </div>
+                        <div class="sortOrderList lf">
+                            <ul class="clearfix">
+                                <li class="sortOrderListItem selectOn clearfix" data-value="">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">默认</p>
+                                </li>
+                                <li class="sortOrderListItem clearfix" data-value="1">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">按相关度</p>
+                                </li>
+                                <li class="sortOrderListItem clearfix" data-value="2">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="sortOrderListTitle lf">按时间</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="keyWordSite clearfix">
+                        <div class="keyWordSiteTitle lf">
+                            <p>关键词位置：</p>
+                        </div>
+                        <div class="keyWordSiteList lf">
+                            <ul class="clearfix">
+                                <li class="keyWordSiteListItem selectOn clearfix" data-value="">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">默认</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="title,content,filenumber">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">全部</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="title">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">标题</p>
+                                </li>
+                                <li class="keyWordSiteListItem clearfix" data-value="content">
+                                    <div class="macked lf">
+                                        <div></div>
+                                    </div>
+                                    <p class="keyWordSiteListTitle lf">正文</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="beginSearchBtn">
+                        <button>开始检索</button>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+    </div>
+    <div class="zz_msk">
+        <input id="basecode" name="basecode" type="hidden" value="" /> 
+        <input id="matter_title" name="matter_title" type="hidden" value="" />     
+        <div class="tck">
+        <div class="tck_top clearfix">
+            <div class="tck_top_left left">
+            </div>
+            <div class="close right">
+                X
+            </div>
+        </div>
+        <div id="current">
+            您的选择是：<span></span>
+        </div>
+        <div class="tck_list_xian"></div>
+        <div class="tck_list">
+        </div>
+        <div class="tck_bottom clearfix">
+            
+            <div class="sure right">确定</div>
+            <div class="quit1 right">取消</div>
+        </div>
+    </div>
+    </div>
+    <div class="toppng"><img src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//images/top.png" style="border-radius: 22px;"></div>
+    <div class="highLevelSearchSelectModalBg"></div>
+    <span id="searchtext"></span>
+    <div class="itemlist">
+        <div class="bszn_list " style="display: none;">
+            <div class="bszn_listName">
+                
+            </div>
+            <div class="bszn_listTitle clearfix">
+                <div class="bszn_listTitle_address left">
+                    办理地点
+                </div>
+                <div class="bszn_listTitle_sxname left">
+                    事项名称
+                </div>
+            </div>
+            <div class="bszn_listTitle_list">
+                
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/top/proviSwitch.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/util1.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/common.js"></script>
+
+<script src="/jsearch_files/website.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/provi.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/new_top.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/leftTab.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/hotword/hotword.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/autocomplete/autocomplete.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/autocomplete/jquery.autocomplete.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/condition/condition.js"></script>
+
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/plugins/moment.min.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/datepicker.all.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/datepicker.en.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/datechoose/js/date.js"></script>
+
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/myPagination/myPagination.js"></script>
+
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/weidu/weidu1.js"></script>
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/websitechange/webinit.js"></script>
+
+<script src="/jsearch_files/publish/sT7I9StjJmJrznxcoft9c//js/search/search1.js"></script>
+
+</html>
+<script>
+    $(document).ready(function(){
+        
+        var attachSearchType = parseInt(getQueryVariable("attachSearchType"));
+        if(attachSearchType==1){
+            $("#attachsearchtype").attr("checked","checked");
+        }
+        $("#attachsearchtype").click(function(){
+            if($(this).prop('checked')){
+                attachSearchType = 1
+            }else{
+                attachSearchType = 0
+            }
+            var q = $('#q').val();
+            if (getcheckerror()) {
+                q = $("#word").val();
+            }
+            window.location.href = "./search?" + replaceUrl(window.location.search.substring(1), ["attachSearchType","q","p"], [attachSearchType,q,1]);
+            return false;
+        });
+    })
+</script>

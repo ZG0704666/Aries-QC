@@ -1,0 +1,5 @@
+﻿OK len 68934 artlinks 0 | &page=1&pagesize=10
+OK len 68934 artlinks 0 | &pageNum=1&pageSize=10
+OK len 68934 artlinks 0 | &p=1&size=10
+OK len 160 artlinks 0 | 0%84&page=1&size=10
+OK len 160 artlinks 0 | %84&page=1&size=10

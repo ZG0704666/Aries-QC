@@ -1,0 +1,9 @@
+# 凭据与派生产物不入库
+.env.local
+.env
+audio/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db

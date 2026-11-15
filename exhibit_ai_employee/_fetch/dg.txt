@@ -1,0 +1,190 @@
+﻿len 56184
+ther[i].length }}" class="value js_limit_text">
+
+                              <span class="js_text" data-content="{{ other[i][j] }}">{{@ other[i][j] }}</span>
+
+                            </td>
+
+                          <% } %>
+
+                        </tr>
+
+                      <% } %>
+
+                      {{if boxType === 'organization'}}
+
+                      <tr>
+
+                        <td colspan="2" class="td-map"><iframe src="{{ '/irs-c-mobile/map.html?locations=' + location + '&searchWord=' + title }}" height="304px" width="100%"></iframe></td>
+
+                      </tr>
+
+                      {{/if}}
+
+                    </table>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </script>
+
+    <!-- 最新消息框应用 -->
+
+    <script id="news-box-tpl" type="text/html">
+
+        <div class="main_application_item igs-top-news" name="{{ name }}">
+
+            <a class="title" href="{{ list[0] | visitUrl }}"><em>{{ hitWord || searchWord }}</em>的最新相关新闻</a>
+
+            <ul>
+
+                {{each list $value $index}}
+
+                <li class="clearfix">
+
+                    <a class="title" target="_blank" title="{{ $value.title_no_tag }}" href="{{ $value.url }}">{{@ $value.title }}</a>
+
+                    {{if $index === 0}}
+
+                    <div class="content js_limit_text">
+
+                        <span class="js_text" data-content="{{ $value.content }}" title="{{ $value.content }}">{{@ $value.content | spaceFilter }}</span>
+
+                    </div>
+
+                    {{/if}}
+
+                    {{if $value.source}}
+
+                    <span class="source">{{ $value.source }}</span>
+
+                    {{/if}}
+
+                    <span class="time">{{ $value.time | timeAgo }}</span>
+
+                </li>
+
+                {{/each}}
+
+            </ul>
+
+        </div>
+
+    </script>
+
+    <!-- 抖音框应用 -->
+
+    <script id="douyin-box-tpl" type="text/html">
+
+        <div class="main_application_item igs-relate-douyin-wrap clearfix" name="{{ name }}">
+
+            <div class="title">
+
+                <span class="fl"><em>{{hitWord || searchWord}}</em>-短视频</span>
+
+                <a href="{{ list[0] | visitUrl }}" class="visit-url">
+
+                    <span>查看全部</span>
+
+                </a>
+
+            </div>
+
+
+
+            <div class="outer">
+
+                <div class="inner">
+
+                    {{each list}}
+
+                    <a class="igs-relate-douyin scale-item" href="{{ $value.url }}" target="_blank" title="{{ $value.title_no_tag }}">
+
+                        <img class="cover-pic" src="{{ $value.imgUrl | imgFilter }}" alt=""/>
+
+                        <p class="title" title="{{ $value.title_no_tag }}">{{@ $value.title }}</p>
+
+                        <div class="channel">
+
+                            <img src="./images/search_douyin_channel.png" alt="" width="24"/>
+
+                            <span title="抖音号-{{ $value.source }}">抖音号-{{ $value.source }}</span>
+
+                        </div>
+
+                    </a>
+
+                    {{/each}}
+
+                </div>
+
+            </div>
+
+            <div class="turn-btn next"></div>
+
+            <div class="turn-btn prev"></div>
+
+        </div>
+
+    </script>
+
+    <!-- 视频框应用 -->
+
+    <script id="video-box-tpl" type="text/html">
+
+        <div class="main_application_item igs-relate-video" name="{{ name }}">
+
+            <div class="title">
+
+                <span>
+
+                    <em>{{ hitWord || searchWord }}</em>-视频
+
+             
+
+
+=== ALL HREFS ===
+  ./libs/obox/obox.css
+  ./libs/tagsinput/bootstrap-tagsinput.css
+  search.css?e768e6676121fee876a1
+  {{ linkUrl }}
+  {{ linkUrl }}
+  {{ linkUrl }}
+  {{ list[0] | visitUrl }}
+  {{ $value.url }}
+  {{ list[0] | visitUrl }}
+  {{ $value.url }}
+  {{ list[0] | visitUrl }}
+  {{ $value.url }}
+  {{ list[0] | visitUrl }}
+  {{ list[0].url }}
+  {{ list[1].url }}
+  {{ list[2].url }}
+  {{ list[3].url }}
+  {{ list[4].url }}
+  {{ list[5].url }}
+  {{ list[6].url }}
+  {{ list[7].url }}
+  {{ list[0] | visitUrl }}
+  {{ $value.url }}
+  {{ $value.url }}
+  {{ $value | relateSearchUrl }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ url }}
+  {{ $value.linkUrl }}
+  {{ $value.linkUrl }}

@@ -1,0 +1,114 @@
+﻿== util1.js 24841
+   >>> otherdatanew
+function otherdatanew(data, cateid) {
+  var pg = 10;
+  var q = $('#q').val();
+  if (getcheckerror()) {
+    q = $("#word").val();
+  }
+  var eq = decodeURIComponent(getQueryVariable("eq"));
+  var attachType = decodeURIComponent(getQueryVariable("_cus_pq_ja_type"));
+  if (websiteid) {
+    data += "websiteid=" + websiteid;
+  } else {
+    data += "websiteid=";
+  }
+  //发文机构和发文字号
+  var _cus_eq_fbjg = decodeURIComponent(getQueryVariable("dispatch_input"));
+  var _cus_eq_filenumber = decodeURIComponent(getQueryVariable("_cus_eq_filenumber"));
+
+  if ($("#result-in").prop('checked')) {
+    q = q.substring(0, q.length - 1)
+    q += " " + $("#jgq").val();
+  }
+  data += '&q=' + encodeURIComponent(q) + '&pg=' + encodeURIComponent(pg);
+  if (eq) {
+    data += '&eq=' + encodeURIComponent(eq);
+  }
+  if (cateid) {
+    data += "&cateid=" + cateid;
+  }
+  if (attachType) {
+    data += "&attachType=" + attachT
+
+   >>> tooldata
+function tooldata(data) {
+  //查询范围
+  var pos = decodeURIComponent(getQueryVariable("pos"));
+  if (!pos) {
+    pos = $("#pos").val();
+  }
+  $("#pos").val(pos);
+  var postext = "";
+  $(".highLevelSearchContent .keyWordSiteList ul li").each(function (index, item) {
+    if ($(item).data("value") == pos) {
+      postext = $(item).find("p").text();
+    };
+  });
+  if (postext) {
+    var $pos = $('#pos-box');
+    $('.jsearch-condition-box-title>span', $pos).text(postext);
+  }
+  if (pos) {
+    data += '&pos=' + pos;
+  }
+  //排序方式
+  var sortType = decodeURIComponent(getQueryVariable("sortType"));
+  if (!sortType) {
+    sortType = $("#sortType").val();
+  }
+  $("#sortType").val(sortType);
+  //排序方式
+  var sortTypetext = '';
+  $(".highLevelSearchContent .sortOrderList ul li").each(function (index, item) {
+    if ($(item).data("value") == sortType) {
+      sortTypetext = $(item).find("p").text();
+    };
+
+
+   >>> ajaxGet
+function ajaxGet(url, setting) {
+  jQuery.support.cors = true;
+  var opt = {
+    async: true,
+    type: 'text/html',
+    contentType: 'application/x-www-form-urlencoded',
+
+    success: function () {},
+    complete: function () {},
+    data: null,
+    xhrFields: {
+      withCredentials:true
+    }
+  };
+  opt = $.extend(opt, setting);
+  $.ajax({
+    type: "get",
+    url: url,
+    dataType: opt.type,
+    error: opt.error,
+    contentType: opt.contentType,
+    data: opt.data,
+    success: opt.success,
+    complete: opt.complete
+  });
+}
+
+function limitText(text, length) {
+  if (!length) {
+    length = 19;
+  }
+  //alert(text.length);
+  if (text.length > length) {
+    text = text.substring(0, length - 1) + '...';
+  }
+  return text;
+}
+
+function getQueryString(name) {
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+  var r = window.location.search.substr(1).match(reg);
+  if (r != null) {
+
+== common.js 11077
+== webinit.js 430

@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>展览语音体验交付员 · 工作台</title>
+<style>
+:root{
+  --bg:#f7f8fc; --card:#fff; --ink:#101114; --ink-2:#4a4d57; --ink-3:#8b8f9c;
+  --line:#e6e8ef; --line-2:#eef0f6;
+  --live:#0b6b4f; --live-bg:#e7f4ee;
+  --block:#8a2418; --block-bg:#fdeceb; --warn:#7a4b00; --warn-bg:#fdf3e2;
+  --demo:#5a4a00; --demo-bg:#fdf7dd;
+  --r:10px; --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-family:'Inter','Helvetica Neue',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased;
+}
+*{box-sizing:border-box}
+body{margin:0;font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 64px}
+header{border-bottom:1px solid var(--line);background:var(--card)}
+.hd{max-width:1180px;margin:0 auto;padding:20px 24px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.hd .kicker{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.hd h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
+.hd .sub{color:var(--ink-3);font-size:12.5px;margin-left:auto}
+.boundary{background:#fbfbfd;border-bottom:1px solid var(--line);padding:9px 0}
+.boundary div{max-width:1180px;margin:0 auto;padding:0 24px;font-size:12px;color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.boundary b{font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--ink);padding:4px 7px;border-radius:4px}
+section{margin-top:26px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.sec-h h2{font-size:13px;font-weight:600;margin:0;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.sec-h .note{font-size:12px;color:var(--ink-3);margin-left:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3-2{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.15fr);gap:16px}
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 11px/1 var(--mono);letter-spacing:.04em;padding:5px 9px;border-radius:99px;background:#f1f2f7;color:var(--ink-2);white-space:nowrap}
+.pill.live,.pill.ok{background:var(--live-bg);color:var(--live)}
+.pill.block{background:var(--block-bg);color:var(--block)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.demo{background:var(--demo-bg);color:var(--demo)}
+label{display:block;font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit;font-size:13.5px;color:var(--ink);background:#fff;transition:border-color .12s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#b9bdc9;box-shadow:0 0 0 3px #1011140a}
+textarea{resize:vertical;min-height:84px;line-height:1.55}
+.field{margin-bottom:14px}
+button{border:0;border-radius:8px;padding:9px 14px;font:600 13px/1 inherit;background:var(--ink);color:#fff;cursor:pointer;transition:opacity .12s}
+button:hover{opacity:.86}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button.ghost:hover{border-color:#b9bdc9;opacity:1}
+button.tiny{padding:6px 10px;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ex{border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:10px;background:#fcfcfe}
+.ex .ex-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ex .code{font:700 12px/1 var(--mono);background:var(--ink);color:#fff;width:22px;height:22px;display:grid;place-items:center;border-radius:5px}
+.ex .ex-h span{font-size:12.5px;color:var(--ink-2)}
+.ex textarea{min-height:78px;font-size:13px}
+.cards{display:grid;gap:12px}
+.ec{border:1px solid var(--line);border-radius:9px;padding:16px;background:#fff}
+.ec-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.ec-h h3{font-size:14px;font-weight:600;margin:0}
+.ec-h .code{font:700 11px/1 var(--mono);background:#f1f2f7;color:var(--ink);padding:5px 7px;border-radius:4px}
+.ec textarea{min-height:96px;font-size:13px;margin-top:2px}
+.kv{display:grid;grid-template-columns:76px 1fr;gap:5px 10px;font-size:12.5px;margin-top:12px}
+.kv dt{color:var(--ink-3);font:500 10.5px/1.6 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.kv dd{margin:0;color:var(--ink-2)}
+.quote{margin-top:12px;background:#fbfbfd;border:1px solid var(--line-2);border-radius:7px;padding:10px 12px;font-size:12.5px;line-height:1.6}
+.quote>b{font:600 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px}
+.quote .q{color:var(--ink);border-left:2px solid #c9ccd6;padding-left:9px;margin:6px 0;white-space:pre-wrap}
+.quote .src{color:var(--ink-3);font-size:11.5px}
+.gate-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;align-items:flex-start}
+.gate-row:last-child{border-bottom:0}
+.gate-row .g{font:600 10px/1.7 var(--mono);letter-spacing:.05em;min-width:104px;color:var(--ink-3);text-transform:uppercase}
+.gate-row .m{flex:1;color:var(--ink-2)}
+.gate-row.ok .m{color:var(--ink-3)}
+.gate-row.bad .m{color:var(--block)}
+.mark{width:7px;height:7px;border-radius:99px;margin-top:6px;flex:none}
+.mark.ok{background:var(--live)}
+.mark.bad{background:var(--block)}
+.summary-box{display:flex;gap:22px;padding:14px;background:#fbfbfd;border-radius:8px;margin-bottom:14px;flex-wrap:wrap}
+.summary-box .n{font:600 22px/1 var(--mono);letter-spacing:-.02em}
+.summary-box .l{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:7px}
+.runs{display:grid;gap:6px;max-height:300px;overflow:auto}
+.run{display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;text-align:left;transition:border-color .12s,background .12s;width:100%}
+.run:hover{border-color:#c8ccd6;background:#fcfcfe}
+.run.sel{border-color:var(--ink);background:#fbfbfd}
+.run .id{font:600 11px/1 var(--mono);color:var(--ink-3);min-width:26px}
+.run .t{flex:1;min-width:0}
+.run .t b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run .t small{color:var(--ink-3);font-size:11px}
+.state-strip{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.state-strip div{flex:1;padding:11px 12px;text-align:center;font:600 11.5px/1.3 var(--mono);letter-spacing:.04em;color:var(--ink-3);background:#fbfbfd;border-right:1px solid var(--line);transition:all .15s}
+.state-strip div:last-child{border-right:0}
+.state-strip div.on{background:var(--ink);color:#fff}
+.state-strip div.on.multi{background:var(--demo)}
+.state-strip div.on.play{background:var(--live)}
+.targets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.target{padding:13px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:600 12.5px/1.3 inherit;color:var(--ink);cursor:pointer;text-align:center;transition:all .12s}
+.target:hover{border-color:#c8ccd6}
+.target.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.target small{display:block;font:400 10.5px/1.4 var(--mono);opacity:.62;margin-top:3px}
+.log{max-height:158px;overflow:auto;font:11.5px/1.7 var(--mono);background:#fbfbfd;border:1px solid var(--line-2);color:var(--ink-2);padding:11px 12px;border-radius:8px;white-space:pre-wrap}
+.hint{font-size:12.5px;color:var(--ink-2);background:#fbfbfd;border-radius:7px;padding:10px 12px;margin-top:10px;line-height:1.55}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:9px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff}
+th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font:600 10px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);background:#fbfbfd;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.t-id{font:600 11px/1 var(--mono);color:var(--ink-3)}
+.diff{font:11.5px/1.75 var(--mono);background:#fbfbfd;border:1px solid var(--line-2);padding:12px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto}
+.diff .add{color:var(--live);display:block}
+.diff .del{color:var(--block);display:block}
+.diff .fld{color:var(--ink);font-weight:600;display:block;margin-top:10px}
+.biz{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.biz .m{border:1px solid var(--line);border-radius:8px;padding:12px 13px;background:#fcfcfe}
+.biz .m .v{font:600 20px/1.1 var(--mono);letter-spacing:-.02em}
+.biz .m .k{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:7px}
+.msg{padding:11px 13px;border-radius:8px;font-size:12.5px;line-height:1.6;margin-top:12px;white-space:pre-wrap;background:#fbfbfd;border:1px solid var(--line-2);color:var(--ink-2)}
+.msg.err{background:var(--block-bg);border-color:#f3d3cf;color:var(--block)}
+.msg.ok{background:var(--live-bg);border-color:#cfe8dd;color:var(--live)}
+.msg.warn{background:var(--warn-bg);border-color:#f0e0c4;color:var(--warn)}
+.hide{display:none!important}
+.mut{font-size:12px;color:var(--ink-3);line-height:1.65}
+.empty{padding:26px 14px;text-align:center;color:var(--ink-3);font-size:12.5px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 0;font-size:12px;color:var(--ink-3);line-height:1.75}
+@media(max-width:900px){.grid2,.grid-3-2{grid-template-columns:1fr}.wrap{padding:0 16px}.hd{padding:16px}.boundary div{padding:0 16px}}
+</style></head><body>
+
+<header><div class="hd">
+  <span class="kicker">AI Digital Employee</span>
+  <h1>展览语音体验交付员</h1>
+  <span class="sub">展项资料 → 带出处讲解 → 质量门 → 审核 → 交付包</span>
+</div></header>
+<div class="boundary"><div><b>边界</b><span id="modeLine">读取服务状态…</span></div></div>
+
+<main class="wrap">
+
+<section>
+  <div class="sec-h"><h2>01 / 接单与资料</h2><span class="note">A · B · C 三个展项，每项独立授权资料</span></div>
+  <div class="grid-3-2">
+    <div class="card">
+      <div class="field"><label>展览 / 项目名称</label><input id="title" value="城市记忆展"></div>
+      <div id="exInputs"></div>
+      <div class="row" style="margin-top:14px">
+        <button id="btnGen" onclick="generate()">提交任务</button>
+        <button class="ghost tiny" onclick="fillSample()">正常资料</button>
+        <button class="ghost tiny" onclick="fillMissing()">缺料</button>
+        <button class="ghost tiny" onclick="fillConflict()">来源冲突</button>
+      </div>
+      <div id="genMsg" class="msg hide"></div>
+    </div>
+    <div class="card">
+      <div class="sec-h" style="margin-bottom:10px"><h2 style="font-size:11px">任务列表</h2><span class="note" id="runCount"></span></div>
+      <div id="runs" class="runs"><div class="empty">尚无任务</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="gateSec" class="hide">
+  <div class="sec-h"><h2>02 / 质量门</h2><span class="note">程序判定 · 可复跑 · 任一 P0 未过即不可批准</span></div>
+  <div class="card">
+    <div class="summary-box">
+      <div><div class="n" id="gateScore">—</div><div class="l">通过 / 总项</div></div>
+      <div><div class="n" id="gateVerdict">—</div><div class="l">判定</div></div>
+      <div><div class="n" id="gateIssues">—</div><div class="l">阻断问题</div></div>
+      <div><div class="n" id="gateMode">—</div><div class="l">生成模式</div></div>
+    </div>
+    <div id="gateList"></div>
+  </div>
+</section>
+
+<section id="contentSec" class="hide">
+  <div class="sec-h"><h2>03 / 内容与审核</h2><span class="note">修改后自动重跑质量门，旧版本保留</span></div>
+  <div class="cards" id="cards"></div>
+  <div class="card" style="margin-top:14px">
+    <div class="row">
+      <button onclick="review('approved')">人工批准</button>
+      <button class="ghost" onclick="review('needs_revision')">退回修改</button>
+      <button class="ghost" onclick="revise()">保存修改并重跑门</button>
+      <button class="ghost" onclick="exportRun()">导出交付包</button>
+      <span class="pill" id="statusPill"></span>
+    </div>
+    <div id="actMsg" class="msg hide"></div>
+  </div>
+</section>
+
+<section id="diffSec" class="hide">
+  <div class="sec-h"><h2>04 / 修改差异与重测范围</h2><span class="note">只重测受影响的展项与用例</span></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:12px"><span class="pill" id="diffAffected">影响展项 —</span><span class="pill" id="diffRetest">重测 —</span></div>
+    <div id="diff" class="diff">选择任务后显示。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>05 / 电脑端体验模拟器</h2><span class="note">确定性状态机 · 非眼镜实机 · 非 AI 能力</span></div>
+  <div class="card">
+    <div class="state-strip"><div id="st0" class="on">空闲</div><div id="st1">多目标待选</div><div id="st2">播放中</div></div>
+    <div class="grid2">
+      <div>
+        <label>模拟候选展项</label>
+        <div class="targets" id="targets"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="ghost tiny" onclick="finish()">模拟自然结束</button>
+          <button class="ghost tiny" onclick="reset()">清空</button>
+          <button class="ghost tiny" onclick="recordTest('T2')">记录 T2</button>
+          <button class="ghost tiny" onclick="recordTest('T3')">记录 T3</button>
+        </div>
+        <div id="hint" class="hint">空闲静默。超过 5 秒可轻提示一次，冷却 30 秒；不播报"附近没有展品"。</div>
+      </div>
+      <div>
+        <label>事件日志 · 本机</label>
+        <div id="events" class="log">尚无事件。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>06 / 测试记录</h2><span class="note">未运行显示"未运行"，不预填通过</span></div>
+  <div id="testMsg" class="msg hide" role="status" aria-live="polite"></div>
+  <div class="tw"><table>
+    <thead><tr><th style="width:170px">用例</th><th>期望</th><th>实际 / 结果</th><th style="width:80px">操作</th></tr></thead>
+    <tbody id="testRows"></tbody>
+  </table></div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>07 / 单位经济模型</h2><span class="note">未计获客、税费、折旧；报价为访谈测试假设</span></div>
+  <div class="grid-3-2">
+    <div class="card">
+      <div class="grid2" style="gap:10px">
+        <div class="field" style="margin:0"><label>试点报价 CNY</label><input id="bQuote" type="number" placeholder="访谈测试价"></div>
+        <div class="field" style="margin:0"><label>实测人工小时</label><input id="bHours" type="number" step="0.1" placeholder="计时"></div>
+        <div class="field" style="margin:0"><label>内部时薪</label><input id="bRate" type="number" placeholder="团队确认"></div>
+        <div class="field" style="margin:0"><label>模型调用费</label><input id="bModel" type="number" placeholder="账单"></div>
+        <div class="field" style="margin:0"><label>语音成本</label><input id="bVoice" type="number" placeholder="未用填0"></div>
+        <div class="field" style="margin:0"><label>其他直接成本</label><input id="bOther" type="number" placeholder="凭据"></div>
+        <div class="field" style="margin:0"><label>人工基线（分钟）</label><input id="bBase" type="number" placeholder="手工做一遍"></div>
+        <div class="field" style="margin:0"><label>岗位流程（分钟）</label><input id="bEmp" type="number" placeholder="员工做一遍"></div>
+      </div>
+      <button style="margin-top:14px" onclick="saveBusiness()">计算并保存</button>
+      <div id="bizMsg" class="msg hide"></div>
+    </div>
+    <div class="card"><div id="bizResult"><div class="empty">填入实测数据后计算。缺项会明确列出，不预填数字。</div></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>08 / 改进候选台账</h2><span class="note">候选需人工批准，不是自动学习</span></div>
+  <div class="card">
+    <div class="row">
+      <select id="fbCat" style="max-width:220px"><option>来源引用缺失</option><option>事实表述需收敛</option><option>讲解长度不适合播放</option><option>交互提示不清晰</option><option>设备播放异常</option></select>
+      <input id="fbNote" placeholder="问题与证据" style="flex:1;min-width:180px">
+      <button class="ghost tiny" onclick="addFeedback()">记录候选</button>
+    </div>
+    <div id="fbMsg" class="msg hide"></div>
+    <div id="fbList" class="mut" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<footer>
+  眼镜现有能力：自研端侧识别与固定播报，纯边端不联网，本次不可改固件。本页面不连接实机。<br>
+  模拟器事件不等于眼镜行为；DEMO 模板不等于 AI 交付证据；质量门通过不等于客户事实审定。
+</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const CODES=['A','B','C'];
+let runs=[], runId=null, run=null, baseDraft=null, candidates=new Set(), playState='idle', playing=null, events=[], actionEvents=[], tests={}, pendingTests=new Set();
+
+const CASES=[
+ ['T1','三展项各一份讲解，出处可逐字定位，串台门通过'],
+ ['T2','空闲静默且冷却生效；多目标提示选择，不自动播放'],
+ ['T3','选 B 时先停 A 再播 B，事件序列可证明无重叠'],
+ ['T4','资料缺项被指出，不补造事实，不标可交付'],
+ ['T5','来源冲突列明双方出处，未确认不得标已审核'],
+ ['T6','修改后显示差异，只重测受影响项，其他展项不变'],
+ ['T7','调用失败留痕，无草稿，任务不可批准'],
+ ['T8','施压要求补造时标待确认，原文没有的数字被拦'],
+ ['T9','未批准或门未通过时不能导出交付包']
+];
+function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function api(path,body){
+  let r,d;
+  try{
+    r=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    d=await r.json();
+  }catch(e){throw Error('服务不可达：'+e.message)}
+  if(!r.ok){const err=Error(d.error||('HTTP '+r.status));err.data=d;throw err}
+  return d;
+}
+function show(id,text,kind=''){const el=$(id);el.textContent=text;el.className='msg '+(kind||'');el.classList.remove('hide');}
+
+function renderExInputs(){
+  $('exInputs').innerHTML=CODES.map(c=>`
+    <div class="ex"><div class="ex-h"><span class="code">${c}</span><span>展项 ${c} · 授权资料</span></div>
+      <input id="sn${c}" value="模拟资料 ${c}" placeholder="资料名称 / 版本" style="margin-bottom:8px">
+      <textarea id="st${c}" placeholder="粘贴客户授权的展项资料。资料不足时本系统会拒绝生成，不会替你补写。"></textarea>
+    </div>`).join('');
+}
+const SAMPLES={
+ A:"本展项展出一件西周青铜鼎，通高约三十厘米，器身饰有饕餮纹。该鼎于二十世纪八十年代在本地窖藏出土，现藏于市博物馆。鼎内壁铸有铭文，记录了当时的祭祀活动，是研究本地礼制的重要实物。",
+ B:"本展项展示的陶罐属于新石器时代晚期，采用泥条盘筑法制成，表面留有绳纹。陶罐出土于城郊遗址，器形完整，用于储存粮食。陶罐的发现说明当时已有稳定的农业定居生活。",
+ C:"本展项展示的织物残片为汉代丝织品，采用平纹织造，残片出土于本地墓葬，颜色已褪。织物上的纹样显示了当时的纺织工艺水平，也反映本地与外地的手工业交流。"
+};
+function fillSample(){CODES.forEach(c=>{$('st'+c).value=SAMPLES[c]});}
+function fillMissing(){fillSample();$('stA').value="展项 A 未提供任何事实参数，待补。";}
+function fillConflict(){fillSample();$('stB').value="据资料甲记载，展项 B 的陶罐为一八五零年本地工匠烧制。据资料乙记载，该陶罐实际烧制于一八七零年前后，器表留有绳纹。两批资料对烧制年代说法不同。";}
+
+async function generate(){
+  $('btnGen').disabled=true;
+  try{
+    const exhibits=CODES.map(c=>({exhibit_id:c,source_name:$('sn'+c).value,source_text:$('st'+c).value}));
+    const d=await api('/api/generate',{title:$('title').value,exhibits});
+    const v=d.validation||{};
+    show('genMsg',`已创建任务 #${d.id}，mode=${d.mode}。${!v.passed?'质量门阻断 '+(v.issues||[]).length+' 项，见下方。':'质量门通过。'}`,'ok');
+    await loadRuns(); await select(d.id);
+  }catch(e){
+    const det=e.data||{};
+    let t='任务未生成：'+e.message;
+    if(det.missing_materials?.length)t+='\n\n缺料：\n'+det.missing_materials.map(m=>`· 展项 ${m.exhibit_id}：${m.missing}`).join('\n');
+    if(det.conflicts?.length)t+='\n\n来源冲突：\n'+det.conflicts.map(c=>`· 展项 ${c.exhibit_id}：${c.description}`).join('\n');
+    if(det.id){t+=`\n\n已记录为任务 #${det.id}（status=${det.status}），不可批准。`;await loadRuns();}
+    show('genMsg',t,'err');
+  }finally{$('btnGen').disabled=false}
+}
+
+async function loadRuns(){
+  try{
+    runs=(await api('/api/runs')).runs||[];
+    $('runCount').textContent=runs.length+' 条';
+    $('runs').innerHTML=runs.length?runs.map(r=>{
+      const cls=r.status==='approved'?'ok':(r.status==='blocked'||r.status==='failed')?'block':'';
+      return `<button class="run ${runId===r.id?'sel':''}" onclick="select(${Number(r.id)})">
+        <span class="id">#${Number(r.id)}</span>
+        <span class="t"><b>${esc(r.title)}</b><small>${esc(r.created_at)} · v${Number(r.version)}</small></span>
+        <span class="pill ${cls}">${esc(r.status)}</span></button>`}).join(''):'<div class="empty">尚无任务</div>';
+  }catch(e){$('runs').innerHTML='<div class="empty">读取失败：'+esc(e.message)+'</div>'}
+}
+
+async function select(id){
+  try{
+    const [d,testResult]=await Promise.all([
+      api('/api/runs/'+id+'/versions'),
+      api('/api/runs/'+id+'/tests').catch(error=>({error}))
+    ]);
+    runId=id;
+    const meta=runs.find(r=>r.id===id)||{};
+    const latest=(d.versions||[]).slice(-1)[0];
+    run={id,title:meta.title||'',status:meta.status,mode:meta.mode,
+         version:latest?latest.version:0,
+         draft:latest?latest.draft:{cards:[]},
+         validation:latest?latest.validation:{},
+         versions:d.versions||[],diff:latest?latest.diff:[]};
+    baseDraft=structuredClone(run.draft);
+    tests={};
+    if(testResult.error){show('testMsg','读取测试记录失败：'+testResult.error.message,'err');}
+    else{
+      (testResult.tests||[]).forEach(record=>{tests[record.number]={...record,passed:record.status==='passed'};});
+      show('testMsg',`已加载 ${(testResult.tests||[]).length} 条服务器测试记录（任务 #${id}）。`,'ok');
+    }
+    await loadRuns(); renderAll();
+    renderTests();
+  }catch(e){show('genMsg','读取任务失败：'+e.message,'err')}
+}
+
+function renderAll(){
+  renderGates();renderCards();renderStatus();
+  if(run.diff&&run.diff.length) showDiffList(run.diff); else renderDiffIdle();
+  $('gateSec').classList.remove('hide');$('contentSec').classList.remove('hide');$('diffSec').classList.remove('hide');
+}
+
+function renderGates(){
+  const v=run.validation||{},issues=v.issues||[];
+  $('gateScore').textContent=(v.checks??0)+' / '+(v.total_checks??0);
+  $('gateVerdict').textContent=v.passed?'通过':'阻断';
+  $('gateVerdict').style.color=v.passed?'var(--live)':'var(--block)';
+  $('gateIssues').textContent=issues.length;
+  $('gateMode').textContent=run.mode==='live'?'LIVE':'DEMO';
+  $('gateMode').style.color=run.mode==='live'?'var(--live)':'var(--demo)';
+  if(!issues.length){
+    $('gateList').innerHTML='<div class="gate-row ok"><span class="mark ok"></span><span class="g">全部通过</span><span class="m">质量门未发现问题。注意：这不等于客户事实已审定。</span></div>';
+    return;
+  }
+  $('gateList').innerHTML=issues.map((msg,i)=>{
+    const g=(msg.match(/P0(\S+?)门/)||[,'其他'])[1];
+    return `<div class="gate-row bad"><span class="mark bad"></span><span class="g">${i<3?esc(g):''}</span><span class="m">${esc(msg)}</span></div>`;
+  }).join('');
+}
+
+function renderCards(){
+  $('cards').innerHTML=(run.draft.cards||[]).map((c,i)=>`
+    <div class="ec">
+      <div class="ec-h"><span class="code">${esc(c.exhibit_id||CODES[i])}</span><h3>${esc(c.card_title||'未命名')}</h3>
+        <span class="pill" style="margin-left:auto">${esc(c.location||'')}</span></div>
+      <label>讲解文案</label>
+      <textarea id="n${i}" oninput="markDirty()">${esc(c.narration||'')}</textarea>
+      <div class="kv">
+        <dt>无目标</dt><dd>${esc(c.no_target_prompt||'—')}</dd>
+        <dt>多目标</dt><dd>${esc(c.multi_target_prompt||'—')}</dd>
+        <dt>提问</dt><dd>${esc(c.question||'—')}</dd>
+        <dt>回答</dt><dd>${esc(c.answer||'—')}</dd>
+      </div>
+      <div class="quote"><b>引用出处</b>
+        ${(c.citations||[]).length?(c.citations).map(x=>`<div class="q">「${esc(x.source_quote)}」</div><div class="src">${esc(x.source_name||'')}</div>`).join(''):'<div style="color:var(--block)">无可定位出处，不可交付</div>'}
+      </div>
+    </div>`).join('')||'<div class="card"><div class="empty">该任务没有内容（可能因资料缺料或模型失败被阻断）</div></div>';
+}
+function markDirty(){$('statusPill').textContent='有未保存修改';$('statusPill').className='pill warn';}
+function editorDraft(){
+  if(!baseDraft)return null;
+  const d=structuredClone(baseDraft);
+  (d.cards||[]).forEach((c,i)=>{const el=$('n'+i);if(el)c.narration=el.value;});
+  return d;
+}
+function renderStatus(){
+  const map={approved:['已批准','ok'],draft:['草稿','warn'],blocked:['被门阻断','block'],failed:['失败','block'],processing:['处理中',''],needs_revision:['已退回','warn']};
+  const [label,cls]=map[run.status]||[run.status||'未知',''];
+  $('statusPill').textContent=label;$('statusPill').className='pill '+cls;
+}
+
+function renderDiffIdle(){
+  $('diffAffected').textContent='影响展项 —';
+  $('diffRetest').textContent='重测 —';
+  $('diff').textContent=(run.draft?.cards||[]).length?'修改讲解后点击「保存修改并重跑门」，这里显示结构化差异与重测范围。':'暂无内容。';
+}
+function showDiffList(diff){
+  const changes=diff.changes||[];
+  $('diffAffected').textContent='影响展项 '+(diff.affected_exhibits?.join(' / ')||'无');
+  $('diffRetest').textContent='重测 '+(diff.retest_cases?.join(' / ')||'无');
+  if(!changes.length){$('diff').textContent='与上一版本一致，无需重测。';return;}
+  $('diff').innerHTML=changes.map(c=>
+    `<span class="fld">展项 ${esc(c.exhibit_id)} · ${esc(c.field)}</span>`+
+    `<span class="del">− ${esc(String(c.before).slice(0,260))}</span>`+
+    `<span class="add">+ ${esc(String(c.after).slice(0,260))}</span>`).join('');
+}
+function showDiff(diff){ if(diff&&diff.changes) showDiffList(diff); }
+
+async function review(decision){
+  try{
+    const d=await api('/api/review',{run_id:runId,decision,draft:editorDraft()});
+    show('actMsg',`审核结果：${d.status}。质量门 ${d.validation.checks}/${d.validation.total_checks}。`,'ok');
+    await select(runId);
+  }catch(e){
+    const det=e.data||{};
+    let t='服务端拒绝：'+e.message;
+    if(det.validation?.issues?.length)t+='\n'+det.validation.issues.slice(0,6).join('\n');
+    show('actMsg',t,'err');
+  }
+}
+async function revise(){
+  try{
+    const d=await api('/api/revise',{run_id:runId,draft:editorDraft(),actor:'human-editor',reason:'人工修改'});
+    show('actMsg',`已保存 v${d.version}，质量门${d.validation.passed?'通过':'仍有阻断'}。`,'ok');
+    await select(runId);
+  }catch(e){show('actMsg','保存失败：'+e.message,'err');}
+}
+// 不依赖外部库的最小 ZIP 写入器（存储模式，无压缩）
+function crc32(bytes){
+  let table=crc32.table;
+  if(!table){
+    table=crc32.table=new Uint32Array(256);
+    for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;table[i]=c>>>0;}
+  }
+  let crc=0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++)crc=table[(crc^bytes[i])&0xFF]^(crc>>>8);
+  return (crc^0xFFFFFFFF)>>>0;
+}
+function buildZip(files){
+  const enc=new TextEncoder();
+  const parts=[], central=[];
+  let offset=0;
+  const dt=new Date();
+  const dosTime=((dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()/2))&0xFFFF;
+  const dosDate=(((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate())&0xFFFF;
+  const u16=v=>[v&0xFF,(v>>>8)&0xFF];
+  const u32=v=>[v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];
+  Object.keys(files).forEach(name=>{
+    const nameBytes=enc.encode(name), data=enc.encode(files[name]);
+    const crc=crc32(data);
+    const local=[].concat(
+      u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(dosTime),u16(dosDate),
+      u32(crc),u32(data.length),u32(data.length),u16(nameBytes.length),u16(0)
+    );
+    parts.push(new Uint8Array(local),nameBytes,data);
+    central.push({nameBytes,crc,size:data.length,offset});
+    offset+=local.length+nameBytes.length+data.length;
+  });
+  const cdStart=offset;
+  let cdSize=0;
+  central.forEach(f=>{
+    const cd=[].concat(
+      u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(dosTime),u16(dosDate),
+      u32(f.crc),u32(f.size),u32(f.size),u16(f.nameBytes.length),u16(0),u16(0),
+      u16(0),u16(0),u32(0),u32(f.offset)
+    );
+    parts.push(new Uint8Array(cd),f.nameBytes);
+    cdSize+=cd.length+f.nameBytes.length;
+  });
+  const eocd=[].concat(
+    u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),
+    u32(cdSize),u32(cdStart),u16(0)
+  );
+  parts.push(new Uint8Array(eocd));
+  return new Blob(parts,{type:'application/zip'});
+}
+
+async function exportRun(){
+  try{
+    const d=await api('/api/runs/'+runId+'/export');
+    const files=d.package?.files||{};
+    const base=d.package?.base_name||('交付包_'+runId);
+    if(!Object.keys(files).length){show('actMsg','交付包为空','err');return;}
+    const blob=buildZip(files);
+    const u=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=u;a.download=base+'.zip';a.click();
+    setTimeout(()=>URL.revokeObjectURL(u),1500);
+    show('actMsg',`已导出 ${base}.zip，含 ${Object.keys(files).length} 个文件：\n${Object.keys(files).join('\n')}`,'ok');
+  }catch(e){show('actMsg','导出被拒：'+e.message,'err');}
+}
+
+function renderSim(){
+  $('targets').innerHTML=CODES.map((c,i)=>`<button class="target ${candidates.has(i)?'on':''}" onclick="toggle(${i})">展项 ${c}<small>${candidates.has(i)?'已选':'候选'}</small></button>`).join('');
+  ['st0','st1','st2'].forEach(id=>{$(id).classList.remove('on','multi','play');});
+  $('st0').textContent='空闲';$('st1').textContent='多目标待选';$('st2').textContent='播放中';
+  if(playState==='playing'){
+    $('st2').classList.add('on','play');$('st2').textContent='播放中 · '+CODES[playing];
+    $('hint').textContent='单音轨。手选另一展项时先停旧音轨，确认停止后再开始新的。自然结束后 30 秒内不自动重播。';
+  }else if(candidates.size>=2){
+    $('st1').classList.add('on','multi');$('st1').textContent='多目标待选（'+candidates.size+'）';
+    $('hint').textContent='多目标只提示选择，不自动播放、不猜测意图。用按钮手动选择。';
+  }else{
+    $('st0').classList.add('on');
+    $('hint').textContent='空闲静默。超过 5 秒可轻提示一次，冷却 30 秒；不播报"附近没有展品"。';
+  }
+}
+function log(s){events.unshift(new Date().toLocaleTimeString('zh-CN')+' · '+s);events=events.slice(0,40);$('events').textContent=events.join('\n');}
+function toggle(i){
+  if(playState==='playing'){if(i!==playing)choose(i);return;}
+  candidates.has(i)?candidates.delete(i):candidates.add(i);
+  log(candidates.size>=2?'multi · 提示选择，未自动播放':candidates.size===1?'single · 等待手动选择':'cleared');
+  renderSim();
+}
+function choose(i){
+  if(playState==='playing'){
+    const previous=playing;
+    actionEvents.push({event:'selected',exhibit_id:CODES[i]});
+    log('selected · 展项 '+CODES[i]);
+    if(window.speechSynthesis)speechSynthesis.cancel();
+    log('stopped · 展项 '+CODES[previous]);
+    actionEvents.push({event:'stopped',exhibit_id:CODES[previous]});
+    playing=null;playState='idle';
+    setTimeout(()=>start(i),100);return;
+  }
+  candidates=new Set([i]);start(i);
+}
+function start(i){
+  playing=i;playState='playing';log('started · 展项 '+CODES[i]);actionEvents.push({event:'started',exhibit_id:CODES[i]});renderSim();
+  const text=(run?.draft?.cards||[])[i]?.narration;
+  if(text&&window.speechSynthesis){
+    const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';
+    u.onend=()=>{if(playState==='playing'&&playing===i)finish();};
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }
+}
+function finish(){
+  if(playState!=='playing')return;
+  log('ended · 展项 '+CODES[playing]+'，进入 30 秒冷却');
+  candidates.clear();playing=null;playState='idle';renderSim();
+}
+function reset(){if(window.speechSynthesis)speechSynthesis.cancel();candidates.clear();playing=null;playState='idle';actionEvents=[];renderSim();log('manual reset');}
+
+function renderTests(){
+  $('testRows').innerHTML=CASES.map(([id,expect])=>{
+    const t=tests[id];
+    const pill=pendingTests.has(id)?'<span class="pill">保存中…</span>':t?.saveError?'<span class="pill block">未保存</span>':t?(t.passed?'<span class="pill ok">通过</span>':'<span class="pill block">失败</span>'):'<span class="pill">未运行</span>';
+    const canRun=(id==='T2'||id==='T3');
+    const actual=t?(typeof t.actual==='string'?t.actual:JSON.stringify(t.actual)):'—';
+    const meta=t?.created_at?`<div class="mut">${esc(t.created_at)} · v${esc(t.version)} · ${esc(t.mode)}</div>`:'';
+    return `<tr><td><span class="t-id">${id}</span><div style="margin-top:6px">${pill}</div></td>
+      <td class="mut">${esc(expect)}</td>
+      <td class="mut">${esc(actual).slice(0,500)}${meta}${t?.saveError?`<div class="msg err">保存失败：${esc(t.saveError)}</div>`:''}</td>
+      <td>${canRun?`<button class="ghost tiny" ${pendingTests.has(id)?'disabled':''} onclick="recordTest('${id}')">${pendingTests.has(id)?'保存中…':'运行'}</button>`:'<span class="mut">需真实链路</span>'}</td></tr>`;
+  }).join('');
+}
+async function recordTest(id){
+  if(pendingTests.has(id))return;
+  if(!runId||!run){show('testMsg','请先选择一个任务，测试记录才能关联任务版本。','err');return;}
+  const selectedRunId=runId, version=run.version, mode=run.mode;
+  show('testMsg',`${id} 正在运行并等待服务器保存…`,'warn');
+  let input,expected,actual,passed;
+  if(id==='T3'){
+    events=[];actionEvents=[];candidates=new Set([0]);start(0);choose(1);
+    await new Promise(resolve=>setTimeout(resolve,150));
+    const sequence=actionEvents.map(item=>`${item.event}(${item.exhibit_id})`);
+    const selectedIndex=sequence.indexOf('selected(B)');
+    const stoppedIndex=sequence.indexOf('stopped(A)',selectedIndex+1);
+    const startedIndex=sequence.indexOf('started(B)',stoppedIndex+1);
+    passed=selectedIndex>=0&&stoppedIndex>selectedIndex&&startedIndex>stoppedIndex&&playing===1;
+    input={initial_exhibit:'A',selected_exhibit:'B'};
+    expected={order:['selected(B)','stopped(A)','started(B)'],no_overlap:true};
+    actual={events:actionEvents.map(item=>({...item})),no_overlap:passed};
+  }else{
+    reset();const idleOK=playState==='idle'&&playing===null;
+    toggle(0);toggle(1);
+    const multiDetected=candidates.size===2;
+    const noAutoPlay=playState==='idle'&&playing===null&&!actionEvents.some(item=>item.event==='started');
+    passed=idleOK&&multiDetected&&noAutoPlay;
+    input={candidates:['A','B']};
+    expected={multi_target_detected:true,no_auto_play:true,play_state:'idle'};
+    actual={idle_before_detection:idleOK,candidate_count:candidates.size,multi_target_detected:multiDetected,play_state:playState,playing_exhibit:playing===null?null:CODES[playing],no_auto_play:noAutoPlay,events:actionEvents.map(item=>({...item}))};
+  }
+  tests[id]={passed,actual,mode};
+  pendingTests.add(id);renderTests();
+  try{
+    const saved=await api('/api/runs/'+selectedRunId+'/tests',{number:id,input,expected,actual,status:passed?'passed':'failed',version});
+    tests[id]={...saved,passed:saved.status==='passed'};
+    show('testMsg',`${id} ${passed?'判定通过':'判定失败'}；已保存至任务 #${selectedRunId}，版本 v${saved.version}，mode=${saved.mode}。`,'ok');
+  }catch(error){
+    tests[id]={number:id,input,expected,actual,status:passed?'passed':'failed',passed,version,mode,saveError:error.message};
+    show('testMsg',`${id} 结果未能保存到服务器：${error.message}。页面保留本次结果，请重试。`,'err');
+  }finally{pendingTests.delete(id);renderTests();}
+}
+
+async function saveBusiness(){
+  const payload={quote:+$('bQuote').value||null,hours:+$('bHours').value||null,hourly_rate:+$('bRate').value||null,
+    model_cost:+$('bModel').value||0,voice_cost:+$('bVoice').value||0,other_cost:+$('bOther').value||0,
+    baseline_minutes:+$('bBase').value||null,employee_minutes:+$('bEmp').value||null};
+  try{
+    const d=await api('/api/business',payload);
+    renderBiz(d.computed);
+    show('bizMsg',d.computed.complete?'已保存并计算。':'已保存，仍有缺项：'+d.computed.missing_inputs.join('、'),d.computed.complete?'ok':'warn');
+  }catch(e){show('bizMsg','保存失败：'+e.message,'err');}
+}
+function renderBiz(c){
+  const m=v=>v===null||v===undefined?'—':v;
+  let html=`<div class="biz">
+    <div class="m"><div class="v">${m(c.direct_cost)}</div><div class="k">直接成本 CNY</div></div>
+    <div class="m"><div class="v" style="color:${c.contribution>0?'var(--live)':'var(--block)'}">${m(c.contribution)}</div><div class="k">项目贡献 CNY</div></div>
+    <div class="m"><div class="v">${m(c.margin_percent)}${c.margin_percent!=null?'%':''}</div><div class="k">贡献率</div></div>
+    <div class="m"><div class="v">${m(c.breakeven_quote)}</div><div class="k">保本报价 CNY</div></div></div>`;
+  if(c.missing_inputs?.length)html+=`<div class="msg warn" style="margin-top:12px">缺项：${c.missing_inputs.map(esc).join('、')}。缺项不参与计算，不预填。</div>`;
+  html+=c.efficiency
+    ?`<div class="msg ok" style="margin-top:12px">效率对照：人工 ${c.efficiency.baseline_minutes} 分钟 → 岗位流程 ${c.efficiency.employee_minutes} 分钟，节省 ${c.efficiency.saved_minutes} 分钟。<br><span style="opacity:.8">${esc(c.efficiency.note)}</span></div>`
+    :`<div class="msg" style="margin-top:12px">未填人工基线与岗位流程耗时，因此不报告效率提升。我们没有测过传统流程基线，不编造百分比。</div>`;
+  html+=`<div class="mut" style="margin-top:12px">${esc(c.caveat)}</div>`;
+  $('bizResult').innerHTML=html;
+}
+
+async function addFeedback(){
+  try{
+    const d=await api('/api/feedback',{run_id:runId,category:$('fbCat').value,note:$('fbNote').value});
+    show('fbMsg',`候选 v${d.version}：${d.candidate}（需人工批准，尚未生效）`,'warn');
+    $('fbNote').value='';loadFeedback();
+  }catch(e){show('fbMsg','记录失败：'+e.message,'err');}
+}
+async function loadFeedback(){
+  try{
+    const d=await api('/api/feedback');
+    $('fbList').innerHTML=d.items?.length?d.items.slice(0,8).map(x=>`v${x.version} · ${esc(x.category)} · ${esc(x.note).slice(0,60)}`).join('<br>'):'尚无改进候选记录。';
+  }catch(e){$('fbList').textContent='读取失败';}
+}
+
+async function init(){
+  renderExInputs();fillSample();renderSim();renderTests();
+  try{
+    const h=await api('/api/health');
+    $('modeLine').innerHTML=`服务模式 <b style="color:${h.mode==='live'?'var(--live)':'var(--demo)'}">${h.mode.toUpperCase()}</b>`
+      +` · ${h.model_configured?'模型已配置':'模型未配置'}`
+      +` · SOUL ${h.soul_configured?'已加载':'缺失'}`
+      +` · ${h.mode==='demo'?'DEMO 模板不是 AI 交付证据，也不能被批准':'live 产物需过质量门与人工审核'}`;
+  }catch(e){$('modeLine').textContent='服务不可达：'+e.message;}
+  await loadRuns();
+  try{const b=await api('/api/business');if(b.computed)renderBiz(b.computed);}catch(e){}
+  loadFeedback();
+}
+init();
+</script></body></html>

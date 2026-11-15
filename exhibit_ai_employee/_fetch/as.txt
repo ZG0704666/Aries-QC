@@ -1,0 +1,40 @@
+﻿refraction cjk=2073 len=2411 | 【科学放大镜】带孩子去科技馆，如何不被问懵？（光影之绚篇）
+    URL-> https://www.cdstm.cn/gallery/kxfdj/art/2020/art_1e1409c7767b4a62bef207828bdfb93b.html
+     带宝宝来科技馆被娃问懵很尴尬？ / 数科君教你怎么应对萌娃的小脑袋瓜 / 最近，宝宝一家又来到科技馆游玩，这次，他们前往了位于二楼的【光影之绚展区】，那么在这个展区，宝宝的奇思妙想会不会把爸爸妈妈问懵呢？ / 自然界中的太阳光并不是没有颜色，而是白色的
+
+refraction FAIL art/2020/art_f24c9cd4c00f470290f5b8a78c4d2fd2.html HTTPError HTTP Error 404: Not Found
+
+refraction FAIL cts/yxkx/ydkxk/video/202106/t20210611_1049554.html HTTPError HTTP Error 302: The HTTP server returned a redirect error th
+
+sound cjk=1003 len=1286 | 声音是什么？
+    URL-> https://www.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_48b013bcec814995bd1dc75a3387bdfb.html
+     “叮铃铃——” / 从早晨第一声清脆的闹铃声开始，脚步声、哗哗流水声、说话声——各种声音就接连涌进我们的耳朵里，除了睡觉的时候，我们几乎时时刻刻都能听到它们，可声音到底是什么呢？又是怎么来的呢？ / 虽然声音摸不着、看不见，但有一种方法可以让你间接
+
+sound cjk=1078 len=1236 | 声音跑多快？
+    URL-> https://www.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2384d3f53dfc455d8fb6b36cb9a97923.html
+     图片来源：pixabay / 在课本里，我们会学到声音每秒能跑340米远，相当于在1秒的时间里能绕操场跑近一圈（400米）！实际上，这个速度还有个前提，那就是在15℃，1个标准大气压的空气中。声音的速度并不是一成不变的，它和我们一样，在有些地方
+
+sound cjk=1125 len=1314 | 火星上的声音传播，与地球上有什么不同？
+    URL-> https://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_ac89fb7a365746f3a7410f6e7ac246e6.html
+     近日，一个国际研究小组分析了毅力号火星车捕获的声音，证实了火星上声音的传播速度与地球上的声速大有不同。研究结果表明，在火星大气中说话，高音比低音传播得更快。 / 洛斯阿拉莫斯（美国新墨西哥州中部城镇）国家实验室的行星科学家巴蒂斯特·奇德在第53
+
+sound cjk=394 len=492 | 毅力号证实火星声音速度更慢：先听高音后听低音 4米就失真
+    URL-> https://www.cdstm.cn/theme/khsj/khzx/khqw/art/2022/art_d6e564b9cf914b70866eede85f58c228.html
+     自从美国宇航局毅力号火星车从火星传来第一个声音以来，科学家就一直分析研究，希望能够得到任何有用的信息。 / 在周五发表于《Nature》杂志上的一项研究中，科学家表示，他们确定火星稀薄的二氧化碳大气会导致声音在火星上的传播速度变慢，而声音的音高
+
+color cjk=2255 len=2609 | 眼见为“虚”——光与色的奥秘
+    URL-> https://www.cdstm.cn/zt/xjll/pyj/art/2017/art_c0d56a506e1e4bfeb94f2c6853e1479a.html
+     颜色是如何形成的？ / 现代汉语常用词词典中是这样定义“颜色”的：由物体发射、反射或透过的光波通过视觉所产生的印象。从定义中我们不难看出，颜色的产生离不开光，没有了光也就不存在颜色了。想象一下在没有任何光源的黑屋子里，你能看到黄色的沙发、粉色的
+
+color cjk=1478 len=1720 | 人们看一样东西的时候，看到的颜色是一样的吗？
+    URL-> https://www.cdstm.cn/gallery/hycx/hqkxltqyzxgt/art/2018/art_1aec662fcdf64bfa848f224586f059d0.html
+     我们怎么确定人们看同一样东西的时候，看到的是相同的颜色？ / ——Henrietta，12岁，英国 / 感谢Henrietta，你提了一个很好的问题，事实上我们不能确定我们都看到了相同的颜色。我们看到的颜色不仅取决于我们周围世界的事物是什么样子的，
+
+color cjk=1180 len=1326 | 站在巨人肩膀上的巨人：牛顿
+    URL-> https://www.cdstm.cn/xqq/kkxw/dyd/kxgs/art/2020/art_2c2f0c25f6384676ae1a3f558f9cc112.html
+     (图片来源：bing) / “如果我比别人看得更远，那是因为我站在巨人的肩上。”这句家喻户晓的名言来自一位叫艾萨克·牛顿的科学家。你一定听过这个名字，而当你深入了解了这位科学家的生平，或许会打心底感叹一句，他不仅站在巨人的肩上，他自己就是巨人。
+
+color cjk=1201 len=1595 | 现代科学之父”牛顿出生，那颗砸中他的苹果其实不存在？
+    URL-> https://www.cdstm.cn/theme/khsj/khzx/khqx/art/2020/art_b591bf98101547228fa052e47c8e5919.html
+     1643年1月4日，被誉为“现代科学之父”的牛顿出生。 / 艾萨克·牛顿(Isaac Newton)出生于英国林肯郡，是一位英国物理学家和数学家，是17世纪科学革命的顶峰人物。 / 在光学方面，他发现了白光的色散现象，为现代物理光学奠定了基础。 / 在
+

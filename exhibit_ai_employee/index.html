@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>讲解稿 · 展陈内容交付</title>
+<style>
+:root{
+  --indigo:#111a4a; --midnight:#011821; --slate:#3b3e47; --steel:#7c7f88; --fog:#a9acb6;
+  --mist:#cbcccf; --silver:#e3e4e8; --canvas:#f6f6f8; --white:#ffffff; --charcoal:#232730;
+  --orange:#ec652b; --peach:#f2936b; --sea6:#44b48b; --sea7:#167e6c; --sea4:#94efb7;
+  --deepsea:#023247; --cyan:#88deeb;
+  --sans:'SuisseIntl',Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  --mono:'SuisseIntlMono','SFMono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --shadow-card:rgba(18,22,30,.024) 0 1px 4px 0,rgba(18,22,30,.05) 0 1px 0 0,rgba(18,22,30,.024) 0 0 0 1px;
+  --shadow-btn:rgba(17,26,74,.1) 0 1px 3px 0,rgba(17,26,74,.05) 0 1px 0 0,rgba(255,255,255,.5) 0 1px 0 0 inset;
+  --shadow-lift:rgba(18,22,30,.05) 0 1px 4px 0,rgba(17,26,74,.12) 0 0 0 1px;
+  --r:8px; --pill:9999px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--canvas);color:var(--slate);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,textarea{font:inherit;color:inherit}
+
+.app{display:flex;flex-direction:column;height:100dvh;max-width:1200px;margin:0 auto}
+
+/* 顶栏 */
+.top{flex:none;height:62px;display:flex;align-items:center;gap:10px;padding:0 24px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;color:var(--indigo);letter-spacing:-.01em}
+.logo .mark{width:24px;height:24px;border-radius:6px;background:var(--indigo);color:#fff;display:grid;place-items:center;font:600 11px/1 var(--mono)}
+.badge{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:var(--pill);
+  font:500 11px/1 var(--mono);background:var(--white);box-shadow:var(--shadow-card);color:var(--steel)}
+.badge .d{width:5px;height:5px;border-radius:99px;background:var(--fog)}
+.badge.live{color:var(--sea7)}.badge.live .d{background:var(--sea6)}
+.badge.off{color:var(--orange)}.badge.off .d{background:var(--orange)}
+.spacer{flex:1}
+.tbtn{height:32px;padding:0 12px;border-radius:var(--r);font-size:14px;color:var(--steel);transition:.12s}
+.tbtn:hover{background:var(--white);color:var(--indigo);box-shadow:var(--shadow-card)}
+.tbtn.on{color:var(--indigo);background:var(--white);box-shadow:var(--shadow-card);font-weight:500}
+
+.body{flex:1;display:flex;min-height:0;padding:0 24px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.feed{flex:1;overflow-y:auto;padding:32px 8px 16px;scroll-behavior:smooth}
+.inner{max-width:720px;margin:0 auto}
+
+/* 消息 */
+.msg{margin-bottom:40px;animation:in .2s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.msg{animation:none}}
+.msg.user{display:flex;justify-content:flex-end}
+.msg.user .bubble{max-width:78%;background:var(--white);border-radius:var(--r);padding:12px 16px;
+  box-shadow:var(--shadow-card);color:var(--indigo);font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin-left:auto}
+.msg.user .bubble.long{font-size:13.5px;max-height:200px;overflow-y:auto;font-family:var(--mono)}
+.who{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.who .av{width:22px;height:22px;border-radius:6px;background:var(--indigo);color:#fff;display:grid;place-items:center;font:600 10px/1 var(--mono)}
+.who .nm{font:500 12px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--steel)}
+.md{font-size:16px;line-height:1.6;color:var(--slate)}
+.md p{margin:0 0 12px}.md p:last-child{margin-bottom:0}
+.md b,.md strong{font-weight:600;color:var(--indigo)}
+.md ul{margin:8px 0 12px;padding-left:20px}.md li{margin:4px 0}
+.md code{font:12px/1.5 var(--mono);background:var(--canvas);border-radius:2px;padding:2px 5px;color:var(--sea7)}
+.muted{color:var(--steel);font-size:14px;line-height:1.55}
+.hintline{margin-top:14px;color:var(--steel);font-size:13px;line-height:1.55}
+
+/* 快捷 */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{height:32px;padding:0 14px;border-radius:var(--r);background:rgba(255,255,255,.5);border:1px solid var(--silver);
+  font-size:13px;color:var(--charcoal);transition:.12s}
+.chip:hover{border-color:var(--indigo);color:var(--indigo);background:var(--white)}
+.chip.primary{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500;box-shadow:var(--shadow-btn)}
+.chip.primary:hover{opacity:.9;background:var(--orange);color:#fff}
+
+/* 卡片 */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);overflow:hidden;transition:box-shadow .3s}
+.card + .card{margin-top:12px}
+.card-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--canvas)}
+.tag{font:500 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--sea7);
+  background:rgba(68,180,139,.12);padding:5px 7px;border-radius:2px}
+.card-h h4{margin:0;font-size:15px;font-weight:500;color:var(--indigo);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-h .meta{font:400 11px/1 var(--mono);color:var(--fog);white-space:nowrap}
+.card-b{padding:16px}
+.lbl{font:500 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fog);margin:0 0 10px}
+
+/* 过程流 */
+.proc{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:4px 0}
+.prow{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;font-size:14px;line-height:1.5;animation:in .18s ease}
+.prow + .prow{border-top:1px solid var(--canvas)}
+.prow .ic{flex:none;width:16px;height:16px;margin-top:1px;border-radius:99px;display:grid;place-items:center;font:600 9px/1 var(--mono)}
+.prow.run .ic{border:1.5px solid var(--orange);border-top-color:transparent;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.prow.run .ic{animation:none;border-color:var(--orange)}}
+.prow.done .ic{background:var(--sea6);color:#fff}
+.prow.failed .ic{background:var(--orange);color:#fff}
+.prow .tx{flex:1;color:var(--slate)}
+.prow.run .tx{color:var(--indigo);font-weight:500}
+.prow .t{font:400 11px/1.5 var(--mono);color:var(--fog);white-space:nowrap;padding-top:1px}
+.prow .sub{display:block;color:var(--steel);font-size:12.5px;margin-top:2px;font-weight:400}
+
+/* 讲解 */
+.speech{background:var(--canvas);border-radius:var(--r);padding:16px;font-size:16px;line-height:1.75;color:var(--indigo);margin-bottom:16px}
+.speech .sent.nosrc{background:rgba(236,101,43,.09);border-radius:2px;box-shadow:0 0 0 1px rgba(236,101,43,.16)}
+.cites{margin-top:4px}
+.cite{display:flex;gap:10px;padding:10px 0;font-size:13px;line-height:1.55}
+.cite + .cite{border-top:1px solid var(--canvas)}
+.cite .n{font:400 10px/1.7 var(--mono);color:var(--fog);min-width:12px}
+.cite .q{flex:1;color:var(--steel)}
+.cite .from{font:400 10px/1.7 var(--mono);color:var(--fog);flex:none;max-width:116px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.facts{margin-top:14px;padding-top:12px;border-top:1px solid var(--canvas)}
+.fact{display:flex;gap:8px;font-size:13px;line-height:1.55;color:var(--steel);padding:3px 0}
+.fact .b{color:var(--sea7);font:500 11px/1.6 var(--mono)}
+.extras{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:14px;padding-top:12px;border-top:1px solid var(--canvas)}
+@media (max-width:600px){.extras{grid-template-columns:1fr}}
+.extras .k{font:500 9.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:5px}
+.extras .v{font-size:13px;line-height:1.55;color:var(--charcoal)}
+
+/* 判定 */
+.verdict{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r);margin-bottom:16px}
+.verdict.pass{background:rgba(68,180,139,.1)}
+.verdict.fail{background:rgba(236,101,43,.08)}
+.verdict .i{font:600 13px/1 var(--mono);width:24px;height:24px;border-radius:99px;display:grid;place-items:center;flex:none}
+.verdict.pass .i{background:var(--sea6);color:#fff}
+.verdict.fail .i{background:var(--orange);color:#fff}
+.verdict .t{flex:1;font-size:14px;line-height:1.5;color:var(--charcoal)}
+.verdict .t b{display:block;color:var(--indigo);font-weight:600;margin-bottom:2px;font-size:15px}
+.verdict .s{font:500 20px/1 var(--mono);color:var(--indigo)}
+.issues{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:8px}
+.issues li{font-size:13px;line-height:1.55;color:var(--orange);background:var(--white);border-radius:var(--r);padding:10px 14px;
+  box-shadow:inset 3px 0 0 var(--orange),var(--shadow-card)}
+
+/* 表格 */
+.tw{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--canvas);vertical-align:top;line-height:1.5}
+th{font:500 9.5px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--fog);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td{color:var(--steel)}
+
+/* 音频 */
+.audio{display:flex;align-items:center;gap:12px;margin-top:12px;background:var(--canvas);border-radius:var(--r);padding:10px 12px}
+.audio audio{flex:1;height:32px;min-width:0}
+.audio .m{font:400 10.5px/1.4 var(--mono);color:var(--fog);white-space:nowrap}
+
+/* 输入 */
+.composer-wrap{flex:none;padding:8px 8px 24px;background:linear-gradient(to top,var(--canvas) 70%,transparent)}
+.composer{max-width:720px;margin:0 auto;background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);
+  padding:12px 14px 10px;transition:box-shadow .12s}
+.composer:focus-within{box-shadow:rgba(17,26,74,.08) 0 0 0 1px,rgba(17,26,74,.1) 0 2px 8px 0}
+.composer textarea{width:100%;border:0;outline:0;resize:none;background:transparent;font-size:15px;line-height:1.55;
+  min-height:24px;max-height:200px;padding:2px 0;color:var(--indigo)}
+.composer textarea::placeholder{color:var(--fog)}
+.cbar{display:flex;align-items:center;gap:8px;margin-top:8px}
+.cbar .hint{font:400 11px/1 var(--mono);color:var(--fog)}
+.plus{width:28px;height:28px;border-radius:6px;border:1px solid var(--silver);color:var(--steel);display:grid;place-items:center;font-size:14px;transition:.12s}
+.plus:hover{border-color:var(--indigo);color:var(--indigo)}
+.send{width:30px;height:30px;border-radius:6px;background:var(--indigo);color:#fff;display:grid;place-items:center;
+  font-size:14px;box-shadow:var(--shadow-btn);transition:.12s}
+.send:disabled{background:var(--mist);color:#fff;box-shadow:none;cursor:not-allowed}
+.send:not(:disabled):hover{background:#1a2660}
+
+/* 右栏 */
+.rail{width:340px;flex:none;overflow-y:auto;padding:32px 0 24px;display:none}
+.rail.open{display:block}
+@media (max-width:1024px){.rail.open{display:none}}
+.rblock{margin-bottom:28px}
+.rt{display:flex;align-items:baseline;gap:8px;font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fog);margin:0 0 12px}
+.rt .n{margin-left:auto;letter-spacing:0;font-weight:400;color:var(--mist)}
+.agent{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:14px}
+.agent-top{display:flex;align-items:center;gap:10px}
+.ava{width:32px;height:32px;border-radius:8px;background:var(--indigo);color:#fff;display:grid;place-items:center;
+  font:600 11px/1 var(--mono);flex:none;position:relative}
+.ava.on::after{content:'';position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:99px;
+  background:var(--orange);box-shadow:0 0 0 2px var(--white)}
+.agent-top .nm{font-size:13px;font-weight:500;color:var(--indigo)}
+.agent-top .st{font:400 10px/1.4 var(--mono);color:var(--fog)}
+.track{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:6px 0}
+.tr{display:flex;align-items:center;gap:9px;padding:8px 14px;font-size:12.5px;color:var(--fog)}
+.tr .n{width:16px;height:16px;border-radius:99px;display:grid;place-items:center;font:500 9px/1 var(--mono);flex:none;
+  box-shadow:inset 0 0 0 1px var(--silver);color:var(--mist)}
+.tr.done{color:var(--sea7)}.tr.done .n{background:var(--sea6);color:#fff;box-shadow:none}
+.tr.now{color:var(--indigo);font-weight:500}.tr.now .n{box-shadow:inset 0 0 0 1.5px var(--indigo);color:var(--indigo);font-weight:600}
+.tr .x{margin-left:auto;font:400 10px/1 var(--mono);color:var(--fog);font-weight:400}
+.gate-v{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.gate-v .b{font:500 24px/1 var(--mono);color:var(--indigo)}
+.gate-v .l{font-size:11.5px;color:var(--fog);line-height:1.4}
+.gate-v .b.ok{color:var(--sea7)}.gate-v .b.bad{color:var(--orange)}
+.gbar{display:flex;gap:2px;margin-bottom:10px}
+.gbar i{flex:1;height:3px;border-radius:99px;background:var(--sea6)}
+.gbar i.bad{background:var(--orange)}
+.gnote{font-size:11.5px;line-height:1.55;color:var(--steel)}
+.glist{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:6px}
+.glist li{font-size:11px;line-height:1.5;color:var(--orange);background:rgba(236,101,43,.07);border-radius:6px;padding:6px 8px}
+.evi{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);overflow:hidden}
+.er{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;font-size:12.5px;color:var(--charcoal);transition:.12s}
+.er + .er{border-top:1px solid var(--canvas)}
+.er:hover{background:var(--canvas)}
+.er .id{font:500 10px/1 var(--mono);color:var(--indigo);background:var(--canvas);border-radius:2px;padding:4px 6px}
+.er .nums{margin-left:auto;display:flex;gap:8px;font:400 10px/1.4 var(--mono);color:var(--fog);white-space:nowrap}
+.er .nums .g{color:var(--sea7)}.er .nums .o{color:var(--orange)}
+.art{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:4px 14px}
+.ar{display:flex;align-items:center;gap:8px;padding:9px 0;font-size:12.5px;color:var(--steel)}
+.ar + .ar{border-top:1px solid var(--canvas)}
+.ar .k{flex:1}
+.ar .v{font:400 10.5px/1.4 var(--mono);color:var(--mist)}
+.ar .v.g{color:var(--sea7)}.ar .v.o{color:var(--orange)}
+
+/* 欢迎 */
+.welcome{max-width:720px;margin:0 auto;padding-top:5vh}
+.welcome .kick{display:inline-flex;align-items:center;gap:7px;font:500 11px/1 var(--mono);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--steel);margin-bottom:20px}
+.welcome .kick .d{width:5px;height:5px;border-radius:99px;background:var(--sea6)}
+.welcome h1{font-size:40px;line-height:1.1;letter-spacing:-.8px;font-weight:600;color:var(--indigo);margin:0 0 16px}
+.welcome p.lede{font-size:18px;line-height:1.45;color:var(--steel);margin:0 0 32px;max-width:560px}
+.starters{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.starter{text-align:left;background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:16px;transition:.14s}
+.starter:hover{box-shadow:var(--shadow-lift)}
+.starter b{display:block;font-size:14px;font-weight:500;color:var(--indigo);margin-bottom:5px}
+.starter span{font-size:12.5px;line-height:1.5;color:var(--steel)}
+.boundary{margin-top:32px;padding-top:20px;border-top:1px solid var(--silver);font-size:12.5px;line-height:1.6;color:var(--fog)}
+@media (max-width:600px){
+  .top{padding:0 16px}.body{padding:0 16px}.welcome h1{font-size:30px;letter-spacing:-.5px}
+  .composer-wrap{padding:8px 0 20px}.feed{padding:20px 0 16px}
+}
+</style></head><body>
+
+<div class="app">
+  <div class="top">
+    <div class="logo"><span class="mark">讲</span>讲解稿</div>
+    <span class="badge" id="modeBadge"><span class="d"></span>读取中</span>
+    <span class="badge" id="ttsBadge"><span class="d"></span>语音</span>
+    <span class="spacer"></span>
+    <button class="tbtn" id="railBtn" onclick="toggleRail()">处理路径</button>
+    <button class="tbtn" onclick="location.href='/console'">台账</button>
+    <button class="tbtn" onclick="resetChat()">新对话</button>
+  </div>
+
+  <div class="body">
+    <div class="main">
+      <main class="feed" id="feed">
+        <div class="welcome" id="welcome">
+          <div class="kick"><span class="d"></span>展陈内容交付</div>
+          <h1>把客户的一段介绍，<br>变成能上眼镜的讲解。</h1>
+          <p class="lede">贴资料，用一句话推进：切分展项、生成知识卡与出处、出四类测试用例、合成语音、审核、导出交付包。</p>
+          <div class="starters">
+            <button class="starter" onclick="focusComposer()"><b>粘贴客户资料</b><span>每段前写“展项A：”，或用空行分成三段</span></button>
+            <button class="starter" onclick="showHelp()"><b>它能做什么</b><span>五步流程与能力边界</span></button>
+          </div>
+          <div class="boundary">演示模式生成的是摘句模板，不是模型产出。质量门通过只代表程序校验，不代表客户审定事实。</div>
+        </div>
+      </main>
+
+      <div class="composer-wrap">
+        <div class="composer">
+          <textarea id="input" rows="1" placeholder="贴资料，或说“开始整理”“展项A讲了什么”“生成测试用例”“给展项A配音”“通过”“导出”"></textarea>
+          <div class="cbar">
+            <button class="plus" onclick="pickFile()" title="导入 txt / md">＋</button>
+            <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden onchange="readFile(this)">
+            <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+            <span class="spacer"></span>
+            <button class="send" id="send" onclick="submit()" title="发送">↑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="rail" id="rail">
+      <div class="rblock">
+        <div class="agent">
+          <div class="agent-top">
+            <span class="ava" id="ava">AI</span>
+            <div style="flex:1;min-width:0">
+              <div class="nm">讲解稿 · 数字员工</div>
+              <div class="st" id="agentState">待命</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rblock">
+        <h3 class="rt">处理路径<span class="n" id="pathCount"></span></h3>
+        <div class="track" id="rtrack"></div>
+      </div>
+      <div class="rblock">
+        <h3 class="rt">质量门<span class="n" id="gateCount"></span></h3>
+        <div class="agent" id="gateBox"><div class="gnote">生成草稿后，这里逐条显示 9 道门的核对结果。</div></div>
+      </div>
+      <div class="rblock">
+        <h3 class="rt">证据链<span class="n" id="eviCount"></span></h3>
+        <div id="evi"><div class="gnote">每个展项列出出处与事实条数，点一下跳到左边对应卡片。</div></div>
+      </div>
+      <div class="rblock">
+        <h3 class="rt">产物</h3>
+        <div class="art" id="art"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const feed=$('#feed'), input=$('#input'), sendBtn=$('#send');
+const TOKEN_KEY='exhibit-access-token';
+const S={runId:null,draft:null,exhibits:null,cases:null,tests:false,busy:false,title:'展览项目',
+  version:1,lastGate:null,reviewed:false,reviewState:'',exported:'',audio:0,rail:false};
+
+function accessToken(){
+  const q=new URLSearchParams(location.search).get('token');
+  if(q){try{localStorage.setItem(TOKEN_KEY,q)}catch(e){} return q}
+  try{return localStorage.getItem(TOKEN_KEY)||''}catch(e){return ''}
+}
+async function api(path,body){
+  const t=accessToken();
+  let r,d;
+  try{
+    r=await fetch(path,{method:body?'POST':'GET',
+      headers:{'Content-Type':'application/json',...(t?{'X-Access-Token':t}:{})},
+      body:body?JSON.stringify(body):undefined});
+    d=await r.json();
+  }catch(e){throw Object.assign(Error('服务连不上：'+e.message),{offline:true})}
+  if(r.status===401)throw Object.assign(Error('需要访问口令'),{needsToken:true});
+  if(!r.ok)throw Object.assign(Error(d.error||('HTTP '+r.status)),{data:d,status:r.status});
+  return d;
+}
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function down(){requestAnimationFrame(()=>feed.scrollTo({top:feed.scrollHeight,behavior:'smooth'}))}
+function userMsg(text){
+  const el=document.createElement('div');el.className='msg user';
+  el.innerHTML=`<div class="bubble ${text.length>140?'long':''}">${esc(text)}</div>`;
+  feed.appendChild(el);down();
+}
+function agentMsg(html,chips){
+  const el=document.createElement('div');el.className='msg';
+  el.innerHTML=`<div class="inner">
+    <div class="who"><span class="av">AI</span><span class="nm">讲解稿</span></div>
+    <div class="md">${html}</div>
+    ${chips&&chips.length?`<div class="chips">${chips.map(c=>`<button class="chip ${c.primary?'primary':''}" data-send="${esc(c.send??c.label)}" onclick="chipSend(this.dataset.send)">${esc(c.label)}</button>`).join('')}</div>`:''}
+  </div>`;
+  feed.appendChild(el);down();
+  return el;
+}
+function chipSend(t){if(!t)return;input.value=t;submit()}
+
+/* 右栏 */
+const RSTEPS=[['资料','intake'],['知识卡','cards'],['质量门','gate'],['测试用例','tests'],['审核','review'],['交付包','export']];
+function toggleRail(force){
+  S.rail=typeof force==='boolean'?force:!S.rail;
+  $('#rail').classList.toggle('open',S.rail);
+  $('#railBtn').classList.toggle('on',S.rail);
+  renderRail();
+}
+function setAgent(state,working){
+  $('#agentState').textContent=state;
+  $('#ava').classList.toggle('on',!!working);
+}
+function lcs(a,b){let best=0;const dp=new Array(b.length+1).fill(0);
+  for(let i=1;i<=a.length;i++){let prev=0;for(let j=1;j<=b.length;j++){const t=dp[j];dp[j]=a[i-1]===b[j-1]?prev+1:0;if(dp[j]>best)best=dp[j];prev=t}}
+  return best}
+
+function renderRail(){
+  if(!S.rail)return;
+  const done={intake:!!S.exhibits,cards:!!S.draft,gate:!!S.lastGate,tests:!!S.tests,review:!!S.reviewed,export:!!S.exported};
+  const labels={intake:S.exhibits?'3 段':'—',cards:S.draft?((S.draft.cards||[]).length+' 张'):'—',
+    gate:S.lastGate?`${S.lastGate.checks??0}/${S.lastGate.total_checks??0}`:'—',
+    tests:S.tests?((S.cases||[]).length+' 条'):'—',
+    review:S.reviewState||'—',export:S.exported||'—'};
+  let cur=RSTEPS.findIndex(([l,k])=>!done[k]);if(cur<0)cur=RSTEPS.length;
+  $('#rtrack').innerHTML=RSTEPS.map(([label,key],i)=>{
+    const cls=done[key]?'done':(i===cur?'now':'');
+    return `<div class="tr ${cls}"><span class="n">${done[key]?'✓':i+1}</span>${label}<span class="x">${esc(labels[key])}</span></div>`;
+  }).join('');
+  $('#pathCount').textContent=Object.values(done).filter(Boolean).length+' / 6';
+
+  const v=S.lastGate;
+  if(v){
+    const total=v.total_checks||0,ok=v.checks||0,bad=Math.max(0,total-ok);
+    let bars='';for(let i=0;i<Math.max(total,1);i++)bars+=`<i class="${i<bad?'bad':''}"></i>`;
+    $('#gateCount').textContent=`${ok} / ${total}`;
+    $('#gateBox').innerHTML=`
+      <div class="gate-v"><span class="b ${v.passed?'ok':'bad'}">${v.passed?'通过':'有阻断'}</span>
+        <span class="l">${v.passed?'9 类规则全部通过':'未解决前不可批准'}<br>程序逐条核对，非模型自评</span></div>
+      <div class="gbar">${bars}</div>
+      ${(v.issues||[]).length?`<ul class="glist">${v.issues.slice(0,5).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+        ${v.issues.length>5?`<div class="gnote" style="margin-top:8px">还有 ${v.issues.length-5} 条，见左侧</div>`:''}`
+        :'<div class="gnote">没有阻断项。这只代表程序没发现问题，不代表客户已审定事实。</div>'}`;
+  }
+  const cards=(S.draft&&S.draft.cards)||[];
+  if(cards.length){
+    $('#eviCount').textContent=cards.reduce((a,c)=>a+(c.citations||[]).length,0)+' 条出处';
+    $('#evi').innerHTML='<div class="evi">'+cards.map(c=>{
+      const cites=c.citations||[],facts=c.facts||[];
+      const blob=cites.map(x=>x.source_quote).join(' ');
+      const sents=(c.narration||'').match(/[^。！？!?；;]+[。！？!?；;]?/g)||[];
+      const weak=sents.filter(s=>!(lcs(s.trim(),blob)>=6||s.trim().length<8)).length;
+      return `<button class="er" onclick="jumpTo('${esc(c.exhibit_id)}')">
+        <span class="id">${esc(c.exhibit_id)}</span>
+        <span class="nums"><span class="g">${cites.length} 出处</span><span>${facts.length} 事实</span>${weak?`<span class="o">${weak} 待核</span>`:''}</span></button>`;
+    }).join('')+'</div>';
+  }
+  $('#art').innerHTML=`
+    <div class="ar"><span class="k">草稿版本</span><span class="v ${S.draft?'g':''}">${S.draft?'v'+(S.version||1):'—'}</span></div>
+    <div class="ar"><span class="k">测试用例</span><span class="v ${S.tests?'g':''}">${S.tests?((S.cases||[]).length+' 条'):'—'}</span></div>
+    <div class="ar"><span class="k">语音音频</span><span class="v ${S.audio?'g':''}">${S.audio?S.audio+' 条':'—'}</span></div>
+    <div class="ar"><span class="k">交付包</span><span class="v ${S.exported?'g':''}">${S.exported||'—'}</span></div>
+    <div class="ar"><span class="k">审核状态</span><span class="v ${/approved/.test(S.reviewState)?'g':(S.reviewState?'o':'')}">${esc(S.reviewState||'—')}</span></div>`;
+}
+function jumpTo(id){
+  const el=document.getElementById('card-'+id);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.boxShadow='rgba(17,26,74,.16) 0 0 0 2px';setTimeout(()=>el.style.boxShadow='',1400)}
+  if(window.innerWidth<=1024)toggleRail(false);
+}
+
+input.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit()}
+});
+input.addEventListener('input',()=>{
+  input.style.height='auto';input.style.height=Math.min(200,input.scrollHeight)+'px';
+  sendBtn.disabled=!input.value.trim();
+});
+function submit(){
+  const t=input.value.trim();
+  if(!t||S.busy)return;
+  input.value='';input.style.height='auto';sendBtn.disabled=true;
+  route(t);
+}
+async function route(text){
+  userMsg(text);
+  $('#welcome')?.remove();
+  S.busy=true;
+  try{
+    let r;
+    try{
+      r=await api('/api/route',{text,state:{
+        has_exhibits:!!S.exhibits,has_draft:!!S.draft,run_id:S.runId,
+        reviewed:!!S.reviewed,stage:S.tests?'tests':(S.draft?'cards':(S.exhibits?'intake':'new'))}});
+    }catch(e){
+      if(e.needsToken)throw e;
+      r={intent:'chat',reply:'',routed_by:'offline'};
+    }
+    await act(r,text);
+  }catch(e){fail(e)}
+  finally{S.busy=false;sendBtn.disabled=!input.value.trim()}
+}
+
+async function act(r,raw){
+  const intent=r.intent||'chat';
+  if(intent==='chat'){
+    const reply=r.reply||'我在。可以把展项资料贴进来，或者问我已经整理好的内容。';
+    agentMsg(`<p>${esc(reply)}</p><p class="muted">${
+      S.runId?'当前任务 #'+S.runId+'。可以直接问「展项A讲了什么」，或说「生成测试用例」「合成语音」「通过」「导出」。'
+      :S.exhibits?'资料已切分好，说「开始整理」生成讲解稿。'
+      :'贴一段客户介绍就能开始，每段前写「展项A：」。'}</p>`,
+      S.runId?[{label:'生成测试用例',send:'生成测试用例'},{label:'通过',send:'通过'},{label:'导出交付包',send:'导出交付包'}]
+        :S.exhibits?[{label:'开始整理',primary:true,send:'开始整理'}]:[{label:'它能做什么',send:'它能做什么'}]);
+    return;
+  }
+  if(intent==='help')return showHelp();
+  if(intent==='reset')return resetChat();
+  if(intent==='intake'){
+    const mat=(r.materials&&r.materials.length>20)?r.materials:raw;
+    setAgent('切分资料',true);
+    return await doIntake(mat);
+  }
+  if(intent==='generate'){
+    if(!S.exhibits)return agentMsg('<p>还没有资料。先把客户介绍贴进来，每段前写「展项A：」。</p>',[{label:'它能做什么',send:'它能做什么'}]);
+    setAgent('生成中',true);
+    return await doGenerate();
+  }
+  if(intent==='ask'){
+    if(!S.runId)return agentMsg('<p>还没有讲解稿，先整理资料，我才能回答关于它的问题。</p>');
+    setAgent('检索资料',true);
+    return await doAsk(r.question||raw,r.exhibit_id);
+  }
+  if(intent==='tests'){
+    if(!S.runId)return agentMsg('<p>先生成讲解稿，才有可测的内容。</p>');
+    setAgent('生成用例',true);
+    return await doTests();
+  }
+  if(intent==='tts'){
+    if(!S.runId)return agentMsg('<p>先生成讲解稿，才有可配音的文本。</p>');
+    setAgent('合成语音',true);
+    return await doTTS(raw,r.exhibit_id);
+  }
+  if(intent==='approve'){if(!S.runId)return agentMsg('<p>还没有可批准的任务。</p>');setAgent('审核',true);return await doReview('approved')}
+  if(intent==='reject'){if(!S.runId)return agentMsg('<p>还没有可退回的任务。</p>');setAgent('审核',true);return await doReview('needs_revision')}
+  if(intent==='export'){if(!S.runId)return agentMsg('<p>还没有可导出的任务。</p>');setAgent('打包',true);return await doExport()}
+  return agentMsg('<p>这句我没理解清，换个说法？</p>');
+}
+
+function fail(e){
+  setAgent('待命',false);
+  if(e.needsToken)return agentMsg('<p>需要访问口令。用 <code>/?token=口令</code> 重新打开本页。</p>');
+  const det=e.data||{};
+  let html=`<p><b>这一步没成：</b>${esc(e.message)}</p>`;
+  if(det.missing_materials&&det.missing_materials.length)
+    html+='<p>资料不够的地方：</p><ul>'+det.missing_materials.map(m=>`<li>展项 ${esc(m.exhibit_id)}：${esc(m.missing)}</li>`).join('')+'</ul>';
+  if(det.conflicts&&det.conflicts.length)
+    html+='<p>资料互相矛盾的地方：</p><ul>'+det.conflicts.map(c=>`<li>展项 ${esc(c.exhibit_id)}：${esc(c.description)}</li>`).join('')+'</ul>';
+  if(det.id){html+=`<p class="muted">已记为任务 #${det.id}，状态被拦下，不可批准。宁可不出稿，也不编一句。</p>`;S.runId=det.id}
+  agentMsg(html,[{label:'重新粘贴资料',send:'我要重新贴资料'}]);
+  renderRail();
+}
+
+/* 1 资料切分 */
+async function doIntake(text){
+  try{
+    const d=await api('/api/intake',{text});
+    S.exhibits=d.exhibits;
+    // 后端 check[].missing / conflicts 是对象数组，不能直接当字符串拼
+    const bad=(d.check||[]).filter(c=>(c.missing&&c.missing.length)||(c.conflicts&&c.conflicts.length))
+      .map(c=>({
+        id:c.exhibit_id,
+        reason:[].concat(c.missing||[]).map(m=>typeof m==='string'?m:(m&&m.missing)||'').filter(Boolean)
+          .concat([].concat(c.conflicts||[]).map(x=>typeof x==='string'?x:(x&&x.description)||'').filter(Boolean))
+          .join('；')
+      }));
+    const rows=d.exhibits.map(e=>`<div class="cite"><span class="n">${esc(e.exhibit_id)}</span>
+      <span class="q">${esc(e.source_text.slice(0,88))}${e.source_text.length>88?'…':''}</span>
+      <span class="from">${e.source_text.length} 字</span></div>`).join('');
+    let html=`<p>切成三段，可以开始整理。</p>
+      <div class="card"><div class="card-h"><span class="tag">资料</span><h4>已识别 3 个展项</h4><span class="meta">A · B · C</span></div>
+      <div class="card-b" style="padding:6px 16px 10px">${rows}</div></div>`;
+    if(bad.length){
+      html+=`<p style="margin-top:16px"><b>先提醒：</b>下面这些地方，生成时会被门拦下。</p><ul>`+
+        bad.map(c=>`<li>展项 ${esc(c.exhibit_id)}：${esc(c.missing||'')}${(c.conflicts||[]).map(x=>' '+esc(x.description||'')).join('')}</li>`).join('')+'</ul>';
+    }
+    setAgent('待命',false);
+    agentMsg(html,[{label:'开始整理',primary:true,send:'开始整理'},{label:'重新贴资料',send:'我要重新贴资料'}]);
+    renderRail();
+    if(!S.rail)setTimeout(()=>toggleRail(true),150);
+  }catch(e){throw e}
+}
+
+/* 2 生成：真实过程流 */
+async function doGenerate(){
+  setAgent('生成中',true);
+  const wrap=document.createElement('div');wrap.className='msg';
+  wrap.innerHTML='<div class="inner"><div class="who"><span class="av">AI</span><span class="nm">讲解稿</span></div><div class="proc" id="proc"></div></div>';
+  feed.appendChild(wrap);down();
+  const proc=$('#proc');
+  let steps=[];
+  function draw(){
+    proc.innerHTML=steps.map(s=>`<div class="prow ${s.state}">
+      <span class="ic">${s.state==='done'?'✓':s.state==='failed'?'✕':''}</span>
+      <span class="tx">${esc(s.label)}${s.sub?`<span class="sub">${esc(s.sub)}</span>`:''}</span>
+      <span class="t">${s.t||''}</span></div>`).join('');
+    down();
+  }
+  const started=Date.now();
+  try{
+    const d=await api('/api/generate',{title:S.title,exhibits:S.exhibits});
+    const runId=d.id;S.runId=runId;
+    steps.push({key:'created',label:'已建立任务 #'+runId,state:'done',t:'0.0s'});draw();
+    let guard=0;
+    while(guard++<900){
+      await sleep(320);
+      const j=await api('/api/jobs/'+runId);
+      const secs=((Date.now()-started)/1000).toFixed(1)+'s';
+      (j.steps||[]).forEach(st=>{
+        const key=st.step+'|'+st.label;
+        const sub=(st.detail&&st.detail.detail)?String(st.detail.detail):'';
+        const stt=st.state==='running'?'run':(st.state==='failed'?'failed':'done');
+        const i=steps.findIndex(x=>x.key===key);
+        const item={key,label:st.label,state:stt,sub,t:secs};
+        if(i>=0)steps[i]=item;else steps.push(item);
+      });
+      draw();
+      if(j.finished){
+        steps.forEach(s=>{if(s.state==='run')s.state='done'});
+        draw();
+        await sleep(300);
+        // 完成后不删过程记录：折叠保留，点开还能看到这次是怎么做的
+        const secsAll=((Date.now()-started)/1000).toFixed(1)+'s';
+        const detailWrap=document.createElement('details');
+        detailWrap.style.cssText='margin-bottom:40px';
+        detailWrap.innerHTML=`<summary style="cursor:pointer;font:400 12px/1.6 var(--mono);color:var(--fog);list-style:none;display:flex;align-items:center;gap:6px;padding:2px 0">
+          <span style="font-size:9px">▸</span>执行过程 · ${steps.length} 步 · ${secsAll}</summary>`;
+        detailWrap.appendChild(wrap);
+        feed.appendChild(detailWrap);down();
+        if(j.status==='failed'){
+          setAgent('待命',false);
+          return agentMsg(`<p><b>生成失败：</b>${esc(j.error||'模型没有返回可用内容')}</p>
+            <p class="hintline">失败不会产出草稿，也不会降级成模板冒充结果。</p>`,[{label:'重试',send:'开始整理'}]);
+        }
+        S.draft=j.draft;S.lastGate=j.validation;S.version=j.version;
+        setAgent('待命',false);
+        await renderRun(j.draft,j.validation);
+        renderRail();
+        if(!S.rail)toggleRail(true);
+        return;
+      }
+    }
+    throw Error('等待超时，任务可能仍在后台运行');
+  }catch(e){wrap.remove();throw e}
+}
+
+function renderCards(cards){
+  return cards.map(c=>{
+    const cites=c.citations||[];
+    const blob=cites.map(x=>x.source_quote).join(' ');
+    const sents=(c.narration||'').match(/[^。！？!?；;]+[。！？!?；;]?/g)||[];
+    const speech=sents.map(s=>{
+      const ok=lcs(s.trim(),blob)>=6||s.trim().length<8;
+      return `<span class="sent ${ok?'':'nosrc'}">${esc(s)}</span>`;
+    }).join('');
+    const miss=sents.filter(s=>!(lcs(s.trim(),blob)>=6||s.trim().length<8)).length;
+    const citeHtml=cites.map((x,i)=>`<div class="cite"><span class="n">${i+1}</span>
+      <span class="q">「${esc(x.source_quote)}」</span><span class="from">${esc(x.source_name||'')}</span></div>`).join('');
+    const facts=(c.facts||[]).slice(0,5).map((f,i)=>`<div class="fact"><span class="b">${i+1}</span><span>${esc(f.claim)}</span></div>`).join('');
+    return `<div class="card" id="card-${esc(c.exhibit_id)}">
+      <div class="card-h"><span class="tag">${esc(c.exhibit_id)}</span><h4>${esc(c.card_title||'未命名')}</h4>
+        <span class="meta">${(c.narration||'').length} 字 · ${Math.round((c.narration||'').length/4)} 秒</span></div>
+      <div class="card-b">
+        <div class="lbl">讲解正文${miss?` · <span style="color:var(--orange)">${miss} 句待核</span>`:''}</div>
+        <div class="speech">${speech}</div>
+        <div class="lbl">出处</div>
+        <div class="cites">${citeHtml||'<div class="muted" style="color:var(--orange)">没有可定位的出处，这份内容不能交付</div>'}</div>
+        <div class="extras">
+          <div><div class="k">没认出展项时</div><div class="v">${esc(c.no_target_prompt||'—')}</div></div>
+          <div><div class="k">同时看到多个展项</div><div class="v">${esc(c.multi_target_prompt||'—')}</div></div>
+          <div><div class="k">观众可能问</div><div class="v">${esc(c.question||'—')}</div></div>
+          <div><div class="k">兜底回答</div><div class="v">${esc(c.answer||'—')}</div></div>
+        </div>
+        ${facts?`<div class="facts"><div class="lbl">知识卡事实</div>${facts}</div>`:''}
+        <div class="chips" style="margin-top:14px">
+          <button class="chip" data-send="给展项${esc(c.exhibit_id)}配音" onclick="chipSend(this.dataset.send)">合成语音</button>
+          <button class="chip" data-send="展项${esc(c.exhibit_id)}讲了什么？" onclick="chipSend(this.dataset.send)">问它一句</button>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+
+async function renderRun(draft,validation){
+  const v=validation||{};
+  const cards=(draft&&draft.cards)||[];
+  S.draft=draft||S.draft;S.lastGate=v;
+  const verdict=`<div class="verdict ${v.passed?'pass':'fail'}">
+      <span class="i">${v.passed?'✓':'✕'}</span>
+      <span class="t"><b>${v.passed?'质量门全部通过':'有内容不允许交付'}</b>
+        ${v.passed?'程序逐条核对了出处、数字与覆盖范围。这不代表客户已审定事实。':`${(v.issues||[]).length} 项没过，批准会被拒绝。`}</span>
+      <span class="s">${v.checks??0}/${v.total_checks??0}</span></div>`
+    +((v.issues||[]).length?`<ul class="issues">${v.issues.slice(0,8).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'');
+  // 冲突是"两处说法不一致"，属于需要人确认的警告，不是硬阻断；
+  // 必须显示出来，不能静默丢掉——人看不到就无法决定采用哪种说法。
+  const warns=(v.warnings||[]);
+  const warnHtml=warns.length?`<ul class="issues" style="margin-top:-4px">${warns.slice(0,8).map(w=>
+    `<li style="color:var(--indigo);box-shadow:inset 3px 0 0 var(--fog),var(--shadow-card)">${esc(w)}</li>`).join('')}</ul>`:'';
+  agentMsg(`<p>整理完了。带底色的句子有原文支撑，出处逐条列在下面。</p>${verdict}${warnHtml}
+    <div style="margin-top:16px">${renderCards(cards)}</div>
+    <p class="hintline">${warns.length
+      ? '有来源说法不一致的地方（上面灰条）。请核对原文、确认采用哪种说法后再点「通过」；批准会把这次确认记进事件表。'
+      : '右侧是这次的处理路径与证据链。下一步可以问资料里的问题、出测试用例、合成语音，或直接说「通过」。'}</p>`,
+    [{label:'生成测试用例',primary:true,send:'生成测试用例'},{label:'合成语音',send:'全部配音'},
+     {label:'通过',send:'通过'},{label:'导出交付包',send:'导出交付包'}]);
+}
+
+/* 3 问答 */
+function exhibitIds(){
+  const ids=((S.draft&&S.draft.cards)||[]).map(c=>c.exhibit_id).filter(Boolean);
+  if(ids.length)return ids;
+  return S.exhibits?S.exhibits.map(e=>e.exhibit_id):['A'];
+}
+async function doAsk(text,hintId){
+  try{
+    const q=text.replace(/^问[：:]?/,'');
+    const all=exhibitIds();
+    const ids=hintId&&all.includes(hintId)?[hintId]:all;
+    let best=null;
+    for(const id of ids){
+      const d=await api('/api/ask',{run_id:S.runId,exhibit_id:id,question:q});
+      if(d.in_source&&(!best||(d.matched||0)>(best.matched||0)))best=d;
+    }
+    setAgent('待命',false);
+    if(!best){
+      const fb=await api('/api/ask',{run_id:S.runId,exhibit_id:all[0],question:q});
+      return agentMsg(`<p>${esc(fb.answer)}</p>
+        <p class="hintline">这是“资料外”的标准回答方式：说明边界，不补猜。</p>`,
+        [{label:'生成测试用例',send:'生成测试用例'},{label:'换个问法',send:'这件展品讲了什么？'}]);
+    }
+    const ev=(best.evidence||[]).map((x,i)=>`<div class="cite"><span class="n">${i+1}</span>
+      <span class="q">「${esc(x.source_quote)}」</span><span class="from">${esc(x.source_name||'')}</span></div>`).join('');
+    agentMsg(`<p><b>展项 ${esc(best.exhibit_id)}：</b>${esc(best.answer)}</p>
+      <div class="card"><div class="card-h"><span class="tag">出处</span><h4>回答只用了这份资料</h4>
+      <span class="meta">命中 ${Math.round((best.matched||0)*100)}%</span></div>
+      <div class="card-b" style="padding:6px 16px 10px">${ev}</div></div>`,
+      [{label:'继续追问',send:'那还有别的记载吗？'},{label:'测试用例',send:'生成测试用例'}]);
+  }catch(e){throw e}
+}
+
+/* 4 测试用例 */
+async function doTests(){
+  try{
+    const d=await api('/api/testcases',{run_id:S.runId});
+    S.cases=d.cases||[];S.tests=true;
+    const groups=['资料内','资料外','歧义问题','连续追问'];
+    const rows=S.cases.map(c=>{
+      const chk=c.program_check||{};
+      const verdict=chk.matched!=null?(chk.in_source?'能答':'拒答'):'—';
+      const color=chk.matched!=null?(chk.in_source?'color:var(--sea7)':'color:var(--orange)'):'';
+      return `<tr><td style="font:500 11px/1.4 var(--mono);color:var(--sea7)">${esc(c.type)}</td>
+        <td><b style="color:var(--indigo);font-weight:500">${esc(c.exhibit_id)}</b></td>
+        <td>${c.turns.map(t=>esc(t)).join('<br>↳ ')}</td>
+        <td>${esc(c.expected)}</td>
+        <td style="white-space:nowrap;${color}">${verdict}</td></tr>`;
+    }).join('');
+    const counts=groups.map(g=>`${g} ${S.cases.filter(c=>c.type===g).length}`).join(' · ');
+    setAgent('待命',false);
+    agentMsg(`<p>四类用例共 ${d.total} 条：${counts}。</p>
+      <div class="tw" style="margin-top:16px"><table>
+        <thead><tr><th>类型</th><th>展项</th><th>提问</th><th>期望</th><th>程序预判</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <p class="hintline">“程序预判”是按原文检索的真实判定，不是模型自评；最终结论仍需在眼镜实机跑一遍。</p>`,
+      [{label:'合成语音',primary:true,send:'全部配音'},{label:'通过',send:'通过'},{label:'导出交付包',send:'导出交付包'}]);
+    renderRail();
+  }catch(e){throw e}
+}
+
+/* 5 语音 */
+async function doTTS(text,hintId){
+  try{
+    const all=exhibitIds();
+    let ids;
+    if(hintId&&all.includes(hintId))ids=[hintId];
+    else if(/全部|三个|都|每/.test(text))ids=all;
+    else{
+      const m=text.match(/展项\s*([A-Ca-c])|([A-Ca-c])\s*展项/);
+      ids=m&&all.includes((m[1]||m[2]).toUpperCase())?[(m[1]||m[2]).toUpperCase()]:all;
+    }
+    const blocks=[];
+    for(const id of ids){
+      try{
+        const d=await api('/api/tts',{run_id:S.runId,exhibit_id:id,
+          instructions:'像博物馆讲解员一样自然亲切，语速平稳，重点词稍作停顿'});
+        blocks.push(`<div class="card"><div class="card-h"><span class="tag">${esc(id)}</span>
+          <h4>展项 ${esc(id)} 的讲解音频</h4><span class="meta">${(d.bytes/1024).toFixed(0)} KB</span></div>
+          <div class="card-b"><div class="audio"><audio controls src="${esc(d.url)}"></audio>
+          <span class="m">Breeze TTS</span></div></div></div>`);
+        S.audio++;
+      }catch(e){
+        blocks.push(`<p style="color:var(--orange)"><b>展项 ${esc(id)} 合成失败：</b>${esc(e.message)}</p>`);
+        if(e.status===503)break;
+      }
+    }
+    setAgent('待命',false);
+    agentMsg(`<p>语音合成好了，直接试听。</p>${blocks.join('')}`,
+      [{label:'生成测试用例',send:'生成测试用例'},{label:'通过',send:'通过'}]);
+    renderRail();
+  }catch(e){throw e}
+}
+
+/* 6 审核 / 导出 */
+async function doReview(decision){
+  try{
+    const d=await api('/api/review',{run_id:S.runId,decision});
+    S.reviewed=true;S.reviewState=d.status;
+    setAgent('待命',false);
+    if(decision==='approved'){
+      agentMsg(`<p>已通过，状态记为 <code>${esc(d.status)}</code>。${d.status==='approved_demo'
+        ?'演示模式：导出包会印“不可作为客户交付”。':'现在可以导出交付包了。'}</p>`,
+        [{label:'导出交付包',primary:true,send:'导出交付包'},{label:'新对话',send:'我想开始一个新项目'}]);
+    }else{
+      agentMsg('<p>已标记为需要修改。改完再说「通过」。</p>',[{label:'再试一次',send:'通过'}]);
+    }
+    renderRail();
+  }catch(e){throw e}
+}
+
+async function doExport(){
+  try{
+    const d=await api('/api/runs/'+S.runId+'/export');
+    const files=d.package?.files||{};
+    if(!Object.keys(files).length)return agentMsg('<p>交付包是空的。</p>');
+    const blob=buildZip(files);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(d.package.base_name||('交付包_'+S.runId))+'.zip';
+    a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    S.exported=Object.keys(files).length+' 个文件';
+    setAgent('待命',false);
+    agentMsg(`<p>已导出 ${Object.keys(files).length} 个文件：</p>
+      <ul>${Object.keys(files).map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
+      ${d.package.is_demo?'<p class="hintline">演示包，不可作为客户交付证据。</p>':''}`,
+      [{label:'新对话',primary:true,send:'我想开始一个新项目'}]);
+    renderRail();
+  }catch(e){throw e}
+}
+
+/* ZIP */
+function crc32(b){let t=crc32.t;
+  if(!t){t=crc32.t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c>>>0}}
+  let crc=0xFFFFFFFF;for(let i=0;i<b.length;i++)crc=t[(crc^b[i])&0xFF]^(crc>>>8);return (crc^0xFFFFFFFF)>>>0}
+function buildZip(files){
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;const dt=new Date();
+  const dosT=((dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()/2))&0xFFFF;
+  const dosD=(((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate())&0xFFFF;
+  const u16=v=>[v&0xFF,(v>>>8)&0xFF],u32=v=>[v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];
+  Object.keys(files).forEach(name=>{
+    const nb=enc.encode(name),da=enc.encode(files[name]),crc=crc32(da);
+    const loc=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(dosT),u16(dosD),u32(crc),u32(da.length),u32(da.length),u16(nb.length),u16(0));
+    parts.push(new Uint8Array(loc),nb,da);central.push({nb,crc,size:da.length,off});
+    off+=loc.length+nb.length+da.length;
+  });
+  const cdStart=off;let cdSize=0;
+  central.forEach(f=>{
+    const cd=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(dosT),u16(dosD),u32(f.crc),u32(f.size),u32(f.size),u16(f.nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(f.off));
+    parts.push(new Uint8Array(cd),f.nb);cdSize+=cd.length+f.nb.length;
+  });
+  parts.push(new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),u32(cdSize),u32(cdStart),u16(0))));
+  return new Blob(parts,{type:'application/zip'});
+}
+
+/* 其它 */
+function focusComposer(){input.focus()}
+function showHelp(){
+  $('#welcome')?.remove();
+  agentMsg(`<p><b>五步，全部用一句话触发：</b></p>
+  <ul>
+    <li><b>切分资料</b> —— 贴一段介绍，自动按 A/B/C 切开，先报缺料和冲突</li>
+    <li><b>整理知识卡</b> —— 每展项一张卡，每条事实挂原文出处</li>
+    <li><b>写交互脚本</b> —— 讲解正文、未识别话术、多目标提示、追问与兜底</li>
+    <li><b>出测试用例</b> —— 资料内 / 资料外 / 歧义 / 连续追问</li>
+    <li><b>合成语音</b> —— Breeze TTS 直接出 mp3，可试听</li>
+  </ul>
+  <p class="muted">边界：不凭记忆补事实。资料里没有的，它说没有。</p>`,
+  [{label:'粘贴资料开始',primary:true,send:'我要开始'},{label:'我能问什么',send:'展项A讲了什么？'}]);
+}
+function pickFile(){$('#file').click()}
+function readFile(el){
+  const f=el.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{input.value=String(r.result||'');input.dispatchEvent(new Event('input'));input.focus()};
+  r.readAsText(f,'utf-8');el.value='';
+}
+function resetChat(){
+  S.runId=null;S.draft=null;S.exhibits=null;S.cases=null;S.tests=false;S.reviewed=false;
+  S.reviewState='';S.exported='';S.audio=0;S.lastGate=null;S.version=1;
+  feed.innerHTML=`<div class="welcome" id="welcome">
+    <div class="kick"><span class="d"></span>展陈内容交付</div>
+    <h1>把客户的一段介绍，<br>变成能上眼镜的讲解。</h1>
+    <p class="lede">贴资料，用一句话推进。</p>
+    <div class="starters">
+      <button class="starter" onclick="focusComposer()"><b>粘贴客户资料</b><span>每段前写“展项A：”</span></button>
+      <button class="starter" onclick="showHelp()"><b>它能做什么</b><span>五步与边界</span></button>
+    </div></div>`;
+  setAgent('待命',false);renderRail();
+}
+
+(async function boot(){
+  renderRail();
+  try{
+    const h=await api('/api/health');
+    const m=$('#modeBadge'),t=$('#ttsBadge');
+    m.className='badge '+(h.mode==='live'?'live':'');
+    m.innerHTML=`<span class="d"></span>${h.mode==='live'?'LIVE 真实模型':'DEMO 演示'}`;
+    t.className='badge '+(h.tts_configured?'live':'off');
+    t.innerHTML=`<span class="d"></span>${h.tts_configured?'语音已接':'语音未配置'}`;
+    t.title=h.tts_configured?'可调用 Breeze TTS':'在 .env.local 配置 BREEZE_API_KEY 后重启';
+  }catch(e){
+    if(e.needsToken){
+      $('#modeBadge').className='badge off';
+      $('#modeBadge').innerHTML='<span class="d"></span>需要口令';
+      agentMsg('<p>需要访问口令。用 <code>/?token=口令</code> 打开本页。</p>');
+      return;
+    }
+    $('#modeBadge').className='badge off';
+    $('#modeBadge').innerHTML='<span class="d"></span>服务未连接';
+  }
+})();
+</script></body></html>

@@ -1,0 +1,58 @@
+﻿FAIL https://www.kepu.net.cn/js/keputop_2024_9.js HTTPError HTTP Error 404: Not Found
+OK https://www.kepu.net.cn/images/keputop_2024_9.js 5516
+n('.layui-nav .layui-nav-item.rc-nav{display:none}');
+
+document.writeln('.head .search #searchWord{border:none;margin-left:15px;width:200px;height:30px;display:inline-block}');
+
+document.writeln('.czcenter{
+document.writeln('<div id="navBtn"></div>');
+
+    document.writeln('<div class="search">');
+
+    document.writeln('<form name="searchform" id="searchform" action="" method="get" target="_top">');
+
+    docum
+.writeln('<input type="text" value="" placeholder="输入关键字" id="searchWord" name="searchword" />');
+
+    document.writeln('<input type="submit" value="" id="sub-pc" />');
+
+    document.writeln('</form>');
+
+  
+ocument.writeln('$("#sub-pc").click(function () {');
+
+    document.writeln('var searchWord= $.trim($("#searchWord").val()); ');
+
+    document.writeln('if (searchWord== "" || searchWord== "请输入关键字" || !isVali
+ 打开的是url ');
+
+    document.writeln('var url = "http://www.kepu.net.cn/irs-c-web/search.shtml?code=182109db521&searchWord="+encodeURI(searchWord);');
+
+    document.writeln('window.open(url); }); ');
+
+    doc
+CTX: });
+            function isValid(str) {
+                if (str.indexOf('&') != -1 || str.indexOf('<') != -1 || str.indexOf('>') != -1 || str.indexOf('\'') != -1
+                    || str.indexOf('\\') != -1 || str.indexOf('/') != -1 || str.indexOf('"') != -1
+                    || str.indexOf('%') != -1 || str.indexOf('#') != -1) {
+                    return false;
+                }
+                return true;
+            }
+            $('.search-btn').click(function () {
+                var searchword = $.trim($('#searchword').val());
+                if (searchword == "" || !isValid(searchword)) {
+                    alert("请输入关键词后再进行提交。");
+                    return false;
+                }
+                $('input[name="keyword"]').val(encodeURI(searchword));
+                $('form[name="searchform"]').submit();
+            })
+        });
+    </script>
+
+    <!-- 黑白面板，节庆面板更换 -->
+    <iframe id="ifram" src="/focus/index.html" style="display:none;"></iframe>
+    <script>
+    var j=

@@ -1,0 +1,113 @@
+﻿CTX1: everse
+        $('#serch_wrapper').click(function (ev) {
+            ev.stopPropagation();
+            channelSearch();
+        });
+
+        //遮罩层代理document点击事件
+        $('#search_mask').click(function (ev) {
+            ev.stopPropagation();
+            channelSearch();
+        });
+
+        //Code of channelSearch
+
+        function channelSearch() {
+            //input框内容清空
+            $('.search_i').val('');
+            //遮罩层方法
+            hideMask();
+            //导航淡出
+            $('#nav_bar').fadeIn(0);
+
+            //搜索框  父容器
+            $('#serch_wrapper').hide(0);
+
+
+            //头部信息等
+            $('.header').slideDown(0);
+
+            //搜索图标
+            $('.serch_nav i').hide(0);
+
+            // 搜索框
+            $('.search_nav').hide(0);
+
+            $('.search_nav input').focus();
+
+        }
+
+        $(".search_span").click(search_span);
+        var csh = "";
+        var cshs = "";
+        function search_span() {
+            csh = $(".search-i").val().trim();
+            cshs = $(".search-i:eq(2)").val().trim()
+            console.log(csh);
+            if (cshs == "") cshs = "中国科学技术馆"
+            if (csh == "") csh = cshs
+            location.href = "/api-gateway/jpaas-jsearch-web-server/search?serviceId=sT7I9StjJmJrznxcoft9c&q=" + csh + "";
+            $(".search-i").val('');
+
+        }
+
+
+        function getKey(event) {
+            var event = event || window.event;
+            if (event.keyCode == 13) {
+                search_span();
+            }
+        }
+        $(".shipin1,.shipin2").on("mouseover", function () {
+            $(this).find(".mengban1").stop(
+
+CTX2:            },
+            bannerInit: function (max) {
+                var _this = this;
+                _this._max = max;
+                _this.bannerStart();
+
+                $(_this._navId).find("li a").bind("mouseover", function () {
+                    clearInterval(_this._interval);
+                    _this._i = $(this).parent().index();
+                    _this.bannerShow();
+                    _this.bannerStart();
+                });
+            }
+        };
+        String.prototype.replaceAt = function (index, character) {
+            if (!character)
+                return this;
+            return this.substr(0, index) + character + this.substr(index + character.length);
+        };
+
+        $('.header-menu-icon').on('click', function () {
+            $('.header .header-content .search-box').hide();
+            $('.header-links').toggle();
+        });
+        $('.search-btn-icon').on('click', function () {
+
+            $(this).toggleClass("close");
+            $('.header-links').hide();
+            $('.header .header-content .search-box').toggle();
+        });
+        var showScrollTop = function () {
+            if ($(document).scrollTop() > 200) {
+                $("#scrollTop").show(0);
+            } else {
+                $("#scrollTop").hide(0);
+            }
+        };
+
+        $(window).on("scroll", showScrollTop);
+        showScrollTop();
+        $("#scrollTop").on('click', function () {
+            $('html, body').animate({
+                scrollTop: 0
+            }, 500);
+        });
+
+        $('.mobile-menu-btn').on('click', function () {
+            $('.mobile-header-menu-search').hide();
+            $('.mobile-header-menu-item-box').toggle();
+      

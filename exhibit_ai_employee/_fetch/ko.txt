@@ -1,0 +1,10 @@
+﻿OK http://www.kepu.net.cn/gb/ -> https://www.kepu.net.cn/gb/ len 430
+   TXT:  中国科普博览 网站已调整，请直接访问 www.kepu.cn 
+OK http://www.kepu.net.cn/gb/earth/weather/light/lgt008_2.html -> https://www.kepu.net.cn/gb/earth/weather/light/lgt008_2.html len 6214
+   TXT:  йղߴѧ &nbsp;ҳ &gt; ѧ &gt; 澰 &gt;&nbsp; 澰γ γɵԭ ޶Ҫ̫ܹ۲쵽յİ ʱ׿ޡ̫ƽе䵽ˮʱ䷴ĳУȽϰֻƫԭ䷽ĽǶΪС(Сƫ)ĳԵر̫ԵһеˮΣ䣬о䡢һڷСƫǳĹ⣬ǡͶ䵽̫Ĺ۲Ļι⻷Ǻ硣ɫСƫԲͬƽԼΪ138ȡо䣬ڷСƫǳĹ⣬ǡͶ䵽УĻλޣɫСƫ죬ƽԼ232ȡ ĲʻΪԭΪеĺСƫСΪ13742֣ϹΪ13924֣Ͷ䵽ϸλõΣСƫǳĺ⣬ǡ۲ôֻͶ䵽ϵλõϲСǳϹ⣬ͬʱ۲ߵͼʾɫ⣬ɫڡͼ˺ĲʻӽƽԼ42ȡͬ, ֪޵ĲʻΪںϵԼ޵ŽƽԼ52ȡ ɫʺͿδСйء󣬺խɫ֮СɫιС򲻿ֺܳ硣⣬̫߶ȽǴʱ磬Ͳῴ硣Ϊǡꡱʱγɣǳ̫Ķ棬Գĺڶ ʱں໹ܿڶ磬ʱȵһԵɫں죬Ǹޡ ޺ͺĲͬ㣬ڹڲڷ䡣˹ͨκ䵽ʱ⻡ɫ෴ʱĵ硣ڹߵãںڲҲһĺ硣 [һҳ] [һҳ | γɵԭ |&nbsp; Ϊʲô˵ճꡱ |&nbsp;&nbsp; Ϊʲôкأ 
+OK http://www.kepu.net.cn/gb/earth/weather/light/ -> https://www.kepu.net.cn/gb/earth/weather/light/ len 7077
+   TXT:  йղߴѧ &nbsp;ҳ &gt; ѧ &gt; 澰 澰γ ϼ ɫ λ Ѥ ұ 澰 еĴ ڴе뷴 ڴеɢ ڴе ڴе С εС ¥С 
+OK http://www.kepu.net.cn/gb/beyond/ -> https://www.kepu.net.cn/gb/beyond/ len 416
+   TXT:  Ժ󡭡 
+OK http://www.kepu.net.cn/gb/special/ -> https://www.kepu.net.cn/gb/special/ len 19987
+   TXT:  中国科普博览--科技专题 背景图片： '); var bgimage=new String() bgimage=' ' var add1=bgimage.indexOf('"') var add2=bgimage.indexOf('"',add1+1) bgimage=bgimage.slice(add1+1,add2); xk_nr[1]=' 垃圾分类新时尚 2019年7月1日，《上海市生活垃圾管理条例》正式施行。垃圾为什么要分类？如何分类？分类后的垃圾如何处理？我们能从那些将垃圾分类做到极致的国... [全文] '; } else{ //document.write('右侧100X84图： '); xk_nr[j]=' 垃圾分类新时尚 2019年7月1日，《上海市生活垃圾管理条例》正式施行。垃圾为什么要分类？如何分类？分类后的垃圾如何处理？我们能从那些将垃圾分类做到极致的国家里...

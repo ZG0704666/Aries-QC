@@ -1,0 +1,14 @@
+﻿FAIL https://www.cdstm.cn/search-web-server/search?serviceId=sT7I9StjJmJrznxcoft9c&q=%E5%85%89%E7%9A%84%E HTTPError HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.
+The last 30x error message was:
+Moved Temporarily
+FAIL https://www.cdstm.cn/search-web-server/search?serviceId=sT7I9StjJmJrznxcoft9c&q=%E5%85%89%E7%9A%84%E HTTPError HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.
+The last 30x error message was:
+Moved Temporarily
+js: ./images/player.js
+js: ./images/keputop_2024_9.js
+js: ./images/newfooter0822.js
+js: ./images/jquery.min.js
+js: ./images/bootstrap.3.3.7.min.js
+js: ./images/SuperSlide.js
+js: ./images/swiper.3.4.2.min.js
+js: ./images/layui_2022.js

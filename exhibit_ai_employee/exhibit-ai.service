@@ -1,0 +1,33 @@
+[Unit]
+Description=Exhibit AI Employee prototype
+After=network.target
+
+[Service]
+Type=simple
+User=exhibit-ai
+Group=exhibit-ai
+WorkingDirectory=/opt/guikesong/exhibit-ai
+Environment=HOST=127.0.0.1
+Environment=PORT=4181
+Environment=DEMO_MODE=true
+Environment=EXHIBIT_DB=/var/lib/exhibit-ai/employee.sqlite3
+# 部署到非本机或多人可访问环境时必须设置访问口令，否则 /api/* 无鉴权。
+# 用 EnvironmentFile 读取，避免口令写进单元文件被 git 提交。
+# 文件示例（权限 600，属主 exhibit-ai）：
+#   ACCESS_TOKEN=<强随机串>
+EnvironmentFile=-/etc/exhibit-ai.env
+# 启用 live 模型时同样从该文件读：AI_BASE_URL / AI_MODEL / GMI_API_KEY
+ExecStart=/usr/bin/python3 /opt/guikesong/exhibit-ai/app.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/var/lib/exhibit-ai
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,80 @@
+﻿occurrences [797, 11632, 13898, 14345]
+-----
+60" href="./technology/cybernetics/index.html" alt="自动化">
+                            <area shape="rect" coords="313,237,385,260" href="./technology/robot/index.html" alt="机器人">
+                            <area shape="rect" coords="386,237,503,260" href="./technology/ancientech/index.html" alt="中国古代科技">
+                        </map>
+                    </div>
+                </div>
+            </li>
+            <li class="item5">
+                <div class="wrapper">
+
+                    <div class="ad_img">
+                        <img src="../images/xnbwg5.jpg" width="100%" height="" alt="万物之理" usemap="#Map2" border="0" />
+                        <map name="Map2">
+                            <area shape="rect" coords="78,182,153,202" href="./basic/physics2005/index.html" alt="世界物理年" >
+                            <area shape="rect" coords="167,182,237,202" href="./basic/szsx/index.htm
+-----
+alt="园林">
+                            <area shape="rect" coords="724,284,945,305" href="./civilization/zhou/index.html" alt="东周图说">
+                            <area shape="rect" coords="826,284,1044,305" href="./civilization/chinaware/index.html" alt="中国陶瓷">
+
+                        </map>
+                    </div>
+                </div>
+            </li>
+
+        </ul>
+        <div id="banner_ctr">
+            <div id="drag_ctr"></div>
+            <ul>
+                <li>生命奥秘</li>
+                <li>地球故事</li>
+                <li>星宇迷尘</li>
+                <li>科技之光</li>
+                <li>万物之理</li>
+                <li>文明星火</li>
+            </ul>
+
+        </div>
+    </div>
+    <!--顶部轮播 end-->
+
+    <!--手机端大轮播  start-->
+    <div id="mobBan">
+        <div class="w370">
+            <ul class="clearfix">
+                <li><a href="#">生命奥秘</a></li>
+                <li><a href="#">地球故事</a>
+-----
+        <ul>
+                <li>生命奥秘</li>
+                <li>地球故事</li>
+                <li>星宇迷尘</li>
+                <li>科技之光</li>
+                <li>万物之理</li>
+                <li>文明星火</li>
+            </ul>
+
+        </div>
+    </div>
+    <!--顶部轮播 end-->
+
+    <!--手机端大轮播  start-->
+    <div id="mobBan">
+        <div class="w370">
+            <ul class="clearfix">
+                <li><a href="#">生命奥秘</a></li>
+                <li><a href="#">地球故事</a></li>
+                <li class="padding0"><a href="#">星宇迷尘</a></li>
+                <li><a href="#">科技之光</a></li>
+                <li><a href="#">万物之理</a></li>
+                <li class="padding0"><a href="#">文明星火</a></li>
+            </ul>
+        </div>
+        <div class="zj">
+           <a href="./lives/xljk/index.html">心理健康</a>
+           <a href="./lives/jywg/index.html">基因王国</a>
+           <a href="./lives/viruses/index.html">病毒</a>
+  

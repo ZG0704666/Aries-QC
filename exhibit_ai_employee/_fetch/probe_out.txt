@@ -1,0 +1,9 @@
+﻿OK 200 https://www.cdstm.cn/ len 122814 final https://www.cdstm.cn/
+<!DOCTYPE html>  <html lang="zh-cn">  <head>     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">      <meta name="baidu-site-verification" content="m95thrnZ95">     <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">     <meta name="renderer" content="webkit" /><!-- 360下打开强制为急速模式 -->     <meta name="force-rendering" content="webkit" />     <meta name="keywords" content="中国科学技术馆,中国数字科技馆,科学,技术,科普,服务公众,知识,思想,方法,精神,科普中国">     <meta name="description" conten
+---
+OK 200 https://www.kepu.net.cn/ len 53222 final https://www.kepu.net.cn/
+<!DOCTYPE html> <html lang="en">  <head>     <meta charset="UTF-8">     <meta http-equiv="X-UA-Compatible" content="IE=edge">     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0">-->     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />      <link rel="icon" href="./images/ico.jpg" type="image/x-icon">     <link rel="shortcut icon" href="./images/ico.jpg" type="image/x-icon">     <meta name="keywords" content="中国科普博览">     <meta name="author" content="中国科学院计算机网络信息中心">     <meta content="科普,科学,科学普及,科学
+---
+FAIL https://www.cdstm.cn/search/ HTTPError HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.
+The last 30x error message was:
+Moved Temporarily

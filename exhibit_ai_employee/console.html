@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>展览语音体验交付员 · 把展项资料变成可交付的讲解稿</title>
+<style>
+:root{
+  --bg:#f7f8fc; --card:#fff; --ink:#101114; --ink-2:#4a4d57; --ink-3:#8b8f9c;
+  --line:#e6e8ef; --line-2:#eef0f6;
+  --live:#0b6b4f; --live-bg:#e7f4ee;
+  --block:#8a2418; --block-bg:#fdeceb; --warn:#7a4b00; --warn-bg:#fdf3e2;
+  --demo:#5a4a00; --demo-bg:#fdf7dd;
+  --accent:#1f5eff; --accent-bg:#eef3ff;
+  --r:12px; --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-family:'Inter','Helvetica Neue',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased;
+}
+*{box-sizing:border-box}
+body{margin:0;font-size:15px;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px 80px}
+
+/* ---------- 顶部 ---------- */
+.hero{background:#fff;border-bottom:1px solid var(--line)}
+.hero-in{max-width:980px;margin:0 auto;padding:48px 24px 40px}
+.hero .kicker{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.hero h1{font-size:34px;line-height:1.25;font-weight:600;letter-spacing:-.02em;margin:14px 0 16px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{font-size:17px;color:var(--ink-2);max-width:620px;line-height:1.65}
+.hero .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:32px}
+.hero .facts div{background:#fff;padding:18px 20px}
+.hero .facts dt{font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.hero .facts dd{margin:0;font-size:14.5px;color:var(--ink);line-height:1.55}
+
+/* ---------- 问题对照 ---------- */
+.problem{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}
+.problem .col{border:1px solid var(--line);border-radius:var(--r);padding:22px;background:#fff}
+.problem .col.now{border-color:#e8dcd8;background:#fdfbfa}
+.problem .col.ours{border-color:#cfdcff;background:#fbfcff}
+.problem .col h3{font-size:14px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.problem .col h3 .tag{font:600 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:4px}
+.problem .col.now .tag{background:#f0e3df;color:#7a4238}
+.problem .col.ours .tag{background:var(--accent-bg);color:var(--accent)}
+.problem ul{margin:0;padding-left:18px}
+.problem li{margin:9px 0;color:var(--ink-2);font-size:14px;line-height:1.55}
+
+/* ---------- 步骤 ---------- */
+.step{margin-top:40px}
+.step-h{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.step-h .num{flex:none;width:30px;height:30px;border-radius:99px;background:var(--ink);color:#fff;display:grid;place-items:center;font:600 13px/1 var(--mono)}
+.step-h h2{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em}
+.step-h p{margin:5px 0 0;color:var(--ink-3);font-size:13.5px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+
+/* ---------- 表单 ---------- */
+label.f{display:block;font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 7px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 13px;font:inherit;font-size:14px;color:var(--ink);background:#fff;transition:border-color .12s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#b9bdc9;box-shadow:0 0 0 3px #1011140a}
+textarea{resize:vertical;line-height:1.6}
+button{border:0;border-radius:9px;padding:11px 18px;font:600 14px/1 inherit;background:var(--ink);color:#fff;cursor:pointer;transition:opacity .12s}
+button:hover{opacity:.87}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button.ghost:hover{border-color:#b9bdc9;opacity:1}
+button.small{padding:7px 12px;font-size:12.5px}
+button.primary{background:var(--accent)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- 展项输入 ---------- */
+.ex{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px;background:#fcfcfe}
+.ex-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ex-h .code{font:700 12px/1 var(--mono);background:var(--ink);color:#fff;width:24px;height:24px;display:grid;place-items:center;border-radius:6px}
+.ex-h .nm{font-size:13.5px;color:var(--ink-2);flex:1}
+.ex textarea{min-height:88px;font-size:13.5px}
+.ex input{margin-bottom:8px;font-size:13.5px}
+
+/* ---------- 讲解卡 ---------- */
+.talk{display:grid;gap:16px}
+.talk-card{border:1px solid var(--line);border-radius:var(--r);background:#fff;overflow:hidden}
+.talk-card .head{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line-2);background:#fcfcfe}
+.talk-card .head .code{font:700 11px/1 var(--mono);background:var(--ink);color:#fff;padding:5px 8px;border-radius:5px}
+.talk-card .head h3{font-size:15px;font-weight:600;margin:0;flex:1}
+.talk-card .head .len{font:500 11px/1 var(--mono);color:var(--ink-3)}
+.talk-card .body{padding:20px}
+.talk-card .label{font:600 10px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+.talk-card .speech{font-size:15.5px;line-height:1.75;color:var(--ink);background:#fbfbfd;border-left:3px solid var(--accent);padding:14px 16px;border-radius:0 8px 8px 0;margin-bottom:16px}
+.talk-card textarea{min-height:110px}
+.sources{margin-top:16px;border-top:1px solid var(--line-2);padding-top:14px}
+.sources .src{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line-2);font-size:13px}
+.sources .src:last-child{border-bottom:0}
+.sources .src .q{flex:1;color:var(--ink-2);line-height:1.6}
+.sources .src .from{font:500 10.5px/1.5 var(--mono);color:var(--ink-3);white-space:nowrap}
+.extras{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)}
+.extras .x .k{font:600 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.extras .x .v{font-size:13px;color:var(--ink-2);line-height:1.55}
+
+/* ---------- 检查结果 ---------- */
+.verdict{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:10px;margin-bottom:18px}
+.verdict.pass{background:var(--live-bg)}
+.verdict.fail{background:var(--block-bg)}
+.verdict .icon{font-size:24px;line-height:1}
+.verdict .txt{flex:1}
+.verdict .txt b{display:block;font-size:15px;margin-bottom:3px}
+.verdict.pass .txt b{color:var(--live)}
+.verdict.fail .txt b{color:var(--block)}
+.verdict .txt span{font-size:13px;color:var(--ink-2)}
+.verdict .score{font:600 22px/1 var(--mono)}
+.verdict.pass .score{color:var(--live)}
+.verdict.fail .score{color:var(--block)}
+.check{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-2);font-size:13.5px;align-items:flex-start}
+.check:last-child{border-bottom:0}
+.check .dot{width:8px;height:8px;border-radius:99px;margin-top:7px;flex:none}
+.check.ok .dot{background:var(--live)}
+.check.bad .dot{background:var(--block)}
+.check .what{flex:1;color:var(--ink-2);line-height:1.55}
+.check.bad .what{color:var(--block)}
+
+/* ---------- 结果提示 ---------- */
+.msg{padding:13px 16px;border-radius:9px;font-size:13.5px;line-height:1.65;margin-top:14px;white-space:pre-wrap;background:#fbfbfd;border:1px solid var(--line-2);color:var(--ink-2)}
+.msg.err{background:var(--block-bg);border-color:#f3d3cf;color:var(--block)}
+.msg.ok{background:var(--live-bg);border-color:#cfe8dd;color:var(--live)}
+.msg.warn{background:var(--warn-bg);border-color:#f0e0c4;color:var(--warn)}
+.hide{display:none!important}
+.mut{font-size:13px;color:var(--ink-3);line-height:1.65}
+
+/* ---------- 状态条 ---------- */
+.bar{background:#fff;border-bottom:1px solid var(--line);padding:10px 0;position:sticky;top:0;z-index:20}
+.bar-in{max-width:980px;margin:0 auto;padding:0 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 11px/1 var(--mono);letter-spacing:.03em;padding:5px 9px;border-radius:99px;background:#f1f2f7;color:var(--ink-2);white-space:nowrap}
+.pill.ok{background:var(--live-bg);color:var(--live)}
+.pill.bad{background:var(--block-bg);color:var(--block)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.demo{background:var(--demo-bg);color:var(--demo)}
+
+/* ---------- 折叠区 ---------- */
+details.adv{border:1px solid var(--line);border-radius:var(--r);background:#fff;margin-top:14px}
+details.adv>summary{cursor:pointer;padding:16px 20px;font-size:14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:10px}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv>summary::before{content:'▸';color:var(--ink-3);font-size:12px;transition:transform .15s}
+details.adv[open]>summary::before{transform:rotate(90deg)}
+details.adv>summary .hint{font:500 11.5px/1 var(--mono);color:var(--ink-3);margin-left:auto;font-weight:400}
+details.adv .adv-body{padding:0 20px 20px;border-top:1px solid var(--line-2);padding-top:18px}
+
+/* ---------- 数据格 ---------- */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+.metrics .m{border:1px solid var(--line);border-radius:9px;padding:14px 16px;background:#fcfcfe}
+.metrics .m .v{font:600 21px/1.15 var(--mono);letter-spacing:-.02em}
+.metrics .m .k{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:8px}
+
+/* ---------- 任务列表 ---------- */
+.runs{display:grid;gap:8px}
+.run{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit}
+.run:hover{border-color:#c8ccd6;background:#fcfcfe}
+.run.sel{border-color:var(--ink);background:#fbfbfd}
+.run .id{font:600 11px/1 var(--mono);color:var(--ink-3);min-width:28px}
+.run .t{flex:1;min-width:0}
+.run .t b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run .t small{color:var(--ink-3);font-size:11.5px}
+
+/* ---------- 模拟器 ---------- */
+.states{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:16px}
+.states div{flex:1;padding:13px 12px;text-align:center;font:600 12px/1.4 var(--mono);color:var(--ink-3);background:#fbfbfd;border-right:1px solid var(--line);transition:all .15s}
+.states div:last-child{border-right:0}
+.states div.on{background:var(--ink);color:#fff}
+.states div.on.multi{background:var(--demo)}
+.states div.on.play{background:var(--live)}
+.targets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.target{padding:15px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font:600 13px/1.4 inherit;color:var(--ink);cursor:pointer;text-align:center}
+.target:hover{border-color:#c8ccd6}
+.target.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.target small{display:block;font:400 11px/1.4 var(--mono);opacity:.6;margin-top:4px}
+.evlog{max-height:150px;overflow:auto;font:11.5px/1.75 var(--mono);background:#fbfbfd;border:1px solid var(--line-2);color:var(--ink-2);padding:12px;border-radius:9px;white-space:pre-wrap}
+
+/* ---------- 表格 ---------- */
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font:600 10px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);background:#fbfbfd;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* ---------- 页脚 ---------- */
+footer{border-top:1px solid var(--line);margin-top:56px;padding:28px 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.8}
+@media(max-width:760px){
+  .hero-in{padding:32px 16px 28px}.hero h1{font-size:26px}
+  .hero .facts,.problem{grid-template-columns:1fr}
+  .wrap{padding:0 16px 60px}.bar-in{padding:0 16px}
+  .talk-card .body{padding:16px}
+}
+</style></head><body>
+
+<div class="bar"><div class="bar-in">
+  <span id="statusLine">读取服务状态…</span>
+  <span id="tokenWrap" class="hide" style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <input id="tokenInput" placeholder="访问口令" style="width:130px;padding:6px 9px;font-size:12px">
+    <button class="ghost small" onclick="saveToken()">确定</button>
+  </span>
+</div></div>
+
+<div class="hero"><div class="hero-in">
+  <div class="kicker">AI 数字员工 · 展览语音体验交付员</div>
+  <h1>把一堆展项资料，变成<br><em>能交付给客户的讲解稿</em></h1>
+  <p class="lede">展陈集成商接到展览项目后，要把策展资料改写成观众能听懂的语音讲解。这份工作反复、耗时，还容易写错事实。这名 AI 员工接下这件事：每句讲解都标出处，不合格的内容不放行。</p>
+  <dl class="facts">
+    <div><dt>谁用它</dt><dd>展陈集成商的项目负责人<br>（场馆策展人负责审核）</dd></div>
+    <div><dt>它交付什么</dt><dd>带出处的讲解稿 + 测试记录<br>+ 可签收的验收单</dd></div>
+    <div><dt>凭什么不让它乱写</dt><dd>9 道程序检查，缺出处、编数字<br>就卡住，不允许批准交付</dd></div>
+  </dl>
+</div></div>
+
+<main class="wrap">
+
+<!-- ==================== 问题对照 ==================== -->
+<div class="problem">
+  <div class="col now">
+    <h3><span class="tag">现在</span>人工做，问题在哪</h3>
+    <ul>
+      <li>翻资料、写稿、逐句核对出处，一个展项要花掉大半天</li>
+      <li>改一版资料，要重新找哪些讲解受影响，容易漏改</li>
+      <li>写稿的人可能凭印象补一句"大约在清代"，没人核对</li>
+      <li>交付时说不清"每条事实出自哪一页"，客户审核靠信任</li>
+    </ul>
+  </div>
+  <div class="col ours">
+    <h3><span class="tag">用它</span>这名员工做什么</h3>
+    <ul>
+      <li>三份展项资料进去，三份讲解稿出来，每条都挂着原文出处</li>
+      <li>资料缺项或前后矛盾，它直接拒绝生成，而不是先编一句</li>
+      <li>改了哪句、影响哪些展项、要重测什么，它列清楚</li>
+      <li>交付包里每个文件都能打开核对，未做的测试就写"未运行"</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== 第 1 步 ==================== -->
+<section class="step">
+  <div class="step-h">
+    <div class="num">1</div>
+    <div>
+      <h2>把展项资料交给它</h2>
+      <p>一个展览挑三个展项。每项给一段授权资料，它会先检查资料够不够、有没有互相矛盾，再决定要不要动笔。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div style="margin-bottom:18px">
+      <label class="f">展览名称</label>
+      <input id="title" value="城市记忆展">
+    </div>
+    <div id="exInputs"></div>
+    <div class="row" style="margin-top:18px">
+      <button class="primary" id="btnGen" onclick="generate()">交给它做</button>
+      <span class="mut" style="margin-left:4px">试试三种情况：</span>
+      <button class="ghost small" onclick="fillSample()">正常资料</button>
+      <button class="ghost small" onclick="fillMissing()">资料缺失</button>
+      <button class="ghost small" onclick="fillConflict()">资料打架</button>
+    </div>
+    <div id="genMsg" class="msg hide"></div>
+  </div>
+</section>
+
+<!-- ==================== 第 2 步 ==================== -->
+<section class="step hide" id="step2">
+  <div class="step-h">
+    <div class="num">2</div>
+    <div>
+      <h2>它写出的讲解稿</h2>
+      <p>每张卡是一段 30–60 秒的口播。下面灰框是讲解正文，最下面是它引用的原文——每条都能回到客户给的那份资料。</p>
+    </div>
+  </div>
+  <div class="talk" id="cards"></div>
+</section>
+
+<!-- ==================== 第 3 步 ==================== -->
+<section class="step hide" id="step3">
+  <div class="step-h">
+    <div class="num">3</div>
+    <div>
+      <h2>程序检查结果</h2>
+      <p>这不是让 AI 自己说"我觉得没问题"，而是一组写死的规则在逐条核对。任何一条不过，就不允许批准交付。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div id="verdict"></div>
+    <div id="checks"></div>
+    <div id="actMsg" class="msg hide"></div>
+    <div class="row" style="margin-top:20px">
+      <button class="primary" onclick="review('approved')">人工批准这份稿子</button>
+      <button class="ghost" onclick="revise()">保存我的修改并重查</button>
+      <button class="ghost" onclick="review('needs_revision')">退回修改</button>
+      <button class="ghost" onclick="exportRun()">导出交付包 (.zip)</button>
+    </div>
+    <div class="mut" style="margin-top:12px">批准代表"人认可这份稿子可以交给客户"，不是 AI 自己拍板。批准前每一句都要人看过。</div>
+  </div>
+</section>
+
+<!-- ==================== 第 4 步：修改影响 ==================== -->
+<section class="step hide" id="step4">
+  <div class="step-h">
+    <div class="num">4</div>
+    <div>
+      <h2>改了资料，影响哪些内容</h2>
+      <p>客户改一句资料，不用全部重做。它会指出哪几个展项受影响、哪些测试要重跑，其他内容保持不动。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-bottom:14px">
+      <span class="pill" id="diffAffected">影响展项 —</span>
+      <span class="pill" id="diffRetest">需重测 —</span>
+    </div>
+    <div id="diff" class="mut">修改上面任意一句讲解后点「保存我的修改并重查」，这里会显示差异与重测范围。</div>
+  </div>
+</section>
+
+<!-- ==================== 成本 ==================== -->
+<section class="step">
+  <div class="step-h">
+    <div class="num">5</div>
+    <div>
+      <h2>这门生意算不算得过来</h2>
+      <p>卖一个试点包，收多少钱、成本多少、最少多少钱能不亏。数字没填全就明说缺什么，不编一个好看的毛利率。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">
+      <div><label class="f">试点报价（元）</label><input id="bQuote" type="number" placeholder="访谈后确定"></div>
+      <div><label class="f">报价状态</label><select id="bBasis"><option value="assumed">还没验证的假设</option><option value="interviewed">客户访谈确认</option><option value="signed">已签约</option></select></div>
+      <div><label class="f">做一遍要几小时</label><input id="bHours" type="number" step="0.1" placeholder="实测计时"></div>
+      <div><label class="f">团队时薪（元）</label><input id="bRate" type="number" placeholder="团队确认"></div>
+      <div><label class="f">模型调用费（元）</label><input id="bModel" type="number" placeholder="账单"></div>
+      <div><label class="f">其他直接成本（元）</label><input id="bOther" type="number" placeholder="逐项记"></div>
+      <div><label class="f">客户现在自己做要花多少（元）</label><input id="bAlt" type="number" placeholder="自写+配音/外包"></div>
+      <div><label class="f">人工做一遍（分钟）</label><input id="bBase" type="number" placeholder="同一份资料"></div>
+      <div><label class="f">它做一遍（分钟）</label><input id="bEmp" type="number" placeholder="同一份资料"></div>
+    </div>
+    <button class="ghost" style="margin-top:16px" onclick="saveBusiness()">算一下</button>
+    <div id="bizMsg" class="msg hide"></div>
+    <div id="bizResult"></div>
+  </div>
+</section>
+
+<!-- ==================== 高级区 ==================== -->
+<div style="margin-top:52px">
+  <div class="step-h" style="margin-bottom:14px">
+    <div><h2 style="font-size:16px">技术细节与后台记录</h2>
+    <p>评委或技术人员想看的部分。日常演示不用打开。</p></div>
+  </div>
+
+  <details class="adv">
+    <summary>任务历史<span class="hint" id="runCount"></span></summary>
+    <div class="adv-body"><div id="runs" class="runs mut">读取中…</div></div>
+  </details>
+
+  <details class="adv">
+    <summary>电脑端体验模拟器<span class="hint">眼镜实机未接入，这是确定性状态机</span></summary>
+    <div class="adv-body">
+      <p class="mut" style="margin-top:0">观众走近展项时会发生什么。它<b>不是</b>眼镜实机行为，也不是 AI 判断，只是一套按钮控制的状态规则，用来验证"多目标不自动播、切换不重叠"。</p>
+      <div class="states"><div id="st0" class="on">空闲</div><div id="st1">多个展项可选</div><div id="st2">正在播放</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <label class="f">模拟候选展项</label>
+          <div class="targets" id="targets"></div>
+          <div class="row" style="margin-top:12px">
+            <button class="ghost small" onclick="finish()">模拟播完</button>
+            <button class="ghost small" onclick="resetSim()">清空</button>
+            <button class="ghost small" onclick="recordTest('T2')">跑 T2</button>
+            <button class="ghost small" onclick="recordTest('T3')">跑 T3</button>
+          </div>
+          <div id="hint" class="msg" style="margin-top:12px">空闲时不说话；超过 5 秒轻提示一次，30 秒内不重复。</div>
+        </div>
+        <div>
+          <label class="f">事件日志</label>
+          <div id="events" class="evlog">尚无事件</div>
+        </div>
+      </div>
+      <div id="testMsg" class="msg hide"></div>
+    </div>
+  </details>
+
+  <details class="adv">
+    <summary>测试记录<span class="hint">未运行就写未运行，不假装通过</span></summary>
+    <div class="adv-body">
+      <div class="tw"><table>
+        <thead><tr><th style="width:130px">用例</th><th>检查什么</th><th>结果</th><th style="width:80px"></th></tr></thead>
+        <tbody id="testRows"></tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <details class="adv">
+    <summary>成交台账<span class="hint">数字来自数据库，0 就是 0</span></summary>
+    <div class="adv-body">
+      <div id="ledgerBox" class="mut">读取中…</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px">
+        <div><label class="f">客户名称</label><input id="cName" placeholder="哪家集成商"></div>
+        <div><label class="f">预算负责人</label><input id="cOwner" placeholder="谁批钱"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="ghost small" onclick="addCustomer()">登记客户</button>
+        <button class="ghost small" onclick="addQuote()">登记报价</button>
+        <button class="ghost small" onclick="addAcceptance()">登记签收</button>
+      </div>
+      <div id="ledgerMsg" class="msg hide"></div>
+    </div>
+  </details>
+
+  <details class="adv">
+    <summary>改进候选台账<span class="hint">候选不是自动学习，要人批准</span></summary>
+    <div class="adv-body">
+      <p class="mut" style="margin-top:0">记录"这类问题反复出现"，作为下一步改规则的依据。它不会自己改自己的规则。</p>
+      <div class="row">
+        <select id="fbCat" style="max-width:230px"><option>来源引用缺失</option><option>事实表述需收敛</option><option>讲解长度不适合播放</option><option>交互提示不清晰</option><option>设备播放异常</option></select>
+        <input id="fbNote" placeholder="具体问题与证据" style="flex:1;min-width:180px">
+        <button class="ghost small" onclick="addFeedback()">记录</button>
+      </div>
+      <div id="fbMsg" class="msg hide"></div>
+      <div id="fbList" class="mut" style="margin-top:12px"></div>
+    </div>
+  </details>
+</div>
+
+<footer>
+  <b>能力边界，先说清楚：</b><br>
+  眼镜是自研原型，端侧识别 + 固定播报，纯边端不联网，本次不改固件。页面里的模拟器只演示交互规则，不连实机。<br>
+  DEMO 模式下生成的是摘句模板，不是模型产出，导出包会印"不可作为客户交付"。要真实生成需配置模型凭据走 LIVE 模式。<br>
+  质量门通过 = 内部程序检查通过，不等于客户策展人已经审定事实。
+</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const CODES=['A','B','C'];
+let runId=null, run=null, baseDraft=null, candidates=new Set(), playState='idle', playing=null, events=[], actionEvents=[], tests={}, pendingTests=new Set(), allRuns=[];
+
+/* ---------- 访问口令 ---------- */
+const TOKEN_KEY='exhibit-access-token';
+function accessToken(){
+  const fromUrl=new URLSearchParams(location.search).get('token');
+  if(fromUrl){ try{localStorage.setItem(TOKEN_KEY,fromUrl)}catch(e){} return fromUrl; }
+  try{ return localStorage.getItem(TOKEN_KEY)||''; }catch(e){ return ''; }
+}
+function saveToken(){
+  const t=$('tokenInput').value.trim();
+  if(!t)return;
+  try{localStorage.setItem(TOKEN_KEY,t)}catch(e){}
+  $('tokenWrap').classList.add('hide');
+  init();
+}
+
+/* ---------- 请求 ---------- */
+async function api(path,body){
+  const t=accessToken();
+  let r,d;
+  try{
+    r=await fetch(path,{
+      method:body?'POST':'GET',
+      headers:{'Content-Type':'application/json',...(t?{'X-Access-Token':t}:{})},
+      body:body?JSON.stringify(body):undefined,
+    });
+    d=await r.json();
+  }catch(e){throw Error('服务连不上：'+e.message)}
+  if(r.status===401){
+    const err=Error('需要访问口令');err.needsToken=true;throw err;
+  }
+  if(!r.ok){const err=Error(d.error||('HTTP '+r.status));err.data=d;throw err}
+  return d;
+}
+function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function show(id,text,kind=''){const el=$(id);el.textContent=text;el.className='msg '+(kind||'');el.classList.remove('hide');}
+
+/* ---------- 第 1 步：资料输入 ---------- */
+const SAMPLES={
+ A:"本展项展出一件西周青铜鼎，通高约三十厘米，器身饰有饕餮纹。该鼎于二十世纪八十年代在本地窖藏出土，现藏于市博物馆。鼎内壁铸有铭文，记录了当时的祭祀活动，是研究本地礼制的重要实物。鼎足为柱状，足根饰有兽面，这类做法在西周早期较为常见。鼎的腹部较深，容量可观，推测用于烹煮或盛放祭品。",
+ B:"本展项展示的陶罐属于新石器时代晚期，采用泥条盘筑法制成，表面留有绳纹。陶罐出土于城郊遗址，器形完整，用于储存粮食。陶罐的发现说明当时已有稳定的农业定居生活，也为研究当时的聚落形态提供了实物依据。陶罐的腹部与口沿形制，反映了当时的制陶技术。罐口略向外翻，便于封口与搬运。",
+ C:"本展项展示的织物残片为汉代丝织品，采用平纹织造，残片出土于本地墓葬，颜色已褪。织物上的纹样显示了当时的纺织工艺水平，也反映本地与外地的手工业交流。这类残片常见于同一时期的墓葬，是研究纺织技术传播的重要材料。残片的织造密度与纹样，也是判断产地的主要线索。线径均匀，说明当时已有较成熟的缫丝工序。"
+};
+function renderExInputs(){
+  $('exInputs').innerHTML=CODES.map(c=>`
+    <div class="ex">
+      <div class="ex-h"><span class="code">${c}</span><span class="nm">展项 ${c} 的授权资料</span></div>
+      <input id="sn${c}" value="模拟资料 ${c}" placeholder="资料名称/版本">
+      <textarea id="st${c}" placeholder="粘贴客户给的这段展项资料"></textarea>
+    </div>`).join('');
+}
+function fillSample(){CODES.forEach(c=>{$('st'+c).value=SAMPLES[c]});}
+function fillMissing(){fillSample();$('stA').value="展项 A 未提供任何事实参数，待补。";}
+function fillConflict(){fillSample();$('stB').value="据资料甲记载，展项 B 的陶罐为一八五零年本地工匠烧制。据资料乙记载，该陶罐实际烧制于一八七零年前后，器表留有绳纹。两批资料对烧制年代说法不同。";}
+
+async function generate(){
+  $('btnGen').disabled=true;
+  try{
+    const exhibits=CODES.map(c=>({exhibit_id:c,source_name:$('sn'+c).value,source_text:$('st'+c).value}));
+    const d=await api('/api/generate',{title:$('title').value,exhibits});
+    const v=d.validation||{};
+    show('genMsg',
+      v.passed
+        ? `任务 #${d.id} 已创建。程序检查全部通过，下面可以看到讲解稿。`
+        : `任务 #${d.id} 已创建，但有 ${(v.issues||[]).length} 项没通过，看第 3 步。`,
+      v.passed?'ok':'warn');
+    await loadRuns(); await select(d.id);
+  }catch(e){
+    const det=e.data||{};
+    let t='它拒绝接这个活：'+e.message;
+    if(det.missing_materials?.length){
+      t+='\n\n资料不够的地方：';
+      det.missing_materials.forEach(m=>t+=`\n· 展项 ${m.exhibit_id}：${m.missing}`);
+    }
+    if(det.conflicts?.length){
+      t+='\n\n资料互相矛盾的地方：';
+      det.conflicts.forEach(c=>t+=`\n· 展项 ${c.exhibit_id}：${c.description}`);
+    }
+    if(det.id){ t+=`\n\n已记为任务 #${det.id}，状态"被拦下"，不可批准。这就是它的第零原则：宁可不出稿，也不编一句。`; await loadRuns(); }
+    show('genMsg',t,'err');
+  }finally{$('btnGen').disabled=false}
+}
+
+/* ---------- 加载任务 ---------- */
+async function loadRuns(){
+  try{
+    allRuns=(await api('/api/runs')).runs||[];
+    $('runCount').textContent=allRuns.length+' 条';
+    const LABEL={approved:'已批准',approved_demo:'演示批准',draft:'草稿',blocked:'被拦下',failed:'失败',processing:'处理中',needs_revision:'已退回'};
+    $('runs').innerHTML=allRuns.length?allRuns.map(r=>{
+      const cls=r.status==='approved'?'ok':r.status==='approved_demo'?'demo':(r.status==='blocked'||r.status==='failed')?'bad':'';
+      return `<button class="run ${runId===r.id?'sel':''}" onclick="select(${Number(r.id)})">
+        <span class="id">#${Number(r.id)}</span>
+        <span class="t"><b>${esc(r.title)}</b><small>${esc(r.created_at)} · 第 ${Number(r.version)} 版</small></span>
+        <span class="pill ${cls}">${esc(LABEL[r.status]||r.status)}</span></button>`;
+    }).join(''):'<div class="mut">还没有任务。先在第 1 步提交一次。</div>';
+  }catch(e){$('runs').textContent='读取失败：'+e.message}
+}
+
+async function select(id){
+  try{
+    const d=await api('/api/runs/'+id+'/versions');
+    runId=id;
+    const meta=allRuns.find(r=>r.id===id)||{};
+    const latest=(d.versions||[]).slice(-1)[0];
+    run={id,title:meta.title||'',status:meta.status,mode:meta.mode,
+         version:latest?latest.version:0,
+         draft:latest?latest.draft:{cards:[]},
+         validation:latest?latest.validation:{},
+         diff:latest?latest.diff:[]};
+    baseDraft=structuredClone(run.draft);
+    renderAll();
+    await loadRuns();
+  }catch(e){show('genMsg','读取任务失败：'+e.message,'err')}
+}
+
+function renderAll(){
+  renderCards(); renderVerdict(); renderDiff();
+  $('step2').classList.remove('hide');
+  $('step3').classList.remove('hide');
+  $('step4').classList.remove('hide');
+}
+
+/* ---------- 第 2 步：讲解稿 ---------- */
+function renderCards(){
+  const cards=run.draft.cards||[];
+  if(!cards.length){
+    $('cards').innerHTML='<div class="card"><div class="mut">这个任务没有讲解稿——可能因为资料缺项被拦下，或模型调用失败。这是正确行为，不是出错。</div></div>';
+    return;
+  }
+  $('cards').innerHTML=cards.map((c,i)=>`
+    <article class="talk-card">
+      <div class="head">
+        <span class="code">${esc(c.exhibit_id||CODES[i])}</span>
+        <h3>${esc(c.card_title||'未命名')}</h3>
+        <span class="len">${(c.narration||'').length} 字 · 约 ${Math.round((c.narration||'').length/4)} 秒</span>
+      </div>
+      <div class="body">
+        <div class="label">讲解正文（观众听到的内容）</div>
+        <div class="speech">${esc(c.narration||'')}</div>
+        <div class="label">改这一段（改了要重新检查）</div>
+        <textarea id="n${i}" oninput="markDirty()">${esc(c.narration||'')}</textarea>
+        <div class="extras">
+          <div class="x"><div class="k">没认出展项时说</div><div class="v">${esc(c.no_target_prompt||'—')}</div></div>
+          <div class="x"><div class="k">同时看到多个展项时说</div><div class="v">${esc(c.multi_target_prompt||'—')}</div></div>
+          <div class="x"><div class="k">观众可能问</div><div class="v">${esc(c.question||'—')}</div></div>
+          <div class="x"><div class="k">答案</div><div class="v">${esc(c.answer||'—')}</div></div>
+        </div>
+        <div class="sources">
+          <div class="label">这段话的出处（客户原始资料原文）</div>
+          ${(c.citations||[]).length
+            ? c.citations.map(x=>`<div class="src"><div class="q">「${esc(x.source_quote)}」</div><div class="from">${esc(x.source_name||'')}</div></div>`).join('')
+            : '<div class="mut" style="color:var(--block)">没有可定位的出处 —— 这份内容不能交付</div>'}
+        </div>
+      </div>
+    </article>`).join('');
+}
+function markDirty(){}
+
+/* ---------- 第 3 步：检查结果 ---------- */
+function renderVerdict(){
+  const v=run.validation||{}, issues=v.issues||[];
+  const passed=v.passed;
+  $('verdict').innerHTML=`
+    <div class="verdict ${passed?'pass':'fail'}">
+      <div class="icon">${passed?'✓':'✕'}</div>
+      <div class="txt">
+        <b>${passed?'全部检查通过，可以批准':'有内容不允许交付'}</b>
+        <span>${passed
+          ? '9 类规则逐条核对过。注意：这代表程序没发现问题，不代表客户已审定事实。'
+          : `${issues.length} 项没通过。未解决之前，批准按钮会被服务端拒绝。`}</span>
+      </div>
+      <div class="score">${v.checks??0}/${v.total_checks??0}</div>
+    </div>`;
+
+  if(!issues.length){
+    $('checks').innerHTML='<div class="check ok"><span class="dot"></span><span class="what">没有阻断项。</span></div>';
+    return;
+  }
+  // 按检查类型分组，用日常语言解释每类在防什么
+  const EXPLAIN={
+    '覆盖门':'三份讲解必须一一对应三个展项，不能多也不能少',
+    '引文门':'引用的原文必须能在客户给的资料里逐字找到',
+    '出处映射门':'讲解里的每条事实都必须挂到具体原文上',
+    '数字门':'讲解里的数字、年份，资料里没有就不许写',
+    '实体门':'机构名、朝代名这类专名，资料里没有就不许写',
+    '串台门':'A 展项的内容不能混进 B 展项',
+    '其他':'其他规则',
+  };
+  $('checks').innerHTML=issues.map(msg=>{
+    const key=Object.keys(EXPLAIN).find(k=>msg.includes(k))||'其他';
+    return `<div class="check bad"><span class="dot"></span><span class="what">
+      <b>${esc(EXPLAIN[key])}</b><br>${esc(msg)}</span></div>`;
+  }).join('');
+}
+
+/* ---------- 第 4 步：差异 ---------- */
+function renderDiff(){
+  $('diffAffected').textContent='影响展项 —';
+  $('diffRetest').textContent='需重测 —';
+  $('diff').textContent='修改上面任意一句讲解后点「保存我的修改并重查」，这里会显示差异与重测范围。';
+}
+function showDiff(diff){
+  const changes=diff?.changes||[];
+  $('diffAffected').textContent='影响展项：'+(diff?.affected_exhibits?.join(' / ')||'无');
+  $('diffRetest').textContent='需重测：'+(diff?.retest_cases?.join(' / ')||'无');
+  if(!changes.length){ $('diff').textContent='和上一版一字不差，不需要重测。'; return; }
+  if(typeof changes[0]==='string'){
+    $('diff').innerHTML='<pre style="font:11.5px/1.7 var(--mono);white-space:pre-wrap;margin:0">'+esc(changes.slice(0,80).join('\n'))+'</pre>';
+    return;
+  }
+  $('diff').innerHTML=changes.map(c=>
+    `<div style="margin-bottom:10px"><b>展项 ${esc(c.exhibit_id)} · ${esc(c.field)}</b>
+     <div style="font:11.5px/1.7 var(--mono);white-space:pre-wrap;color:var(--block)">− ${esc(String(c.before??'').slice(0,200))}</div>
+     <div style="font:11.5px/1.7 var(--mono);white-space:pre-wrap;color:var(--live)">+ ${esc(String(c.after??'').slice(0,200))}</div></div>`).join('');
+}
+
+/* ---------- 操作 ---------- */
+function editorDraft(){
+  if(!baseDraft)return null;
+  const d=structuredClone(baseDraft);
+  (d.cards||[]).forEach((c,i)=>{const el=$('n'+i);if(el)c.narration=el.value;});
+  return d;
+}
+async function review(decision){
+  try{
+    const d=await api('/api/review',{run_id:runId,decision});
+    show('actMsg',
+      decision==='approved'
+        ? `已批准。${d.status==='approved_demo'?'这是演示模式，导出包会印"不可作为客户交付"。':'现在可以导出交付包了。'}`
+        : '已标记为需要修改。',
+      'ok');
+    await select(runId);
+  }catch(e){
+    const det=e.data||{};
+    let t='服务端拒绝：'+e.message;
+    if(det.validation?.issues?.length) t+='\n'+det.validation.issues.slice(0,5).join('\n');
+    show('actMsg',t,'err');
+  }
+}
+async function revise(){
+  try{
+    const d=await api('/api/revise',{run_id:runId,draft:editorDraft(),actor:'审核人修改',reason:'人工修订'});
+    show('actMsg',`已保存为第 ${d.version} 版。检查${d.validation.passed?'通过':'仍有 '+d.validation.issues.length+' 项未过'}。`,d.validation.passed?'ok':'warn');
+    await select(runId); showDiff(d.diff);
+  }catch(e){show('actMsg','保存失败：'+e.message,'err');}
+}
+async function exportRun(){
+  try{
+    const d=await api('/api/runs/'+runId+'/export');
+    const files=d.package?.files||{};
+    if(!Object.keys(files).length){show('actMsg','交付包是空的','err');return;}
+    const blob=buildZip(files);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(d.package.base_name||('交付包_'+runId))+'.zip';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    show('actMsg',`已导出 ${Object.keys(files).length} 个文件：\n${Object.keys(files).join('\n')}`, d.package.is_demo?'warn':'ok');
+  }catch(e){show('actMsg','导出被拒：'+e.message,'err');}
+}
+
+/* ---------- ZIP ---------- */
+function crc32(b){
+  let t=crc32.t;
+  if(!t){t=crc32.t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c>>>0;}}
+  let crc=0xFFFFFFFF;
+  for(let i=0;i<b.length;i++)crc=t[(crc^b[i])&0xFF]^(crc>>>8);
+  return (crc^0xFFFFFFFF)>>>0;
+}
+function buildZip(files){
+  const enc=new TextEncoder(),parts=[],central=[];
+  let off=0;const dt=new Date();
+  const dosT=((dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()/2))&0xFFFF;
+  const dosD=(((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate())&0xFFFF;
+  const u16=v=>[v&0xFF,(v>>>8)&0xFF], u32=v=>[v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];
+  Object.keys(files).forEach(name=>{
+    const nb=enc.encode(name), da=enc.encode(files[name]), crc=crc32(da);
+    const loc=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(dosT),u16(dosD),u32(crc),u32(da.length),u32(da.length),u16(nb.length),u16(0));
+    parts.push(new Uint8Array(loc),nb,da);
+    central.push({nb,crc,size:da.length,off});
+    off+=loc.length+nb.length+da.length;
+  });
+  const cdStart=off;let cdSize=0;
+  central.forEach(f=>{
+    const cd=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(dosT),u16(dosD),u32(f.crc),u32(f.size),u32(f.size),u16(f.nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(f.off));
+    parts.push(new Uint8Array(cd),f.nb);cdSize+=cd.length+f.nb.length;
+  });
+  parts.push(new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),u32(cdSize),u32(cdStart),u16(0))));
+  return new Blob(parts,{type:'application/zip'});
+}
+
+/* ---------- 成本 ---------- */
+async function saveBusiness(){
+  const p={
+    quote:+$('bQuote').value||null, quote_basis:$('bBasis').value,
+    hours:+$('bHours').value||null, hourly_rate:+$('bRate').value||null,
+    model_cost:+$('bModel').value||0, voice_cost:0, other_cost:+$('bOther').value||0,
+    customer_alt_cost:+$('bAlt').value||null,
+    baseline_minutes:+$('bBase').value||null, employee_minutes:+$('bEmp').value||null,
+  };
+  try{
+    const d=await api('/api/business',p);
+    renderBiz(d.computed);
+    show('bizMsg',d.computed.complete?'算完了。':'还缺：'+d.computed.missing_inputs.join('、')+'。缺的项不参与计算，不瞎填。',d.computed.complete?'ok':'warn');
+  }catch(e){show('bizMsg','算失败：'+e.message,'err');}
+}
+function renderBiz(c){
+  const m=v=>v===null||v===undefined?'—':v;
+  let h=`<div class="metrics">
+    <div class="m"><div class="v">${m(c.cash_cost)}</div><div class="k">现金成本 元</div></div>
+    <div class="m"><div class="v">${m(c.direct_cost)}</div><div class="k">含人工全成本</div></div>
+    <div class="m"><div class="v">${c.contribution!=null?m(c.contribution):'—'}</div><div class="k">做完能剩 元</div></div>
+    <div class="m"><div class="v">${c.cash_breakeven!=null?m(c.cash_breakeven):'—'}</div><div class="k">最少收多少不亏现金</div></div>
+    <div class="m"><div class="v">${c.full_breakeven!=null?m(c.full_breakeven):'—'}</div><div class="k">连人工也不亏</div></div>
+  </div>`;
+  if(c.contribution_ratio_blocked_reason){
+    h+=`<div class="msg warn">不算利润率：${esc(c.contribution_ratio_blocked_reason)}</div>`;
+  }else if(c.contribution_ratio!=null){
+    h+=`<div class="msg">报价已签约，贡献率 ${c.contribution_ratio}%（这个数不含获客、税费、折旧，不等于毛利率）。</div>`;
+  }
+  if(c.customer_value && c.customer_value.customer_saving!=null){
+    const s=c.customer_value.customer_saving;
+    h+=`<div class="msg">客户现在自己做要花 ${c.customer_value.customer_alt_cost} 元，用这套${s>0?'能省 '+s+' 元':'反而多花 '+Math.abs(s)+' 元'}。</div>`;
+  }
+  if(c.efficiency && c.efficiency.status==='ok'){
+    h+=`<div class="msg ok">同一份资料：人工 ${c.efficiency.baseline_minutes} 分钟 → 这套流程 ${c.efficiency.employee_minutes} 分钟，省 ${c.efficiency.saved_minutes} 分钟。样本只有 ${c.efficiency.sample_n||'少量'} 次，别当稳定产能。</div>`;
+  }else if(!c.efficiency){
+    h+=`<div class="msg">没填人工和流程耗时，所以不报效率提升。我们没测过传统流程基线，不编百分比。</div>`;
+  }
+  $('bizResult').innerHTML=h;
+}
+
+/* ---------- 台账 ---------- */
+async function loadLedger(){
+  try{
+    const [l,cs]=await Promise.all([api('/api/ledger'),api('/api/customers')]);
+    const list=cs.customers||[];
+    $('ledgerBox').innerHTML=`<div class="metrics">
+      <div class="m"><div class="v">${l.customers}</div><div class="k">客户</div></div>
+      <div class="m"><div class="v">${l.quotes}</div><div class="k">报价</div></div>
+      <div class="m"><div class="v">${l.acceptances}</div><div class="k">已签收</div></div>
+      <div class="m"><div class="v">${l.signed_amount_total}</div><div class="k">签收金额 元</div></div>
+    </div>
+    <div class="mut" style="margin-top:10px">${esc(l.note)}<br>${list.length?'客户：'+list.map(c=>esc(c.name)).join('、'):'还没有客户记录。'}</div>`;
+  }catch(e){$('ledgerBox').textContent='读取失败：'+e.message}
+}
+async function addCustomer(){
+  try{const d=await api('/api/customers',{name:$('cName').value,budget_owner:$('cOwner').value});
+    show('ledgerMsg','已登记客户 #'+d.id,'ok');$('cName').value='';loadLedger();}
+  catch(e){show('ledgerMsg','登记失败：'+e.message,'err');}
+}
+async function addQuote(){
+  try{
+    const cs=await api('/api/customers');const cid=(cs.customers||[])[0]?.id;
+    if(!cid){show('ledgerMsg','先登记一个客户','err');return;}
+    const d=await api('/api/quotes',{customer_id:cid,run_id:runId,amount:+$('bQuote').value||null,basis:$('bBasis').value});
+    show('ledgerMsg','已登记报价 #'+d.id,'ok');loadLedger();
+  }catch(e){show('ledgerMsg','登记失败：'+e.message,'err');}
+}
+async function addAcceptance(){
+  try{
+    if(!runId){show('ledgerMsg','先选一个任务','err');return;}
+    const d=await api('/api/acceptances',{run_id:runId,signed_by:$('cOwner').value||'待填写',amount:+$('bQuote').value||null});
+    show('ledgerMsg','已登记签收 #'+d.id,'ok');loadLedger();
+  }catch(e){show('ledgerMsg','登记失败：'+e.message,'err');}
+}
+
+/* ---------- 模拟器 ---------- */
+function renderSim(){
+  $('targets').innerHTML=CODES.map((c,i)=>`<button class="target ${candidates.has(i)?'on':''}" onclick="toggle(${i})">展项 ${c}<small>${candidates.has(i)?'已选':'点击选择'}</small></button>`).join('');
+  ['st0','st1','st2'].forEach(id=>$(id).classList.remove('on','multi','play'));
+  $('st0').textContent='空闲';$('st1').textContent='多个展项可选';$('st2').textContent='正在播放';
+  if(playState==='playing'){
+    $('st2').classList.add('on','play');$('st2').textContent='正在播放 · 展项 '+CODES[playing];
+    $('hint').textContent='同一时间只播一条。点另一个展项时，先停旧的、再开新的，不会两条一起响。';
+  }else if(candidates.size>=2){
+    $('st1').classList.add('on','multi');$('st1').textContent='多个展项可选（'+candidates.size+'）';
+    $('hint').textContent='同时看到多个展项：只提示让观众选，不猜他想听哪个，也不自动播。';
+  }else{
+    $('st0').classList.add('on');
+    $('hint').textContent='空闲时不说话；超过 5 秒轻提示一次，30 秒内不重复；不说"附近没有展品"。';
+  }
+}
+function log(s){events.unshift(new Date().toLocaleTimeString('zh-CN')+' · '+s);events=events.slice(0,40);$('events').textContent=events.join('\n');}
+function ev(name,cid){actionEvents.push({event:name,exhibit_id:cid});}
+function toggle(i){
+  if(playState==='playing'){ if(i!==playing) choose(i); return; }
+  candidates.has(i)?candidates.delete(i):candidates.add(i);
+  ev('candidates',CODES[i]);
+  log(candidates.size>=2?'看到 '+candidates.size+' 个展项：提示选择，不自动播':candidates.size===1?'选中展项 '+CODES[i]+'，等待确认':'清空候选');
+  renderSim();
+}
+function choose(i){
+  if(playState==='playing'){ ev('selected',CODES[i]); ev('stopped',CODES[playing]); log('停掉展项 '+CODES[playing]+'，切到展项 '+CODES[i]); playing=null; playState='idle'; setTimeout(()=>start(i),100); return; }
+  candidates=new Set([i]); ev('selected',CODES[i]); start(i);
+}
+function start(i){
+  playing=i;playState='playing';ev('started',CODES[i]);log('开始播放展项 '+CODES[i]);renderSim();
+  const text=(run?.draft?.cards||[])[i]?.narration;
+  if(text&&window.speechSynthesis){
+    const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';
+    u.onend=()=>{if(playState==='playing'&&playing===i)finish();};
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }
+}
+function finish(){
+  if(playState!=='playing')return;
+  log('展项 '+CODES[playing]+' 播完，30 秒内不自动重播');
+  candidates.clear();playing=null;playState='idle';renderSim();
+}
+function resetSim(){if(window.speechSynthesis)speechSynthesis.cancel();candidates.clear();playing=null;playState='idle';actionEvents=[];renderSim();log('已清空');}
+
+/* ---------- 测试 ---------- */
+const CASES=[
+ ['T1','三个展项各有一份讲解，出处都在原文里'],
+ ['T2','看到多个展项时只提示选择，不自动播'],
+ ['T3','切换展项时先停旧的再开新的，不重叠'],
+ ['T4','资料缺项时明确指出，不补造'],
+ ['T5','资料互相矛盾时列出来，不自己选边'],
+ ['T6','改一句后只重测受影响的部分'],
+ ['T7','模型调不通时没有产出，任务不能批准'],
+ ['T8','要求它"随便补一句"时，它拒绝'],
+ ['T9','没批准或检查没过时，不能导出交付包'],
+];
+function renderTests(){
+  const cur=run?.version;
+  $('testRows').innerHTML=CASES.map(([id,what])=>{
+    const t=tests[id];
+    const stale=t&&cur!=null&&Number(t.version)!==Number(cur);
+    const pill=pendingTests.has(id)?'<span class="pill">保存中…</span>'
+      :t?.saveError?'<span class="pill bad">未保存</span>'
+      :stale?`<span class="pill warn">旧版 v${esc(t.version)}</span>`
+      :t?(t.passed?'<span class="pill ok">通过</span>':'<span class="pill bad">失败</span>')
+      :'<span class="pill">未运行</span>';
+    const canRun=(id==='T2'||id==='T3');
+    return `<tr><td><b>${id}</b><div style="margin-top:6px">${pill}</div></td>
+      <td class="mut">${esc(what)}${stale?'<div class="mut" style="color:var(--warn)">本版没重测</div>':''}</td>
+      <td class="mut">${t?esc(typeof t.actual==='string'?t.actual:JSON.stringify(t.actual)).slice(0,160):'—'}</td>
+      <td>${canRun?`<button class="ghost small" ${pendingTests.has(id)?'disabled':''} onclick="recordTest('${id}')">跑</button>`:'<span class="mut" style="font-size:11.5px">需真实模型</span>'}</td></tr>`;
+  }).join('');
+}
+async function recordTest(id){
+  if(pendingTests.has(id))return;
+  if(!runId||!run){show('testMsg','先选一个任务，测试记录要挂到任务版本上。','err');return;}
+  const rid=runId, version=run.version;
+  pendingTests.add(id);renderTests();
+  let passed=false, actual='';
+  if(id==='T3'){
+    events=[];actionEvents=[];candidates=new Set([0]);start(0);choose(1);
+    await new Promise(r=>setTimeout(r,150));
+    const seq=actionEvents.map(x=>`${x.event}(${x.exhibit_id})`);
+    const s=seq.indexOf('selected(B)'), st=seq.indexOf('stopped(A)',s+1), en=seq.indexOf('started(B)',st+1);
+    passed=s>=0&&st>s&&en>st&&playing===1;
+    actual='事件顺序：'+seq.join(' → ')+'；同时播放='+(passed?'否':'是');
+  }else{
+    resetSim();const idle=playState==='idle'&&playing===null;
+    toggle(0);toggle(1);
+    const multi=candidates.size===2;
+    const noAuto=playState==='idle'&&playing===null;
+    passed=idle&&multi&&noAuto;
+    actual=`空闲=${idle}；候选=${candidates.size}；自动播放=${noAuto?'否':'是'}`;
+    resetSim();
+  }
+  tests[id]={passed,actual,version};
+  try{
+    const saved=await api('/api/runs/'+rid+'/tests',{
+      number:id, input:{simulated:true}, expected:{pass:true},
+      actual:{detail:actual,events:actionEvents.slice()}, status:passed?'passed':'failed', version
+    });
+    tests[id]={...tests[id],id:saved.id};
+  }catch(e){tests[id].saveError=e.message;}
+  pendingTests.delete(id);
+  show('testMsg',`${id} ${passed?'通过':'失败'}：${actual}`,passed?'ok':'warn');
+  renderTests();
+}
+
+/* ---------- 反馈 ---------- */
+async function addFeedback(){
+  try{
+    const d=await api('/api/feedback',{run_id:runId,category:$('fbCat').value,note:$('fbNote').value});
+    show('fbMsg',`已记录改进候选 #${d.version}：${d.candidate}（需人批准才生效）`,'warn');
+    $('fbNote').value='';loadFeedback();
+  }catch(e){show('fbMsg','记录失败：'+e.message,'err');}
+}
+async function loadFeedback(){
+  try{
+    const d=await api('/api/feedback');
+    $('fbList').innerHTML=d.items?.length
+      ? d.items.slice(0,8).map(x=>`#${x.version} · ${esc(x.category)} · ${esc(x.note).slice(0,50)}`).join('<br>')
+      : '还没有改进候选。';
+  }catch(e){$('fbList').textContent='读取失败';}
+}
+
+/* ---------- 启动 ---------- */
+async function init(){
+  renderExInputs();fillSample();renderSim();renderTests();
+  try{
+    const h=await api('/api/health');
+    $('statusLine').innerHTML=
+      `<span class="pill ${h.mode==='live'?'ok':'demo'}">${h.mode==='live'?'LIVE 真实模型':'DEMO 演示模式'}</span>`
+      +`<span class="pill ${h.model_configured?'ok':'warn'}">${h.model_configured?'模型已配置':'模型未配置'}</span>`
+      +`<span class="mut">${h.mode==='demo'
+        ?'现在是演示模式：生成的是摘句模板，不是模型产出，导出包会印"不可作为客户交付"。'
+        :'真实模型模式：生成内容需过检查并人工审核。'}</span>`;
+  }catch(e){
+    if(e.needsToken){
+      $('statusLine').innerHTML='<span class="pill bad">需要访问口令</span><span class="mut">请输入口令，或用 ?token=口令 打开本页</span>';
+      $('tokenWrap').classList.remove('hide');$('tokenInput').focus();return;
+    }
+    $('statusLine').textContent='服务连不上：'+e.message;
+  }
+  await loadRuns();
+  try{const b=await api('/api/business');if(b.computed)renderBiz(b.computed);}catch(e){}
+  loadFeedback(); loadLedger();
+}
+init();
+</script></body></html>

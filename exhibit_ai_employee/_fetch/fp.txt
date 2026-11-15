@@ -1,0 +1,14 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta content="email=no" name="format-detection" />
+<link rel="icon" href="../images/ico.jpg" type="image/x-icon">
+       <link rel="shortcut icon" href="../images/ico.jpg" type="image/x-icon">
+       <meta content="科普,科学,科学普及,虚拟博物馆,科学讲座,科学图片,科学动画,科学游戏,科学视频,科学论坛,科普基地,kepu" name="keywords" />
+       <meta name="description" content="中国科普博览是一个综合性的以宣传科学知识，提高全民科学文化素质为目的大型科普网站。中国科普博览在诸多院士、专家的指导下，依托中国科学院的科学资源，采集全国各具特色的科普信息，融知识性和趣味性为一体，是青少年课外学习的基地。自1999年建立以来，逐渐形成了由万物之理、地球故事、生命奥秘、星宇迷尘、科技之光和文明星火等六大展区组成的主体结构，并汇聚了科学讲座、动画游戏、科学图片、科普视频等大量的科普资源。曾获'联合国世界信息峰会大奖'、'中国优秀文化网站'、'全国优秀科普网站'等诸多奖项。" />
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="js/html5shiv.min

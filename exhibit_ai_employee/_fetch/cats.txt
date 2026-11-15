@@ -1,0 +1,2 @@
+﻿KGA7sHXaaux0bs9wfhEBs 全部 level 2 children 0
+   dim: 中国数字科技馆-移动VR [('生命与科学', 'smyxk'), ('宇宙航空航天', 'yzkt'), ('数学', 'jx'), ('应急避险', 'yjbx'), ('工程', 'gc'), ('机器人/新能源/新材料', 'jjr'), ('人体与医学', 'rtyyx'), ('地球与海洋', 'dqyhy'), ('装备与制造', 'zbyzz'), ('其他', 'qt')]

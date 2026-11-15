@@ -1,0 +1,6 @@
+﻿=== pat url\s*[:=]\s*[\'"]([^\'"]{5,200})[\'"]
+=== pat ajax\(\{.{0,400}
+=== pat /irs-c-[a-z\-/]+[a-zA-Z0-9_./?=&-]*
+  /irs-c-web-config/182109db521/images/favicon.ico
+  /irs-c-mobile/search-result
+  /irs-c-mobile/map.html?locations=

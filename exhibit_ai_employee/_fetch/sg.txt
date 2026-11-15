@@ -1,0 +1,10 @@
+﻿OK 光的折射 原理 科普 3864 0
+OK 光的折射 site:kepu.net.cn 3843 0
+OK 光的折射 site:cdstm.cn 3840 0
+OK 声音的传播 介质 声波 科普 3894 0
+OK 声音的传播 site:kepu.net.cn 3852 0
+OK 声速 介质 site:cdstm.cn 3843 0
+OK 光的色散 白光的分解 科普 3891 0
+OK 光的色散 site:kepu.net.cn 3843 0
+OK 三原色 物体的颜色 site:cdstm.cn 3879 0
+done

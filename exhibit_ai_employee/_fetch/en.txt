@@ -1,0 +1,15 @@
+﻿OK https://cn.bing.com/search 103204 kepulinks 0
+OK https://www.sogou.com/web 403796 kepulinks 15
+    http://www.kepu.net.cn/gb/technology/telecom/fiber/fbr318.html
+    http://www.kepu.net.cn/gb/earth/weather/light/lgt008_2.html
+    http://self.kepu.net.cn/s...
+    http://kepu.net.cn/y...
+    http://www.kepu.net.cn/gb/technology/nuclear/atom/200207300028.html
+    http://www.kepu.net.cn/g...
+FAIL https://search.cn.bing.com/search HTTPError HTTP Error 400: Bad Request
+OK https://www.so.com/s 256631 kepulinks 5
+    http://www.kepu.net.cn/vmuseum/technology/telecom/fiber/fbr102.html
+    http://www.kepu.net.cn
+    https://www.kepu.net.cn/vmuseum/overview/201407/t20140729_458162.html
+    http://www.kepu.net.cn/gb/earth/antarctica/abc/abc001.html
+    https://www.kepu.net.cn/中国科普博览
