@@ -591,7 +591,7 @@
                   <div class="section-spacer">${act('synth', r.a ? '重新合成' : '合成', 'outline-green', `data-value="${esc(r.e.id)}"`)}</div></td></tr>`).join('')}
             </tbody></table></div>
             ${rows.filter((r) => r.a).map((r) => `<div class="audio-line section-spacer"><strong>${esc(r.e.id)}</strong>
-              <audio controls preload="metadata" src="${esc(withToken('/api/studio/projects/' + p.id + '/audio/' + encodeURIComponent(r.a.filename)))}"></audio></div>`).join('')}
+              <audio controls preload="metadata" src="${esc(withToken('api/studio/projects/' + p.id + '/audio/' + encodeURIComponent(r.a.filename)))}"></audio></div>`).join('')}
           </section>
           <section class="panel panel-pad">
             <h3>实时双向语音 <span class="micro-tag">未接入</span></h3>
@@ -957,7 +957,7 @@
   async function reloadProject() {
     if (!S.project) return;
     try {
-      const data = await api.get('/api/studio/projects/' + S.project.id);
+      const data = await api.get('api/studio/projects/' + S.project.id);
       S.project = data.project;
       try { localStorage.setItem(PROJECT_KEY, S.project.id); } catch (e) {}
       render();
@@ -967,7 +967,7 @@
   async function reloadEvents(reset) {
     if (!S.project) return;
     try {
-      const data = await api.quiet('/api/studio/projects/' + S.project.id + '/events?after=' + (reset ? 0 : S.lastEventId));
+      const data = await api.quiet('api/studio/projects/' + S.project.id + '/events?after=' + (reset ? 0 : S.lastEventId));
       const list = data.events || [];
       if (reset) { S.events = list; } else if (list.length) { S.events = S.events.concat(list); }
       S.lastEventId = S.events.reduce((max, e) => Math.max(max, Number(e.id) || 0), S.lastEventId);
@@ -1010,7 +1010,7 @@
   /* ================= 动作 ================= */
   async function postAction(action, body) {
     if (!S.project) throw new Error('还没有选中项目');
-    const data = await api.post('/api/studio/projects/' + S.project.id + '/' + action, body || {});
+    const data = await api.post('api/studio/projects/' + S.project.id + '/' + action, body || {});
     if (data.project) S.project = data.project;
     await reloadEvents(false);
     render();
@@ -1021,7 +1021,7 @@
   async function uploadMaterial(file) {
     if (!S.project) throw new Error('先建一个项目，再导入资料');
     if (!file || !file.size) throw new Error('文件是空的（0 字节）');
-    const url = withToken('/api/studio/projects/' + S.project.id + '/upload?name=' + encodeURIComponent(file.name));
+    const url = withToken('api/studio/projects/' + S.project.id + '/upload?name=' + encodeURIComponent(file.name));
     let res;
     try {
       res = await fetch(url, {
@@ -1064,7 +1064,7 @@
     S.pendingRun = true;
     render();
     try {
-      await api.post('/api/studio/projects/' + S.project.id + '/run', {});
+      await api.post('api/studio/projects/' + S.project.id + '/run', {});
       toast('已开始生成，事件流会实时刷新');
       await reloadProject();
       await reloadEvents(false);
@@ -1081,7 +1081,7 @@
     S.pendingRun = exhibitId;
     render();
     try {
-      await api.post('/api/studio/projects/' + S.project.id + '/run', { exhibit_id: exhibitId });
+      await api.post('api/studio/projects/' + S.project.id + '/run', { exhibit_id: exhibitId });
       toast(`已开始重新生成 ${exhibitId}，事件流会实时刷新`);
       await reloadProject();
       await reloadEvents(false);
@@ -1208,7 +1208,7 @@
       <div><dt>Breeze 音色</dt><dd class="hint-mono">${esc(tts.breeze_voice || '—')} · ${esc(tts.breeze_model || '—')}</dd></div>
       <div><dt>访问口令</dt><dd>${h.auth_required ? pill('已启用', 'green') : pill('未启用（仅本机监听）', 'amber')}</dd></div>
     </dl>
-    <div class="inline-actions section-spacer">${act('set-token', '设置访问口令', 'outline-green')}${act('retry', '重新连接', '')}<a class="text-button" href="/classic">打开旧版工作台 ↗</a></div>`);
+    <div class="inline-actions section-spacer">${act('set-token', '设置访问口令', 'outline-green')}${act('retry', '重新连接', '')}<a class="text-button" href="classic">打开旧版工作台 ↗</a></div>`);
   }
 
   function go(view) {
@@ -1237,7 +1237,7 @@
     'pick-project': async (value) => {
       closeDialog();
       try {
-        const data = await api.get('/api/studio/projects/' + value);
+        const data = await api.get('api/studio/projects/' + value);
         S.project = data.project; S.exhibitIndex = 0; S.feedbackId = null;
         try { localStorage.setItem(PROJECT_KEY, value); } catch (e) {}
         await reloadEvents(true);
@@ -1252,7 +1252,7 @@
       if (!p) { closeDialog(); return; }
       closeDialog();
       try {
-        const data = await api.post('/api/studio/projects/' + p.id + '/delete', {});
+        const data = await api.post('api/studio/projects/' + p.id + '/delete', {});
         S.project = null;
         S.exhibitIndex = 0;
         S.lastEventId = 0;
@@ -1309,8 +1309,8 @@
     synth: (value) => doSynth(value),
     'run-one': (value) => doRunOne(value),
     'export-quote': () => exportQuote(),
-    'download-zip': () => { location.href = withToken('/api/studio/projects/' + P().id + '/export.zip'); },
-    'download-md': () => { location.href = withToken('/api/studio/projects/' + P().id + '/export'); },
+    'download-zip': () => { location.href = withToken('api/studio/projects/' + P().id + '/export.zip'); },
+    'download-md': () => { location.href = withToken('api/studio/projects/' + P().id + '/export'); },
     'feedback-select': (value) => { S.feedbackId = value; render(); },
     'fix-issue': async (value, el) => {
       try {
@@ -1387,7 +1387,7 @@
     'new-project': async (form) => {
       const body = readForm(form);
       if (!body.name) { toast('项目名称不能为空', 'error'); return; }
-      const data = await api.post('/api/studio/projects', body);
+      const data = await api.post('api/studio/projects', body);
       closeDialog();
       try { localStorage.setItem(PROJECT_KEY, data.project.id); } catch (e) {}
       S.project = data.project;
@@ -1456,7 +1456,7 @@
     renderChat();
     renderChrome();
     try {
-      await api.post('/api/studio/projects/' + S.project.id + '/chat', { message });
+      await api.post('api/studio/projects/' + S.project.id + '/chat', { message });
       // 服务端立刻返回 202，回话与工具进度由轮询的 chat.tool / chat.agent 事件补上。
       await reloadProject();
     } catch (error) {
@@ -1503,7 +1503,7 @@
 
   /* ================= 启动 ================= */
   async function bootProjects() {
-    const list = await api.get('/api/studio/projects');
+    const list = await api.get('api/studio/projects');
     S.projects = list.projects || [];
     S.listLoaded = true;
     if (!S.projects.length) {
@@ -1514,7 +1514,7 @@
     let want = '';
     try { want = localStorage.getItem(PROJECT_KEY) || ''; } catch (e) { want = ''; }
     if (!want || !S.projects.some((p) => p.id === want)) want = S.projects[0].id;
-    const data = await api.get('/api/studio/projects/' + want);
+    const data = await api.get('api/studio/projects/' + want);
     S.project = data.project;
     try { localStorage.setItem(PROJECT_KEY, want); } catch (e) {}
   }
@@ -1522,7 +1522,7 @@
   async function boot() {
     S.connError = null;
     try {
-      S.health = await api.get('/api/studio/health');
+      S.health = await api.get('api/studio/health');
     } catch (error) {
       if (error.unauthorized) { askToken(); return; }
       S.connError = error.message;

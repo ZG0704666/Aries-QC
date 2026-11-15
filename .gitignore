@@ -17,3 +17,6 @@ exhibit_ai_employee/studio.sqlite3
 
 # 外部技能/依赖的源码副本，不入库
 _skill_recover/
+
+# 部署凭据，不入库
+exhibit_ai_employee/deploy/deploy.local.json

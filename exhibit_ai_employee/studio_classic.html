@@ -585,8 +585,8 @@ function render() {
   $('chipExhibits').textContent = (p.materials || []).length + ' 个展项';
   $('agentState').textContent = p.status === 'running' ? '正在生成' : (p.status === 'failed' ? '出错，等待指示' : '工作中');
   $('footNote').textContent = '原文保持不变，所有成果都锁定为 v' + p.version.toFixed(1);
-  $('exportLink').href = withToken('/api/studio/projects/' + p.id + '/export');
-  $('exportZipLink').href = withToken('/api/studio/projects/' + p.id + '/export.zip');
+  $('exportLink').href = withToken('api/studio/projects/' + p.id + '/export');
+  $('exportZipLink').href = withToken('api/studio/projects/' + p.id + '/export.zip');
   $('tabDot').hidden = !(p.issues && p.issues.length);
 
   renderSteps();
@@ -866,7 +866,7 @@ document.addEventListener('click', async (e) => {
     const name = prompt('登记资料授权确认人（真实姓名）');
     if (!name || !name.trim()) return;
     try {
-      const {project} = await api('/api/studio/projects/' + S.project.id + '/authorize', {confirmed_by: name.trim()});
+      const {project} = await api('api/studio/projects/' + S.project.id + '/authorize', {confirmed_by: name.trim()});
       S.project = project; render();
     } catch (err) { alert(err.message); }
     return;
@@ -918,7 +918,7 @@ $('composer').addEventListener('submit', async (e) => {
   S.project.chat.push({role:'user', text, at:new Date().toISOString()});
   renderChat();
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/chat', {message:text});
+    const {project} = await api('api/studio/projects/' + S.project.id + '/chat', {message:text});
     S.project = project; render(); pollEvents();
   } catch (err) { alert(err.message); }
 });
@@ -928,7 +928,7 @@ $('chatInput').addEventListener('keydown', e => {
 
 $('askDelete').addEventListener('click', async (e) => {
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/issue', {issue_id: e.currentTarget.dataset.issue, choice:'删除该事实'});
+    const {project} = await api('api/studio/projects/' + S.project.id + '/issue', {issue_id: e.currentTarget.dataset.issue, choice:'删除该事实'});
     S.project = project; render(); pollEvents();
   } catch (err) { alert(err.message); }
 });
@@ -941,17 +941,17 @@ $('materialForm').addEventListener('submit', async (e) => {
   const err = $('materialErr');
   if (text.length < 20) { err.textContent = '补充资料至少 20 字'; err.classList.add('show'); return; }
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/material', {name, text});
+    const {project} = await api('api/studio/projects/' + S.project.id + '/material', {name, text});
     S.project = project; $('materialDialog').close(); $('materialText').value = '';
     err.classList.remove('show'); render();
-    await api('/api/studio/projects/' + S.project.id + '/run', {});
+    await api('api/studio/projects/' + S.project.id + '/run', {});
     S.project.status = 'running'; render(); pollEvents();
   } catch (e2) { err.textContent = e2.message; err.classList.add('show'); }
 });
 
 $('runTests').addEventListener('click', async () => {
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/tests', {});
+    const {project} = await api('api/studio/projects/' + S.project.id + '/tests', {});
     S.project = project; render();
   } catch (err) { alert(err.message); }
 });
@@ -961,7 +961,7 @@ async function review(decision) {
   const notice = $('reviewNotice');
   if (!reviewer) { notice.className = 'notice err show'; notice.textContent = '审核人不能为空，批准需要人工署名。'; return; }
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/review',
+    const {project} = await api('api/studio/projects/' + S.project.id + '/review',
       {decision, reviewer, note, version: S.project.version});
     S.project = project; notice.className = 'notice ok show';
     notice.textContent = decision === 'approved' ? '已批准 v' + project.version.toFixed(1) : '已退回修改。';
@@ -987,11 +987,11 @@ $('playVoice').addEventListener('click', async () => {
   $('voiceState').className = 'tag amber';
   try {
     // 服务端用真实 TTS 合成，返回的音频元数据含 sha256 与时长，界面据此展示而非假装已试听
-    const {project, audio} = await api('/api/studio/projects/' + S.project.id + '/voice',
+    const {project, audio} = await api('api/studio/projects/' + S.project.id + '/voice',
       {text, exhibit_id: exhibitId});
     S.project = project;
     if (audioEl) { audioEl.pause(); audioEl = null; }
-    audioEl = new Audio(withToken('/api/studio/projects/' + S.project.id + '/audio/' + audio.filename));
+    audioEl = new Audio(withToken('api/studio/projects/' + S.project.id + '/audio/' + audio.filename));
     audioEl.play().then(() => {
       $('voiceState').textContent = '播放中 · ' + (audio.format === 'mp3' ? 'MP3' : 'WAV') + ' ' + (audio.bytes / 1024).toFixed(0) + ' KB';
       $('voiceState').className = 'tag ok';
@@ -1019,7 +1019,7 @@ $('stopVoice').addEventListener('click', () => {
 $('markPublished').addEventListener('click', async () => {
   const notice = $('publishNotice');
   try {
-    const {project} = await api('/api/studio/projects/' + S.project.id + '/publish', {});
+    const {project} = await api('api/studio/projects/' + S.project.id + '/publish', {});
     S.project = project; notice.className = 'notice ok show'; notice.textContent = '已标记为发布 v' + project.version.toFixed(1);
     render();
   } catch (err) { notice.className = 'notice err show'; notice.textContent = err.message; }
@@ -1029,7 +1029,7 @@ $('markPublished').addEventListener('click', async () => {
 async function pollEvents() {
   clearTimeout(S.timer);
   try {
-    const data = await api('/api/studio/projects/' + S.project.id + '/events?after=' + S.eventCursor);
+    const data = await api('api/studio/projects/' + S.project.id + '/events?after=' + S.eventCursor);
     const fresh = (data.events || []).filter(e => e.id > S.eventCursor);
     if (fresh.length) {
       S.events.push(...fresh);
@@ -1046,9 +1046,9 @@ async function pollEvents() {
 }
 
 async function loadProject(id, silent) {
-  const {project} = await api('/api/studio/projects/' + id);
+  const {project} = await api('api/studio/projects/' + id);
   S.project = project;
-  const allEvents = (await api('/api/studio/projects/' + id + '/events?after=0')).events || [];
+  const allEvents = (await api('api/studio/projects/' + id + '/events?after=0')).events || [];
   S.events = allEvents.slice(-200);
   S.eventCursor = allEvents.length ? allEvents[allEvents.length - 1].id : 0;
   $('reviewer').value = project.review?.reviewer || $('reviewer').value;
@@ -1063,7 +1063,7 @@ async function loadProject(id, silent) {
 
 async function boot() {
   try {
-    const health = await api('/api/studio/health');
+    const health = await api('api/studio/health');
     $('modeText').textContent = health.key_configured ? '真实模型 · ' + health.model : '模型未配置';
     $('modePill').style.color = health.key_configured ? '#b9c6dc' : '#f0a5a5';
     // TTS 能力按服务端实测结果展示，不假称已接入
@@ -1077,9 +1077,9 @@ async function boot() {
     } else {
       $('ttsNote').textContent = '本机没有可用的 TTS 引擎，音频无法生成。';
     }
-    const {projects} = await api('/api/studio/projects');
+    const {projects} = await api('api/studio/projects');
     let id = projects[0]?.id;
-    if (!id) { const {project} = await api('/api/studio/seed', {}); id = project.id; }
+    if (!id) { const {project} = await api('api/studio/seed', {}); id = project.id; }
     await loadProject(id);
     pollEvents();
   } catch (err) {

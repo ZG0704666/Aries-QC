@@ -64,7 +64,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-o"
+CODE_REV = "studio-2026-11-15-p"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -1150,14 +1150,27 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass
 
+    def write_body(self, raw):
+        """写响应体。客户端中途关连接（刷新、切视图、音频预载被取消）是常态，
+        不该在日志里变成 BrokenPipe 堆栈——断线不是服务端错误。"""
+        try:
+            return self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+            return None
+
     def send_json(self, status, payload):
         raw = json.dumps(payload, ensure_ascii=False).encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(raw)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(raw)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(raw)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+            return None
+        return self.write_body(raw)
 
     def read_json(self):
         length = int(self.headers.get("Content-Length") or 0)
@@ -1178,7 +1191,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(page)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        return self.wfile.write(page)
+        return self.write_body(page)
 
     def serve_asset(self, path):
         """只下发 assets/ 目录内的静态文件。与页面一样免口令——里面没有项目数据。"""
@@ -1196,7 +1209,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        return self.wfile.write(raw)
+        return self.write_body(raw)
 
     def authorized(self):
         """校验访问口令。未配置口令时放行——启动护栏（main）保证这只在监听本机时才发生。
@@ -1283,7 +1296,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Accept-Ranges", "none")
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
-                return self.wfile.write(raw)
+                return self.write_body(raw)
             match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/export(\.zip)?", path)
             if match:
                 project = load(match.group(1))
@@ -1299,14 +1312,14 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_header("Content-Length", str(len(raw)))
                     self.send_header("X-Delivered-Files", str(len(manifest["files"])))
                     self.end_headers()
-                    return self.wfile.write(raw)
+                    return self.write_body(raw)
                 raw = build_export_markdown(project).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/markdown; charset=utf-8")
                 self.send_header("Content-Disposition", 'attachment; filename="studio-%s.md"' % project["id"])
                 self.send_header("Content-Length", str(len(raw)))
                 self.end_headers()
-                return self.wfile.write(raw)
+                return self.write_body(raw)
             return self.send_json(404, {"error": "接口不存在"})
         except KeyError as error:
             return self.send_json(404, {"error": str(error)})

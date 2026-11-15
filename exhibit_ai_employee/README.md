@@ -266,6 +266,19 @@ BREEZE_API_KEY=...           # 可选：云端 TTS；缺省时自动退回本机
 
 健康检查：`GET /api/studio/health` 返回模型、Key 是否配置、数据库、代码版本、pid、是否需要口令、TTS/联网/文档三种能力的状态、对话循环上限。
 
+### 部署到服务器
+
+单进程、无前端构建、无外部数据库，所以部署就是「放文件 → 起 systemd → 挂 nginx 子路径」。前端全部使用**相对地址**请求接口，因此既能跑在 `/`，也能挂在 `/studio/` 这样的子路径下，不需要改代码。
+
+现网实例：**https://139.9.131.86/studio/**（口令在服务器 `/opt/exhibit-studio/.env` 的 `STUDIO_ACCESS_TOKEN`）。
+
+```bash
+cd exhibit_ai_employee
+python deploy/deploy.py all      # upload → service → nginx → verify
+```
+
+完整步骤、systemd 与 nginx 配置全文、日常运维命令、端口与安全边界、本机与云端的行为差异，见 **[`DEPLOY.md`](DEPLOY.md)**。
+
 ## 附录 B · 目录与关键文件
 
 ```
@@ -280,6 +293,8 @@ exhibit_ai_employee/
 ├── tts.py                # 三引擎合成：Breeze（云端，默认）/ edge / SAPI（离线兜底）
 ├── websearch.py          # Bing 检索 + 网页正文抓取 + 去字典站噪声
 ├── docread.py            # 多格式上传解析与段落编号
+├── deploy/deploy.py      # 一键部署：传文件 → venv → systemd → nginx → 验收
+├── DEPLOY.md             # 部署与运维手册
 ├── studio.sqlite3        # 项目库（本地，不入库）
 └── README.md             # 本文件
 ```
