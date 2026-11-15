@@ -219,7 +219,6 @@
     return header('项目与报价', `${esc(p.id)} · ${esc(p.name)} · 任务 #${p.task_no} · v${p.version}`,
       pill(q.confirmed ? '范围已确认' : '范围待确认', q.confirmed ? 'green' : 'amber')) +
       pipeline([['需求', phases[0]], ['范围', phases[1]], ['签约', phases[2]], ['回款', phases[3]]], step) +
-      (!((p.sources || []).length || (p.research || []).length) ? note('<strong>这个项目还没有内容依据</strong>知名作品让我先联网调研就行；客户自己的作品再导入原文资料。两者都没有时，生成会被服务端拒绝。') : '') +
       `<div class="grid cols-2">
         <section class="panel panel-pad">
           <h3>需求与交付范围</h3>
@@ -236,7 +235,6 @@
               <button type="submit" class="outline-green" data-mode="save">保存范围与报价</button>
               <button type="submit" class="green" data-mode="confirm">✓ 确认范围</button>
             </div>
-            <p class="subtle">确认范围要求客户名称与服务范围都填好、报价大于 0；确认后写入 ${esc(dateTimeOf(q.confirmed_at))}。</p>
           </form>
         </section>
         <div class="stack">
@@ -244,7 +242,6 @@
             <h3>报价与成本</h3>
             <div class="price">${money(q.price)}</div>
             <div class="metric-row">${q.confirmed ? pill('范围已确认', 'green') : pill('范围待确认', 'amber')}${pill('合同与回款未接入', 'blue')}</div>
-            <p class="small muted">成本与贡献由服务端计算，前端传入的数值一律被覆盖。</p>
             <form data-form="money">
               <div class="field-row">${field('报价', 'price', qText('price', ''), 'number')}${field('直接人工', 'labor', qText('labor', ''), 'number')}</div>
               <div class="field-row">${field('模型与语音', 'models', qText('models', ''), 'number')}${field('其他直接费用', 'other', qText('other', ''), 'number')}</div>
@@ -254,7 +251,7 @@
               <li>直接成本<strong>${money(q.cost)}</strong></li>
               <li class="total">项目贡献<strong>${money(q.contribution)}</strong></li>
             </ul>
-            ${note('以上为公式测算，未含获客、税费、折旧，不代表实测利润。')}
+            <p class="small muted">未含获客、税费、折旧。</p>
           </section>
         </div>
       </div>
@@ -321,14 +318,11 @@
         pipeline(steps, 0) +
         `<section class="panel panel-pad"><h3>还没有任何展项草稿</h3>` +
         (hasSources
-          ? note(`<strong>下一步：生成草稿</strong>项目里已有 ${(p.sources || []).length} 份资料、${paraCount()} 个来源段落。` +
-            `生成会为每个展项各调用一次模型（共 ${(p.materials || []).length} 次），成功后逐条核对原文引用。`, 'green') + runBtn
+          ? `<p class="small muted">${(p.sources || []).length} 份资料 · ${paraCount()} 个段落</p>` + runBtn
           : research.length
-            ? note(`<strong>下一步：生成草稿</strong>已存 ${research.length} 个调研网页（${research.map((r) => esc(r.id)).join('、')}），` +
-              `可以按${plan.length ? `${plan.length} 个展项` : '作品名'}起草；引用会逐字核对到你存的网页摘录。`, 'green') + runBtn
-            : note(`<strong>还没有内容依据</strong>知名作品不用等资料——在对话框里说「先调研一下这个作品，然后起草」，我自己去查。` +
-              `客户自己送展的作品、网上查不到的藏品，才需要把资料导进来。`, 'amber') +
-              `<div class="inline-actions section-spacer">${act('nav-content', '去导入资料 →', 'primary')}${act('focus-chat', '让它先调研 ↗')}</div>`) +
+            ? `<p class="small muted">${research.length} 个网页 · ${plan.length ? plan.length + ' 个展项' : '未定展项'}</p>` + runBtn
+            : `<p class="small muted">先给它依据：自己上网调研，或者导入原文资料。</p>` +
+              `<div class="inline-actions section-spacer">${act('focus-chat', '↗ 让它先联网调研', 'primary')}${act('nav-content', '＋ 导入资料')}</div>`) +
         `</section>`;
     }
     const facts = e.facts || [];
@@ -359,7 +353,7 @@
         </section>
         <aside class="panel event-inspector"><div class="panel-pad">
           <div class="panel-title">运行事件 <span class="micro-tag">真实记录</span></div>
-          ${issuesHere ? note(`<strong>! 有 ${issuesHere} 处引用待处理</strong>这些事实的原文引用无法逐字定位，不能直接用于发布。`, 'red') : note('引用检查通过，仍需人工审核。', 'green')}
+          ${issuesHere ? note(`<strong>! 有 ${issuesHere} 处引用待处理</strong>`, 'red') : ''}
           ${issuesHere ? `<div class="notice-actions">${act('goto-issues', '查看待核验', 'primary')}</div>` : ''}
           <details class="event-history"><summary>查看运行记录 <span class="mono">${S.events.length} 条</span></summary>${eventsHtml(30)}</details>
           <h4>后续步骤</h4>
@@ -387,8 +381,7 @@
         <p class="small muted">${esc(r.title || r.url || '')}${r.query ? ` · 搜索词「${esc(r.query)}」` : ''}</p>
         <ul class="para-list" id="paras-${esc(r.id)}">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
           <div class="para-id">${esc(q.id)}</div><p>${esc(q.text)}</p></li>`).join('')}</ul>
-      </div>`).join('')}
-      <p class="subtle">这些摘录是服务端从网页上抓下来的原文整句，和馆方资料同权：讲解里引用它们，同样逐字核对到 ${esc(research[0].id)}·Q001 这个粒度。</p>`;
+      </div>`).join('')}`;
   }
 
   function contentView() {
@@ -406,47 +399,43 @@
             <ul class="para-list">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
               <div class="para-id">${esc(q.id)}</div><p>${esc(q.text)}</p></li>`).join('')}</ul>
           </div>`).join('')}
-          <p class="subtle">这些是服务端从网页上抓下来的原文整句，起草时逐字核对到这里。</p>
         </section>` : '';
       if (!sources.length) {
-        return header('内容成果', '原始资料只读 · 引用可定位 · 改一个字旧结论就失效',
-          pill(research.length ? `${research.length} 个调研来源` : '还没有内容依据', research.length ? 'green' : 'amber')) +
+        return header('内容成果', '引用都能回到原文', pill(research.length ? `${research.length} 个调研来源` : '还没有来源', research.length ? 'green' : 'amber')) +
           `<div class="grid cols-2">
             <section class="panel panel-pad">
-              <h3>${research.length ? '接下来：起草' : '两条路，选一条'}</h3>
-              ${research.length
-                ? `<p>已经存下 ${research.length} 个调研网页。点「生成草稿」，模型会按${(p.plan || []).length ? ` 定的 ${(p.plan || []).length} 个展项` : '作品名'}起草，每条事实的引用都逐字核对到网页摘录。</p>
-                   <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div>`
-                : `<p><strong>一、知名作品</strong>：不用等资料。在对话框里说「先调研一下这个作品，然后起草」，我自己上网查、存来源、定展项，再起草。</p>
-                   <p><strong>二、客户自己的作品</strong>：网上查不到、或者资料很少，才需要把馆方给的原文导进来，讲解里的每一句都要能在里面逐字找到。</p>
-                   <div class="inline-actions">${act('focus-chat', '让它先联网调研 ↗', 'primary')}</div>`}
+              <h3>先给它依据</h3>
+              ${research.length ? `<p class="small muted">${research.length} 个网页</p>` : ''}
+              <div class="inline-actions section-spacer">
+                ${research.length ? act('goto-live', '▶ 生成草稿', 'primary') : act('focus-chat', '↗ 让它先联网调研', 'primary')}
+              </div>
               <div class="divider"></div>
-              <h4>导入资料（第二种路线）</h4>
-              <label class="file-input">＋ 导入资料（txt / md / csv / json / html / docx / pdf）<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
-              <p class="subtle">至少 20 字。导入后写入资料来源并自动编号 SRC-001、SRC-002…，不会自动生成草稿。</p>
+              <label class="file-input">＋ 导入资料<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
+              ${research.length ? `<div class="inline-actions section-spacer">${act('focus-chat', '↗ 再调研一个网页')}</div>` : ''}
               <div class="divider"></div>
               <h4>资料授权</h4>
               ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}</div>`
                 : `<form data-form="authorize"><div class="field-row">${field('确认人姓名', 'confirmed_by', '')}</div>
-                  <button type="submit" class="outline-green">登记资料授权</button></form>
-                  <p class="subtle">登记资料来源已获授权，发布门禁会读这条记录。</p>`}
+                  <button type="submit" class="outline-green">登记资料授权</button></form>`}
             </section>
             ${researchPanel || `<section class="panel panel-pad">
-              <h3>接下来会发生什么</h3>
-              <ol class="gate-list">
-                <li><strong>来源收集</strong>调研网页存成摘录（WEB-001·Q002），或导入原文（SRC-001·P003）。</li>
-                <li><strong>展项清单</strong>一件作品一个展项，起草前先定清楚。</li>
-                <li><strong>知识卡</strong>抽取事实，逐条核对引用。</li>
-                <li><strong>讲解与问答</strong>生成主讲解、简化版、追问与来源外兜底。</li>
-              </ol>
-              ${note('既没有资料也没有调研记录时，点「生成草稿」会被拒绝——生成器不会编造展项内容。')}
+              <h3>还没有任何来源</h3>
+              <p class="small muted">给一个就能起草。</p>
+              <div class="choice-cards section-spacer">
+                <button type="button" class="choice-card" data-action="focus-chat">
+                  <strong>↗ 自己调研</strong><span>公开作品、知名展品</span>
+                </button>
+                <label class="choice-card">
+                  <strong>＋ 导入原文</strong><span>客户自己送展、网上查不到</span>
+                  <input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden>
+                </label>
+              </div>
             </section>`}
           </div>`;
       }
-      return header('内容成果', '资料已就位 · 还没有草稿', pill('待生成', 'amber')) +
-        `<section class="panel panel-pad"><h3>已导入 ${sources.length} 份资料</h3>
-          <p>共 ${paraCount()} 个段落。到「执行现场」点生成，模型会按资料抽取展项并写草稿。</p>
-          <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div></section>` +
+      return header('内容成果', '资料已就位', pill('待生成', 'amber')) +
+        `<section class="panel panel-pad"><h3>${sources.length} 份资料 · ${paraCount()} 个段落</h3>
+          <div class="inline-actions section-spacer">${act('goto-live', '▶ 生成草稿', 'primary')}</div></section>` +
         researchPanel;
     }
     const refs = new Set(e.source_refs || []);
@@ -455,7 +444,7 @@
     const rMine = research.filter((r) => !refs.size || refs.has(r.id)
       || (r.quotes || []).some((q) => refs.has(q.id)));
     const rList = rMine.length ? rMine : research;
-    return header('每一句讲解，都能回到来源', '原始资料只读 · 引用可定位 · 修改后旧结论全部失效') +
+    return header('每一句讲解，都能回到来源', `${esc(e.id)} · v${p.version}`) +
       `<section class="panel panel-pad" style="margin-bottom:16px">${exhibitTray()}</section>
       <div class="grid content-two">
         <section id="source-panel" class="panel panel-pad">
@@ -465,7 +454,7 @@
           ].filter(Boolean).join(' + ') || '（暂无依据）'}</h3>
           ${list.map((s) => `<div class="section-spacer">
             <div class="metric-row"><strong>${esc(s.id)}</strong>${pill(byteText(s.bytes), 'blue')}${pill((s.paragraphs || []).length + ' 段')}</div>
-            <p class="small muted">${esc(s.name)} · 原文不被生成内容覆盖</p>
+            <p class="small muted">${esc(s.name)}</p>
             <ul class="para-list" id="paras-${esc(s.id)}">${(s.paragraphs || []).map((x) => `<li data-para="${esc(x.id)}">
               <div class="para-id">${esc(x.id)}</div><p>${esc(x.text)}</p></li>`).join('')}</ul>
           </div>`).join('')}
@@ -474,11 +463,9 @@
           <h4>资料授权</h4>
           ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}<br>${esc(p.authorization.scope || '')}</div>`
             : `<form data-form="authorize"><div class="field-row">${field('确认人姓名', 'confirmed_by', '')}</div>
-              <button type="submit" class="outline-green">登记资料授权</button></form>
-              <p class="subtle">登记后写入项目，发布门禁会读取这条记录。</p>`}
+              <button type="submit" class="outline-green">登记资料授权</button></form>`}
           <div class="divider"></div>
-          <label class="file-input">＋ 导入资料（txt / md / csv / json / html / docx / pdf）<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
-          <p class="subtle">至少 20 字；导入后写入资料来源并重新编号 SRC，不会自动重写已有草稿。</p>
+          <label class="file-input">＋ 导入资料<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
         </section>
         <section class="panel">
           <div class="panel-header"><h3>知识卡与脚本</h3>
@@ -489,8 +476,7 @@
             ${S.contentTab === '主讲解'
               ? `<form data-form="exhibit"><label class="field"><span>讲解内容（可编辑）</span>
                  <textarea id="script-editor" name="text" class="editor" maxlength="2000">${esc((e.main || {}).text || '')}</textarea></label>
-                 <div class="inline-actions"><button type="submit" class="outline-green">保存为新版本</button>${act('nav-tests', '提交审核 →', 'primary')}</div>
-                 <p class="subtle">保存会在服务端把版本 +0.1，并清空自测结果与审核签名——改一个字，旧结论就不再对应当前文本。</p></form>`
+                 <div class="inline-actions"><button type="submit" class="outline-green">保存为新版本</button>${act('nav-tests', '提交审核 →', 'primary')}</div></form>`
               : `<div>${paperBody(e)}</div>${act('jump-main', '去主讲解编辑 →', 'outline-green section-spacer')}`}
           </div>
         </section>
@@ -507,7 +493,7 @@
     if (!g.tested) blockReasons.push('还没有运行自测');
     if (g.tested && !g.allPassed) blockReasons.push(`自测有 ${testsOf().length - passedCount()} 项未通过`);
     if (!g.clean) blockReasons.push(`仍有 ${issues().length} 处引用待核验`);
-    return header('测试与人工审核', '区分未运行、执行失败与不通过；审批结论由服务端校验署名') +
+    return header('测试与人工审核', `v${p.version} · ${p.id}`) +
       pipeline([['草稿', 'v' + p.version], ['自测', g.tested ? `${passedCount()}/${testsOf().length}` : '未运行'],
         ['引用', g.clean ? '全部定位' : issues().length + ' 处待核验'], ['人工批准', g.approved ? '已通过' : '待审核'],
         ['发布', g.published ? '已发布' : '未发布']], step) +
@@ -520,15 +506,13 @@
             : pill('未运行', 'amber')}</div>
           ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>用例</th><th>结果</th><th class="wrap">说明</th></tr></thead><tbody>
             ${rows.map((t) => `<tr><td>${esc(t.name)}</td><td>${t.status === 'passed' ? pill('通过', 'green') : pill('未通过', 'red')}</td><td class="wrap">${esc(t.detail || '')}</td></tr>`).join('')}
-          </tbody></table></div>` : note('还没有自测结果。自测会现场用 ffprobe 实测音频时长，并逐条核对引用能否在原文中逐字定位。')}
-          <p class="subtle">只保留最近一次结果；改写主讲解或换资料后需要重新运行。</p>
+          </tbody></table></div>` : `<p class="small muted">还没运行自测。</p>`}
         </section>
         <section class="panel panel-pad">
           <h3>人工审核</h3>
           <div class="metric-row">${pill('v' + p.version, 'blue')}${pill('版本绑定', 'green')}${g.approved ? pill('已批准', 'green') : pill('未批准', 'amber')}</div>
           ${p.review ? `<div class="mini-code">${p.review.decision === 'approved' ? '通过' : '要求修改'} · ${esc(p.review.reviewer)}<br>${esc(dateTimeOf(p.review.at))} · 绑定 v${p.review.version}</div>` : ''}
-          ${blockReasons.length ? note(`<strong>仍有阻断条件</strong>${esc(blockReasons.join('；'))}。可以保存退回意见，但不能批准。`, 'red')
-            : note('自测全部通过与引用全部定位，可以批准。', 'green')}
+          ${blockReasons.length ? note(`<strong>${esc(blockReasons.join('；'))}</strong>`, 'red') : ''}
           <form data-form="review" class="section-spacer">
             ${field('审核人', 'reviewer', (p.review && p.review.reviewer) || '')}
             <label class="field"><span>审核意见</span><textarea name="note" rows="3" maxlength="2000" placeholder="写下事实、语气或来源方面的修改意见…">${esc((p.review && p.review.note) || '')}</textarea></label>
@@ -563,7 +547,7 @@
       return { e, a, d, ok };
     });
     const step = rows.length && rows.every((r) => r.a) ? (rows.every((r) => r.ok) ? 3 : 2) : (rows.some((r) => r.a) ? 1 : 0);
-    return header('语音制作与终端', 'Breeze 合成与真实时长校验；网页不代替眼镜验收') +
+    return header('语音制作与终端', `${esc(p.name)} · ${audioCount()}/${exs().length} 段已合成`) +
       pipeline([['内容就绪', exs().length ? '已就绪' : '无草稿'], ['Breeze 合成', audioCount() + '/' + exs().length],
         ['音频校验', rows.filter((r) => r.ok === true).length + '/' + rows.length], ['人工试听', '未记录']], step) +
       `<div class="grid cols-2">
@@ -578,25 +562,23 @@
                 <td>${r.a ? pill('已合成', 'green') : pill('待合成', 'amber')}
                   <div class="section-spacer">${act('synth', r.a ? '重新合成' : '合成', 'outline-green', `data-value="${esc(r.e.id)}"`)}</div></td></tr>`).join('')}
             </tbody></table></div>
-            <p class="subtle">合成只接受与当前草稿完全一致的文本；草稿改了要重新合成。合成耗时按字节数计，三个展项合计约 1 分钟。</p>
             ${rows.filter((r) => r.a).map((r) => `<div class="audio-line section-spacer"><strong>${esc(r.e.id)}</strong>
               <audio controls preload="metadata" src="${esc(withToken('/api/studio/projects/' + p.id + '/audio/' + encodeURIComponent(r.a.filename)))}"></audio></div>`).join('')}
           </section>
           <section class="panel panel-pad">
             <h3>实时双向语音 <span class="micro-tag">未接入</span></h3>
             <div class="voice-flow">${[['♩', '麦克风'], ['〰', 'VAD'], ['▤', 'ASR'], ['◇', '来源约束问答'], ['〰', 'TTS'], ['◖', '播放']].map((n) => `<div class="voice-node"><span class="circle">${n[0]}</span><strong>${n[1]}</strong><small>未实现</small></div>`).join('')}</div>
-            <div class="notice section-spacer"><strong>这一段没有实现，所以不显示任何数字</strong>ASR、实时打断与设备端播报都还没有接。网页上的合成与播放只能证明文件可播放，不能证明眼镜设备可用。</div>
+            <p class="small muted section-spacer">ASR、实时打断与设备端播报都还没有接。</p>
           </section>
         </div>
         <section class="panel panel-pad">
           <h3>时长门 <span class="micro-tag">ffprobe 实测</span></h3>
           <div class="metric-row">${pill(`窗口 ${low}~${high} 秒`, 'blue')}${pill(`目标 ${target} 秒 ±${tol * 100}%`, '')}</div>
-          <p class="small muted">自测里的「主讲解时长约 45 秒」读的就是这里的实测值：有音频但读不出时长会判为失败，不会当通过。</p>
           <ul class="fact-list">${rows.map((r) => `<li class="fact-item ${r.ok === false ? 'is-issue' : ''}">
             <div class="fact-meta"><strong>${esc(r.e.id)}</strong><span class="mono">${r.a ? esc(r.a.engine || '') + ' · ' + (r.a.sample_rate || '—') + ' Hz' : '未合成'}</span>
               ${r.ok === null ? pill('无音频', 'amber') : r.ok ? pill('落在窗口内', 'green') : pill('超出窗口', 'red')}</div>
             <p>${r.d ? '实测 ' + secOf(r.d) + '（' + (r.a.bitrate_kbps || '—') + ' kbps）' : '还没有实测值'}</p></li>`).join('')}</ul>
-          ${rows.some((r) => r.ok === false) ? note(`<strong>有音频超出时长窗口</strong>观众实际听到的时长与「约 45 秒」的承诺不一致：要么改稿重合成，要么在交付说明里写明实际时长。`, 'red') : ''}
+          ${rows.some((r) => r.ok === false) ? note(`<strong>有 ${rows.filter((r) => r.ok === false).length} 段超出时长窗口</strong>改稿重合成，或在交付说明里写明实际时长。`, 'red') : ''}
         </section>
       </div>`;
   }
@@ -632,7 +614,6 @@
           </div>
           <div class="section-spacer">${act('download-zip', '↓ 下载交付包（含 MP3）', 'primary full')}</div>
           <div class="section-spacer">${act('download-md', '↓ 只下载交付稿 .md', 'outline-green full')}</div>
-          <p class="subtle">zip 里的字节数与 sha256 由服务端按磁盘文件重算，与本页显示一致。</p>
         </section>
         <section class="panel panel-pad">
           <h3>发布门禁检查</h3>
@@ -643,7 +624,7 @@
             <li>引用 ${g.clean ? pill('全部定位', 'green') : pill(issues().length + ' 处待核验', 'red')}</li>
             <li>音频 ${g.audio ? pill(audioCount() + '/' + exs().length, 'green') : pill('缺 ' + (exs().length - audioCount()) + ' 段', 'red')}</li>
           </ul>
-          ${reasons.length ? note(`<strong>完整交付被阻止</strong>${esc(reasons.join('；'))}。`, 'red') : note('门禁条件已满足，可以发布。', 'green')}
+          ${reasons.length ? note(`<strong>${esc(reasons.join('；'))}</strong>`, 'red') : ''}
           <div class="section-spacer">${g.published ? act('download-zip', '↓ 已发布版本交付包', 'primary full') : act('publish', '⌑ 发布 v' + p.version, 'primary full', reasons.length ? 'disabled' : '')}</div>
           ${p.review ? `<h4>审核记录</h4><div class="mini-code">${p.review.decision === 'approved' ? '通过' : '要求修改'} · ${esc(p.review.reviewer)} · v${p.review.version}<br>${esc(dateTimeOf(p.review.at))}<br>${esc(p.review.note || '（无意见）')}</div>` : ''}
         </section>
@@ -661,8 +642,7 @@
                <label class="field"><span>结论</span><select name="decision"><option value="accepted">接受</option><option value="rejected">拒收</option></select></label>
                ${field('备注', 'note', (p.acceptance && p.acceptance.note) || '')}
                <button type="submit" class="outline-green full">登记签收</button></form>`
-            : note('只有已发布的版本才能登记客户签收——服务端会拒绝提前签收。')}
-          <div class="notice section-spacer"><strong>批准 ≠ 签收 ≠ 回款</strong>三个动作分别留证据，合同与收款本工作台不处理。</div>
+            : `<button type="button" class="outline-green full section-spacer" disabled>登记签收（未发布）</button>`}
         </section>
       </div>`;
   }
@@ -673,7 +653,7 @@
     const list = p.feedbacks || [];
     const chosen = list.find((f) => f.id === S.feedbackId) || list[0] || null;
     const g = gates();
-    return header('从反馈到可验证的改进', '反馈先落台账，候选必须写清改成什么，再由自测复核') +
+    return header('反馈与改进', `${list.length} 条反馈 · v${p.version}`) +
       pipeline([['运行', `${S.events.length} 条事件`], ['发现问题', list.length + ' 条反馈'],
         ['形成候选', list.filter((f) => f.state === 'candidate').length + ' 条'],
         ['回归', g.tested ? `${passedCount()}/${testsOf().length}` : '未运行'],
@@ -683,7 +663,7 @@
           <div class="paper-heading"><h3>反馈列表（${list.length}）</h3>${pill('真实台账', 'green')}</div>
           ${list.length ? list.map((f) => `<button type="button" class="feedback-item ${chosen && chosen.id === f.id ? 'active' : ''}" data-action="feedback-select" data-value="${esc(f.id)}">
             <strong>${esc(f.id)}</strong><span>${esc(f.title)}</span><small>${esc(f.state === 'candidate' ? '候选' : f.state === 'closed' ? '已关闭' : '已记录')} · ${esc(timeOf(f.recorded_at))}</small></button>`).join('')
-            : `<div class="empty-action"><p class="small muted">还没有反馈。观众说得含糊也先记下来，复核的是现象。</p></div>`}
+            : `<div class="empty-action"><p class="small muted">还没有反馈。</p></div>`}
           <div class="divider"></div>
           <form data-form="feedback"><h4>记录一条反馈</h4>
             <label class="field"><span>展项</span><select name="exhibit_id">${exs().map((e) => `<option value="${esc(e.id)}">${esc(e.id)} ${esc(e.title)}</option>`).join('')}</select></label>
@@ -704,8 +684,7 @@
             </dl>
             <form data-form="candidate"><input type="hidden" name="feedback_id" value="${esc(chosen.id)}">
               <label class="field"><span>候选说法（至少 4 字）</span><textarea name="suggestion" rows="3" maxlength="1000">${esc(chosen.suggestion || '')}</textarea></label>
-              <button type="submit" class="outline-green full">登记改进候选</button></form>
-            <p class="subtle">登记候选只写「打算改成什么」，不改动当前版本内容；改内容要回内容成果页改写并重新自测。</p>`
+              <button type="submit" class="outline-green full">登记改进候选</button></form>`
             : `<p class="small muted">选中左侧任意一条反馈查看详情。</p>`}
         </section>
         <section class="panel panel-pad">
@@ -713,9 +692,7 @@
           <div class="device-check"><span>当前用例</span><strong>${testsOf().length} 条</strong></div>
           <div class="device-check"><span>通过</span><strong>${passedCount()} 条</strong></div>
           <div class="device-check"><span>最近结果</span>${g.allPassed ? pill('全通过', 'green') : g.tested ? pill('有未通过', 'red') : pill('未运行', 'amber')}</div>
-          <p class="small muted">回归就是重新跑一遍自测：改过的文本会让旧结果失效，所以每次改动后都要重跑。</p>
           <div class="section-spacer">${act('run-tests', '▶ 执行回归自测', 'primary full')}</div>
-          <div class="notice section-spacer">改进闭环需要「改内容 → 重跑自测 → 重新审核 → 再发布」四步都留证据，只登记候选不算闭环。</div>
         </section>
       </div>
       <section class="panel panel-pad section-spacer">
@@ -1106,7 +1083,7 @@
     downloadJson(`${p.name}_报价_v${p.version}.json`, {
       project_id: p.id, project: p.name, version: p.version,
       exported_at: new Date().toISOString(), quote: p.quote || null,
-      note: '由本机 studio_server 输出；成本与贡献为服务端计算结果，不含合同与收款状态。'
+      note: '成本与贡献为服务端计算结果；不含合同与收款。'
     });
   }
 
@@ -1137,10 +1114,9 @@
       </tr>`).join('');
     dialog('项目', (S.projects.length
       ? `<div class="table-wrap"><table><thead><tr><th>项目</th><th>状态</th><th>版本</th><th>更新时间</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
-      : note('这台机器上还没有任何项目。新建一个，再导入你们的展签或教育材料。')) +
+      : `<p class="small muted">还没有任何项目。</p>`) +
       `<div class="inline-actions section-spacer">${act('new-project', '＋ 新建项目', 'outline-green')}` +
-      (P() ? act('delete-project', '删除当前项目', 'text-button') : '') + `</div>
-      <p class="subtle">项目存在本机 studio.sqlite3 里，不做云端同步；删掉项目会连它的音频文件一起删除。</p>`);
+      (P() ? act('delete-project', '删除当前项目', 'text-button') : '') + `</div>`);
   }
 
   function showNewProject() {
@@ -1149,7 +1125,6 @@
       <div class="field-row">${field('目标观众', 'audience', '', 'text', 'maxlength="40" placeholder="例如：小学三年级以上亲子观众"')}
       ${field('语言', 'language', '中文', 'text', 'maxlength="20"')}</div>
       <label class="field"><span>讲解目标（可留空）</span><textarea name="brief" rows="3" maxlength="2000" placeholder="例如：把每个展项改写成约 45 秒的现场讲解，先给草稿我审。"></textarea></label>
-      ${note('新建的项目是空的：没有任何资料，也没有展项。资料要你自己导入。')}
       <div class="inline-actions section-spacer"><button class="primary" type="submit">创建项目</button>${act('close-dialog', '取消', '')}</div>
       </form>`);
   }
@@ -1158,17 +1133,19 @@
     const p = P();
     if (!p) { toast('没有当前项目', 'error'); return; }
     dialog('删除项目', `<article class="reader-document"><p>要删掉 <strong>${esc(p.name)}</strong>（${esc(p.id)}）吗？</p>
-      <section><h3>这个操作会删掉</h3><p>项目档案、${(p.chat || []).length} 条对话、${S.events.length} 条事件记录、${exs().length} 个展项草稿、${Object.keys(p.audio || {}).length} 个已合成音频文件。删完无法从这里恢复。</p></section>
-      <p class="subtle">本机 ${esc((S.health && S.health.database) || 'studio.sqlite3')} 会立刻写入。</p></article>
+      <section><h3>这个操作会删掉</h3><p>项目档案、${(p.chat || []).length} 条对话、${S.events.length} 条事件记录、${exs().length} 个展项草稿、${Object.keys(p.audio || {}).length} 个已合成音频文件。删完无法从这里恢复。</p></section></article>
       <div class="inline-actions section-spacer">${act('delete-project-yes', '确认删除', 'danger')}${act('close-dialog', '取消', '')}</div>`);
   }
 
   function showHelp() {
-    dialog('这个工作台做什么', `<article class="reader-document"><p>它把「资料 → 讲解 → 自测 → 审核 → 音频 → 交付」串成一条能留证据的链。七个页面各自对应链上的一段，左侧对话直接调用本机模型。</p>
-      <section><h3>三条规则</h3><p>一、原文只读：讲解里的每条事实都要能在资料来源里逐字定位，定位不到就进「待核验」，不能发布。<br>
-      二、结论随文本失效：改写主讲解会把版本 +0.1，并清空自测结果与审核签名。<br>
-      三、合成成功不等于验收通过：音频时长由 ffprobe 实测，是否落在 45 秒 ±25% 由自测判定。</p></section>
-      <section><h3>还没有实现的部分</h3><p>ASR 与实时双向语音、眼镜设备适配与实机验收、合同与收款。这些位置在页面上写明「未接入」，不放示例数字。</p></section></article>`);
+    dialog('怎么用', `<article class="reader-document">
+      <ol class="gate-list">
+        <li><strong>给它依据</strong>在对话框里说「先调研一下某个作品，然后起草」，或者点「＋」导入客户给的原文。</li>
+        <li><strong>起草</strong>执行现场点「▶ 生成草稿」，展项、知识卡、主讲解、问答一次生成。</li>
+        <li><strong>核验与审核</strong>引用定位不到的会进「待核验」；测试审核页跑自测、填审核人批准。</li>
+        <li><strong>出音频</strong>语音终端逐段合成，时长由 ffprobe 实测。</li>
+        <li><strong>交付</strong>发布验收页下载交付包。</li>
+      </ol></article>`);
   }
 
   function showSettings() {
@@ -1319,7 +1296,7 @@
     },
     money: async (form) => {
       await postAction('quote', readForm(form));
-      toast('测算已更新（成本与贡献由服务端计算）');
+      toast('测算已更新');
     },
     authorize: async (form) => {
       await postAction('authorize', readForm(form));

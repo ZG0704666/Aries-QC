@@ -103,12 +103,13 @@ def main():
             page.evaluate("() => { location.hash = 'project'; }")
             page.wait_for_timeout(450)
             body = page.inner_text("#workspace-body")
-            check("项目页提示还没有内容依据", "这个项目还没有内容依据" in body)
+            check("项目页不再放系统说明", "生成会被服务端拒绝" not in body and "studio.sqlite3" not in body)
 
             page.evaluate("() => { location.hash = 'content'; }")
             page.wait_for_timeout(450)
             body = page.inner_text("#workspace-body")
-            check("内容成果页给两条路", "两条路，选一条" in body and "让它先联网调研" in body)
+            check("内容成果页给操作入口", "先给它依据" in body and "还没有任何来源" in body
+                  and "让它先联网调研" in body)
             check("内容成果页给导入入口", page.locator('[data-upload="material"]').count() >= 1)
             check("内容成果页给授权表单", page.locator('form[data-form="authorize"]').count() == 1)
 
@@ -126,13 +127,13 @@ def main():
                 check("视图 %s 不出现演示项目名" % view, "光与声音探索展" not in text and "光的折射" not in text)
             page.screenshot(path=os.path.join(SHOTS, "empty-after-create.png"), full_page=True)
 
-            # 没有依据时：页面不给生成按钮，明确给两条路
+            # 没有依据时：页面不给生成按钮，只给两个动作
             page.evaluate("() => { location.hash = 'live'; }")
             page.wait_for_timeout(450)
             live = page.inner_text("#workspace-body")
             check("无依据时执行现场不给生成按钮", page.locator('[data-action="run"]').count() == 0)
-            check("无依据时执行现场给出两条路",
-                  "还没有内容依据" in live and "去导入资料" in live and "让它先调研" in live)
+            check("无依据时执行现场给两个动作",
+                  "先给它依据" in live and "让它先联网调研" in live and "导入资料" in live)
             check("无依据时页面不承诺调用模型", "共 0 次" not in live)
 
             # 删除

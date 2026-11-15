@@ -8,6 +8,7 @@ Playwright 打开页面真点一次。不碰 studio.sqlite3。
 
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -83,6 +84,12 @@ def main():
         check("health 带 web/docs/agent", health.get("web") and health.get("docs") and health.get("agent"),
               health.get("agent"))
 
+        def source_count():
+            url = BASE + "/api/studio/projects/" + info["id"]
+            with urllib.request.urlopen(url, timeout=15) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            return len((body.get("project") or {}).get("sources") or [])
+
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
@@ -131,7 +138,10 @@ def main():
                         reply = bodies.nth(bodies.count() - 1).inner_text()
                         if reply.strip():
                             break
-            check("拿到真实回话", len(reply.strip()) > 40, "%d 字" % len(reply.strip()))
+            # 判据是「说清了东西」，不是字数：不许只甩链接、不许空答。
+            bare = re.sub(r"https?://\S+", " ", reply or "")
+            bare = re.sub(r"[\s。，、；：！？,.!?;:()（）\[\]【】\"'“”‘’—-]+", "", bare)
+            check("拿到真实回话（不是只甩链接）", len(bare) >= 8, "%d 字：%s" % (len(bare), reply.strip()[:60]))
 
             chips = page.locator("#chat-log .tool-chip").count()
             check("回话下面留了工具轨迹", chips > 0, "%d 个 chip" % chips)
@@ -149,11 +159,15 @@ def main():
                 fh.write("彩虹是阳光在水滴里折射与反射形成的。红光偏折最少，紫光最多。\n"
                          "所以彩虹总是外红内紫，观察者背对太阳时才看得到。\n")
             before = page.locator(".reference-files button").count()
+            before_src = source_count()
             page.set_input_files('[data-upload="material"]', sample)
             page.wait_for_timeout(2500)
             after = page.locator(".reference-files button").count()
+            after_src = source_count()
             toast = page.inner_text("#toast") if page.locator("#toast").count() else ""
-            check("上传后资料数增加（或资料块出现）", after >= before, "before=%d after=%d" % (before, after))
+            check("上传后服务端多了一份资料", after_src == before_src + 1,
+                  "before=%d after=%d" % (before_src, after_src))
+            check("上传后界面跟上（资料块出现）", after >= before, "before=%d after=%d" % (before, after))
             check("上传给了明确反馈", "收下" in toast or "补一段资料" in page.content(), toast[:80])
 
             page.screenshot(path=os.path.join(SHOTS, "chat-upload.png"))
