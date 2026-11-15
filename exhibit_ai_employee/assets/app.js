@@ -175,7 +175,7 @@
       const art = ['<i class="glass"></i><i class="straw"></i>',
         '<i class="speaker"></i>', '<i class="mirror-plane"></i><i class="ray"></i>'][i % 3];
       const a = audioOf(e.id);
-      const state = a ? '已合成 · 实测 ' + secOf(a.duration_s) : '无音频';
+      const state = a ? '音频 ' + secOf(a.duration_s) : '无音频';
       const pending = (e.issues || []).length ? stat('待核验', 'fail') : stat('引用可定位', 'pass');
       return `<button type="button" class="exhibit-tile ${S.exhibitIndex === i ? 'active' : ''}" ` +
         `data-action="exhibit" data-value="${i}"><span class="exhibit-art ${['refraction', 'sound', 'colour'][i % 3]}" aria-hidden="true">${art}</span>` +
@@ -293,9 +293,9 @@
     const facts = exs().reduce((sum, x) => sum + (x.facts || []).length, 0);
     const steps = [
       ['资料接收', ((P().sources || []).length || 0) + ' 份 · ' + paraCount() + ' 段'],
-      ['来源定位', located + '/' + facts + ' 条已定位'],
+      ['来源定位', located + '/' + facts + ' 条'],
       ['知识卡', facts + ' 条'],
-      ['讲解与问答', drafts + '/' + exs().length + ' 个展项'],
+      ['讲解与问答', drafts + '/' + exs().length + ' 展项'],
       ['自测', g.tested ? passedCount() + '/' + testsOf().length : '未运行'],
       ['审核', P().review ? (P().review.decision === 'approved' ? '已通过' : '要求修改') : '待审核'],
       ['语音', audioCount() + '/' + exs().length + ' 段'],

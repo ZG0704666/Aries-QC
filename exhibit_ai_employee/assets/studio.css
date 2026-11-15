@@ -67,12 +67,22 @@ body.is-busy{pointer-events:auto}
   .audio-line audio{max-width:none;width:100%}
 }
 
-/* 阶段条：八段在窄栏里横向滚动会把「发布」藏到屏幕外，改成换行排布 */
-.pipeline{flex-wrap:wrap;row-gap:6px;align-content:flex-start}
-.pipeline li{flex:1 1 118px}
-@media(max-width:1240px){.pipeline li{flex-basis:106px}}
-@media(max-width:760px){.pipeline li{flex-basis:92px;min-width:0}}
-@media(max-width:420px){.pipeline li{flex-basis:88px;padding:4px 6px}}
+/* 阶段条：原先 flex-basis:118px × 8 段 + 内边距 > 版心，第八段「发布」被挤到第二行，
+   而长标题（讲解与问答）又把文字挤成竖排。改成等分一整行、文字允许换行：
+   段数由内容决定（项目 4 段 / 现场 8 段），每段永远一样宽。 */
+.pipeline{flex-wrap:wrap;row-gap:8px;align-content:flex-start}
+.pipeline li{flex:1 1 0;min-width:0;padding:6px;column-gap:6px}
+.pipeline li strong{white-space:normal;line-height:1.35}
+.pipeline li small{overflow-wrap:anywhere}
+@media(max-width:1240px){.pipeline li{flex:1 1 22%;min-width:0}}
+@media(max-width:760px){.pipeline li{flex:1 1 40%;padding:6px}}
+@media(max-width:420px){.pipeline li{flex-basis:44%}}
+
+/* 展项瓦片：flex:1 1 166px 会让落单的最后一张撑满整行（5 张时 EX05 变成一条长横幅）。
+   换成 grid 自动填充，落单的那张只占一格，和上面几张等宽。 */
+.exhibit-tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.exhibit-tile{flex:none;min-width:0}
+@media(max-width:760px){.exhibit-tray{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
 
 /* 对话里的富文本：模型回话会带粗体、换行、链接 */
 .message-body p.rich{line-height:1.85;overflow-wrap:anywhere;white-space:normal}
@@ -102,7 +112,7 @@ body.is-busy{pointer-events:auto}
 /* 空来源时给两张可选卡片：靠点，不靠读说明。 */
 .choice-cards { display: grid; gap: 10px; }
 .choice-card { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; width: 100%;
-  padding:16px 16px; border:1px dashed var(--ds-ink-4); border-radius: 10px; background:var(--ds-surface-1);
+  padding:16px 16px; border:1px dashed var(--ds-deco-2); border-radius: 10px; background:var(--ds-surface-1);
   text-align: left; cursor: pointer; color:var(--ds-ink-1); transition: background .16s, border-color .16s, box-shadow .16s; }
 .choice-card strong { font-size:var(--ds-fs-15); font-weight: 650; }
 .choice-card span { font-size:var(--ds-fs-13); color:var(--ds-ink-2); line-height: 1.6; }
