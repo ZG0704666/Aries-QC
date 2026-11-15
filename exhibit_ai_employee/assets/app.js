@@ -84,7 +84,8 @@
   const S = {
     health: null, projects: [], project: null, events: [], lastEventId: 0,
     view: 'live', exhibitIndex: 0, contentTab: '主讲解', feedbackId: null,
-    readerSize: 20, connError: null, chatPending: false, pendingRun: false
+    readerSize: 20, connError: null, chatPending: false, pendingRun: false,
+    chatTools: [], chatBusy: false
   };
 
   /* ================= 小工具 ================= */
@@ -218,7 +219,7 @@
     return header('项目与报价', `${esc(p.id)} · ${esc(p.name)} · 任务 #${p.task_no} · v${p.version}`,
       pill(q.confirmed ? '范围已确认' : '范围待确认', q.confirmed ? 'green' : 'amber')) +
       pipeline([['需求', phases[0]], ['范围', phases[1]], ['签约', phases[2]], ['回款', phases[3]]], step) +
-      (p.demo ? note('<strong>本项目使用内置示例资料</strong>三个展项的资料来源是工作台自带的展签文本，不是客户交付的真实资料。换成客户资料后，请重新生成并重新自测。') : '') +
+      (!(p.sources || []).length ? note('<strong>这个项目还没有资料</strong>先到「内容成果」页导入真实的展签或教育材料文本；没有资料时生成会被服务端拒绝。') : '') +
       `<div class="grid cols-2">
         <section class="panel panel-pad">
           <h3>需求与交付范围</h3>
@@ -312,12 +313,17 @@
     const { steps, current } = liveSteps();
     const e = cur();
     if (!e) {
+      const hasSources = (p.sources || []).length > 0;
       return header('执行现场', `${esc(p.id)} · v${p.version}`, pill('尚无草稿', 'amber')) +
         pipeline(steps, 0) +
         `<section class="panel panel-pad"><h3>还没有任何展项草稿</h3>` +
-        note(`<strong>下一步：生成草稿</strong>项目里已有 ${(p.sources || []).length} 份资料、${paraCount()} 个来源段落。` +
-          `生成会为每个展项各调用一次模型（共 ${(p.materials || []).length || 0} 次），成功后逐条核对原文引用。`, 'green') +
-        `<div class="inline-actions section-spacer">${act('run', '▶ 生成草稿', 'primary', S.pendingRun ? 'disabled' : '')}</div></section>`;
+        (hasSources
+          ? note(`<strong>下一步：生成草稿</strong>项目里已有 ${(p.sources || []).length} 份资料、${paraCount()} 个来源段落。` +
+            `生成会为每个展项各调用一次模型（共 ${(p.materials || []).length} 次），成功后逐条核对原文引用。`, 'green') +
+            `<div class="inline-actions section-spacer">${act('run', '▶ 生成草稿', 'primary', S.pendingRun ? 'disabled' : '')}</div>`
+          : note(`<strong>还没有资料，生成会被服务端拒绝</strong>先去「内容成果」页导入展签或教育材料文本。生成器不编造展项内容。`, 'amber') +
+            `<div class="inline-actions section-spacer">${act('nav-content', '去导入资料 →', 'primary')}</div>`) +
+        `</section>`;
     }
     const facts = e.facts || [];
     const firstFact = facts[0] || null;
@@ -368,8 +374,41 @@
   function contentView() {
     const p = P();
     const e = cur();
-    if (!e) return header('内容成果', '还没有草稿') + note('先到执行现场生成草稿。');
     const sources = p.sources || [];
+    if (!e) {
+      if (!sources.length) {
+        return header('内容成果', '原始资料只读 · 引用可定位 · 改一个字旧结论就失效',
+          pill('还没有资料', 'amber')) +
+          `<div class="grid cols-2">
+            <section class="panel panel-pad">
+              <h3>先导入真实资料</h3>
+              <p>这个项目还没有任何来源文本。展签牌、教育材料、展项说明——把馆方给的原文整份导进来，讲解里的每一句都要能在里面逐字找到。</p>
+              <label class="file-input">＋ 导入资料（txt / md / csv / json / html / docx / pdf）<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
+              <p class="subtle">支持 .txt（UTF-8），至少 20 字。导入后写入资料来源并自动编号 SRC-001、SRC-002…，不会自动生成草稿。</p>
+              <div class="divider"></div>
+              <h4>资料授权</h4>
+              ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}</div>`
+                : `<form data-form="authorize"><div class="field-row">${field('确认人姓名', 'confirmed_by', '')}</div>
+                  <button type="submit" class="outline-green">登记资料授权</button></form>
+                  <p class="subtle">登记资料来源已获授权，发布门禁会读这条记录。</p>`}
+            </section>
+            <section class="panel panel-pad">
+              <h3>接下来会发生什么</h3>
+              <ol class="gate-list">
+                <li><strong>资料接收</strong>原文存进项目，只读，不会被生成内容覆盖。</li>
+                <li><strong>来源定位</strong>每个事实登记到具体段落（例如 SRC-001·P003）。</li>
+                <li><strong>知识卡</strong>抽取展项事实，逐条核对原文引用。</li>
+                <li><strong>讲解与问答</strong>生成为主讲解、简化版、追问与资料外兜底。</li>
+              </ol>
+              ${note('没有资料时点「生成草稿」会被服务端拒绝——生成器不会编造展项内容。')}
+            </section>
+          </div>`;
+      }
+      return header('内容成果', '资料已就位 · 还没有草稿', pill('待生成', 'amber')) +
+        `<section class="panel panel-pad"><h3>已导入 ${sources.length} 份资料</h3>
+          <p>共 ${paraCount()} 个段落。到「执行现场」点生成，模型会按资料抽取展项并写草稿。</p>
+          <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div></section>`;
+    }
     const refs = new Set(e.source_refs || []);
     const mine = sources.filter((s) => !refs.size || refs.has(s.id));
     const list = mine.length ? mine : sources;
@@ -391,7 +430,7 @@
               <button type="submit" class="outline-green">登记资料授权</button></form>
               <p class="subtle">登记后写入项目，发布门禁会读取这条记录。</p>`}
           <div class="divider"></div>
-          <label class="file-input">＋ 导入 UTF-8 纯文本资料<input type="file" id="material-file" accept=".txt,text/plain" hidden></label>
+          <label class="file-input">＋ 导入资料（txt / md / csv / json / html / docx / pdf）<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
           <p class="subtle">至少 20 字；导入后写入资料来源并重新编号 SRC，不会自动重写已有草稿。</p>
         </section>
         <section class="panel">
@@ -655,13 +694,40 @@
       `${issues().length ? '另有 ' + issues().length + ' 处引用待核验。' : ''}`;
   }
 
+  // 模型回话会带 **粗体**、换行和裸链接。这里做最小渲染：先转义，再放开这三样。
+  function fmtText(text) {
+    let out = esc(text);
+    out = out.replace(/\*\*([^*\n]{1,120})\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/(https?:\/\/[^\s<）)】"'，。；]+)/g,
+      '<a href="$1" target="_blank" rel="noreferrer noopener">$1</a>');
+    return out.replace(/\n{3,}/g, '\n\n').replace(/\n/g, '<br>');
+  }
+
+  function toolChips(tools) {
+    if (!tools || !tools.length) return '';
+    const items = tools.map((t) => {
+      const label = t.ok === false ? '没成功' : '已完成';
+      return `<span class="tool-chip${t.ok === false ? ' is-fail' : ''}" title="${esc(t.summary || '')}">${esc(t.tool)} · ${esc(label)}</span>`;
+    }).join('');
+    return `<div class="tool-chips">${items}</div>`;
+  }
+
+  function pendingBubble() {
+    if (!S.chatPending) return '';
+    const items = S.chatTools.map((t) => `<span class="tool-chip${t.state === 'fail' ? ' is-fail' : ''}">${esc(t.message || t.tool)}</span>`);
+    const tail = items.length ? items.join('') : '<span class="tool-chip">在读现场数据…</span>';
+    return `<div class="message agent pending">
+      <span class="mini-avatar"><span class="orbit"></span></span>
+      <div class="message-body"><p>正在处理…</p><div class="tool-chips">${tail}</div>
+      <span class="message-time">${timeOf(new Date().toISOString())}</span></div></div>`;
+  }
+
   function renderChat() {
     const p = P();
     const log = $('#chat-log');
     if (!p) { log.innerHTML = ''; return; }
-    const history = (p.chat || []).map((m) => ({ role: m.role, text: m.text, time: timeOf(m.at) }));
+    const history = (p.chat || []).map((m) => ({ role: m.role, text: m.text, time: timeOf(m.at), tools: m.tools }));
     const all = [{ role: 'agent', text: openingText(), time: timeOf(p.updated_at), opening: true }].concat(history);
-    if (S.chatPending) all.push({ role: 'agent', text: '正在调用模型…', time: timeOf(new Date().toISOString()), pending: true });
     const attachments = `<div class="reference-files">${(p.sources || []).slice(0, 3).map((s, i) => `
       <button type="button" data-action="locate-source" data-value="${esc((s.paragraphs || [])[0] ? (s.paragraphs || [])[0].id : '')}">
         <span class="file-glyph">▤</span><span><strong>${esc(s.name)}</strong><small>${(s.paragraphs || []).length} 段 · 查看原文</small></span></button>`).join('')}</div>
@@ -673,11 +739,11 @@
       <button type="button" class="chat-result-row" data-action="nav-content"><span class="result-icon">▥</span>
         <span><strong>知识卡</strong><small>${exs().reduce((n, e) => n + (e.facts || []).length, 0)} 条 · ${issues().length} 处待核验</small></span>
         <span class="chevron">›</span></button></div>`;
-    log.innerHTML = all.map((m, i) => `<div class="message ${m.role}${m.pending ? ' pending' : ''}">
+    log.innerHTML = all.map((m, i) => `<div class="message ${m.role}">
       <span class="mini-avatar">${m.role === 'user' ? esc(avatarText()) : '<span class="orbit"></span>'}</span>
-      <div class="message-body"><p>${esc(m.text)}</p>${m.actions && m.actions.length
+      <div class="message-body"><p class="${m.role === 'agent' ? 'rich' : ''}">${fmtText(m.text)}</p>${toolChips(m.tools)}${m.actions && m.actions.length
         ? `<div class="message-actions">${m.actions.map((a) => act(a[0], a[1], a[2] || '')).join('')}</div>` : ''}
-        <span class="message-time">${m.time}</span></div></div>${i === 0 && !S.chatPending ? attachments : i === 1 ? results : ''}`).join('');
+        <span class="message-time">${m.time}</span></div></div>${i === 0 && !S.chatPending ? attachments : i === 1 ? results : ''}`).join('') + pendingBubble();
     log.scrollTop = log.scrollHeight;
   }
 
@@ -713,10 +779,10 @@
       chip.className = 'demo-label is-wait';
       text.textContent = '正在连接…';
     }
-    $('#project-switch').innerHTML = `${esc(p ? p.name : '读取中')} <span>⌄</span>`;
+    $('#project-switch').innerHTML = `${esc(p ? p.name : (S.listLoaded ? '还没有项目' : '读取中'))} <span>⌄</span>`;
     $('#context-chips').innerHTML = p
       ? `<span>${exs().length} 个展项</span><span>${esc(p.language || '中文')}</span><span>${esc(p.audience || '')}</span><span>${S.projects.length} 个项目</span>`
-      : '<span>正在读取</span>';
+      : `<span>${S.listLoaded ? '无项目' : '正在读取'}</span>`;
     $('#user-name').textContent = (p && p.quote && p.quote.reviewer) || '本机操作者';
     $('#user-avatar').textContent = ((p && p.quote && p.quote.reviewer) || '本机操作者').trim().slice(0, 1) || '本';
   }
@@ -735,10 +801,26 @@
     renderChrome();
     renderChat();
     if (!P()) {
-      body.innerHTML = `<section class="panel panel-pad"><h3>还没有读到项目</h3>` +
-        (S.connError ? note(`<strong>连不上 studio_server</strong>${esc(S.connError)}<div class="banner-actions">` +
-          `<button type="button" data-action="retry">重试连接</button></div>`, 'red')
-          : note('正在从本机服务读取项目列表…')) + `</section>`;
+      if (S.connError) {
+        body.innerHTML = `<section class="panel panel-pad"><h3>连不上 studio_server</h3>` +
+          note(`<strong>${esc(S.connError)}</strong>服务没起来时页面读不到任何项目数据。<div class="banner-actions">` +
+            `<button type="button" data-action="retry">重试连接</button></div>`, 'red') + `</section>`;
+      } else if (S.listLoaded) {
+        body.innerHTML = `<section class="panel panel-pad">
+          <div class="page-header"><div><h2>新建第一个项目</h2>
+          <p>工作台不预置任何示例内容。填一个真实项目名，创建后到「内容成果」页导入你们的展签或教育材料文本。</p></div>
+          <div class="header-meta">${pill('空数据库', 'amber')}</div></div>
+          <form data-form="new-project">
+            ${field('项目名称', 'name', '', 'text', 'maxlength="60" required placeholder="例如：光与声音探索展"')}
+            <div class="field-row">${field('目标观众', 'audience', '', 'text', 'maxlength="40" placeholder="例如：小学三年级以上亲子观众"')}
+            ${field('语言', 'language', '中文', 'text', 'maxlength="20"')}</div>
+            <label class="field"><span>讲解目标（可留空）</span><textarea name="brief" rows="3" maxlength="2000" placeholder="例如：把每个展项改写成约 45 秒的现场讲解，先给草稿我审。"></textarea></label>
+            <div class="inline-actions section-spacer"><button class="primary" type="submit">创建项目</button></div>
+          </form></section>`;
+      } else {
+        body.innerHTML = `<section class="panel panel-pad"><h3>正在读取项目列表</h3>` +
+          note('正在从本机服务读取项目列表…') + `</section>`;
+      }
       return;
     }
     saveUi();
@@ -835,6 +917,23 @@
       const list = data.events || [];
       if (reset) { S.events = list; } else if (list.length) { S.events = S.events.concat(list); }
       S.lastEventId = S.events.reduce((max, e) => Math.max(max, Number(e.id) || 0), S.lastEventId);
+      // 对话的现场进度：工具在干什么、回话到没到。
+      const toolEvents = list.filter((e) => e.kind === 'chat.tool');
+      if (toolEvents.length) {
+        S.chatTools = S.chatTools.concat(toolEvents.map((e) => ({
+          tool: (e.detail || {}).tool || '工具',
+          message: (e.detail || {}).message || '',
+          state: (e.detail || {}).state || 'done'
+        })));
+        if (S.chatPending) renderChat();
+      }
+      const answered = list.some((e) => e.kind === 'chat.agent' || e.kind === 'chat.failed');
+      if (answered && S.chatPending) {
+        S.chatPending = false;
+        S.chatTools = [];
+        await reloadProject();
+        return;
+      }
       const finished = list.some((e) => e.kind === 'run.finished' || e.kind === 'run.failed');
       if (finished && S.pendingRun) { S.pendingRun = false; await reloadProject(); return; }
       if (S.project.status === 'running' && list.length) { await reloadProject(); }
@@ -846,11 +945,12 @@
     clearInterval(pollTimer);
     pollTimer = setInterval(async () => {
       if (!S.project || document.hidden) return;
+      const fast = S.chatPending || S.pendingRun || S.project.status === 'running';
       const before = S.events.length;
-      await reloadEvents(false);
-      if (S.events.length !== before && (S.view === 'live' || S.view === 'release' || S.view === 'feedback')) render();
+      if (fast || S.view === 'live' || S.view === 'release') await reloadEvents(false);
+      if (!fast && S.events.length !== before) render();
       if (S.pendingRun || S.project.status === 'running') renderChrome();
-    }, 2500);
+    }, 1200);
   }
 
   /* ================= 动作 ================= */
@@ -861,6 +961,46 @@
     await reloadEvents(false);
     render();
     return data;
+  }
+
+  // 上传原始字节：服务端按扩展名解析（txt/md/csv/json/html/docx/pdf），不走 multipart。
+  async function uploadMaterial(file) {
+    if (!S.project) throw new Error('先建一个项目，再导入资料');
+    if (!file || !file.size) throw new Error('文件是空的（0 字节）');
+    const url = withToken('/api/studio/projects/' + S.project.id + '/upload?name=' + encodeURIComponent(file.name));
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/octet-stream' }),
+        body: file
+      });
+    } catch (error) {
+      const err = new Error('连不上本机 studio_server（' + error.message + '）');
+      err.offline = true;
+      throw err;
+    }
+    const raw = await res.text();
+    let data = null;
+    if (raw) { try { data = JSON.parse(raw); } catch (e) { data = { error: raw.slice(0, 300) }; } }
+    if (res.status === 401) { const err = new Error('需要访问口令'); err.unauthorized = true; throw err; }
+    if (!res.ok) throw new Error((data && data.error) || ('服务返回 HTTP ' + res.status));
+    if (data && data.project) S.project = data.project;
+    await reloadProject();
+    await reloadEvents(false);
+    return data || {};
+  }
+
+  async function uploadMany(files) {
+    const list = Array.from(files || []);
+    if (!list.length || !S.project) return;
+    for (const file of list) {
+      try {
+        const data = await uploadMaterial(file);
+        const doc = data.doc || {};
+        toast(`已收下《${file.name}》${doc.chars ? '（' + doc.chars + ' 字）' : ''}${doc.note ? ' ' + doc.note : ''}`);
+      } catch (error) { fail(error); }
+    }
   }
 
   async function doRun() {
@@ -945,10 +1085,35 @@
     const rows = S.projects.map((p) => `<tr data-action="pick-project" data-value="${esc(p.id)}" tabindex="0">
       <td><strong>${esc(p.name)}</strong><br><small class="hint-mono">${esc(p.id)}</small></td>
       <td>${pill(...(STATUS[p.status] || [p.status, '']))}</td><td class="num">v${p.version}</td>
-      <td class="num">${esc(dateTimeOf(p.updated_at))}</td></tr>`).join('');
-    dialog('切换项目', `<div class="table-wrap"><table><thead><tr><th>项目</th><th>状态</th><th>版本</th><th>更新时间</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="inline-actions section-spacer">${act('seed-project', '＋ 新建示例项目（内置三份展签资料）', 'outline-green')}</div>
-      <p class="subtle">示例项目使用工作台自带的展签文本，创建后界面会一直标注「内置示例资料」。</p>`);
+      <td class="num">${esc(dateTimeOf(p.updated_at))}</td>
+      <td class="num">${p.id === (P() && P().id) ? '<span class="small muted">当前</span>' : act('pick-project', '打开', 'text-button', `data-value="${esc(p.id)}"`)}</td>
+      </tr>`).join('');
+    dialog('项目', (S.projects.length
+      ? `<div class="table-wrap"><table><thead><tr><th>项目</th><th>状态</th><th>版本</th><th>更新时间</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : note('这台机器上还没有任何项目。新建一个，再导入你们的展签或教育材料。')) +
+      `<div class="inline-actions section-spacer">${act('new-project', '＋ 新建项目', 'outline-green')}` +
+      (P() ? act('delete-project', '删除当前项目', 'text-button') : '') + `</div>
+      <p class="subtle">项目存在本机 studio.sqlite3 里，不做云端同步；删掉项目会连它的音频文件一起删除。</p>`);
+  }
+
+  function showNewProject() {
+    dialog('新建项目', `<form data-form="new-project">
+      ${field('项目名称', 'name', '', 'text', 'maxlength="60" required placeholder="例如：光与声音探索展"')}
+      <div class="field-row">${field('目标观众', 'audience', '', 'text', 'maxlength="40" placeholder="例如：小学三年级以上亲子观众"')}
+      ${field('语言', 'language', '中文', 'text', 'maxlength="20"')}</div>
+      <label class="field"><span>讲解目标（可留空）</span><textarea name="brief" rows="3" maxlength="2000" placeholder="例如：把每个展项改写成约 45 秒的现场讲解，先给草稿我审。"></textarea></label>
+      ${note('新建的项目是空的：没有任何资料，也没有展项。资料要你自己导入。')}
+      <div class="inline-actions section-spacer"><button class="primary" type="submit">创建项目</button>${act('close-dialog', '取消', '')}</div>
+      </form>`);
+  }
+
+  function confirmDeleteProject() {
+    const p = P();
+    if (!p) { toast('没有当前项目', 'error'); return; }
+    dialog('删除项目', `<article class="reader-document"><p>要删掉 <strong>${esc(p.name)}</strong>（${esc(p.id)}）吗？</p>
+      <section><h3>这个操作会删掉</h3><p>项目档案、${(p.chat || []).length} 条对话、${S.events.length} 条事件记录、${exs().length} 个展项草稿、${Object.keys(p.audio || {}).length} 个已合成音频文件。删完无法从这里恢复。</p></section>
+      <p class="subtle">本机 ${esc((S.health && S.health.database) || 'studio.sqlite3')} 会立刻写入。</p></article>
+      <div class="inline-actions section-spacer">${act('delete-project-yes', '确认删除', 'danger')}${act('close-dialog', '取消', '')}</div>`);
   }
 
   function showHelp() {
@@ -975,8 +1140,12 @@
     <div class="inline-actions section-spacer">${act('set-token', '设置访问口令', 'outline-green')}${act('retry', '重新连接', '')}<a class="text-button" href="/classic">打开旧版工作台 ↗</a></div>`);
   }
 
-  function locateSource(ref) {
-    if (!ref) { toast('这条事实没有登记来源引用', 'error'); return; }
+  function go(view) {
+    if (location.hash.slice(1) === view) render();
+    else location.hash = view;
+  }
+
+  function locateSource(ref) {    if (!ref) { toast('这条事实没有登记来源引用', 'error'); return; }
     const paraId = String(ref).split('·')[0].trim();
     const exact = String(ref).trim();
     S.view = 'content';
@@ -1005,13 +1174,23 @@
         toast('已切换到 ' + S.project.name);
       } catch (error) { fail(error); }
     },
-    'seed-project': async () => {
+    'new-project': () => showNewProject(),
+    'delete-project': () => confirmDeleteProject(),
+    'delete-project-yes': async () => {
+      const p = P();
+      if (!p) { closeDialog(); return; }
       closeDialog();
       try {
-        const data = await api.post('/api/studio/seed', {});
-        S.project = data.project || data;
+        const data = await api.post('/api/studio/projects/' + p.id + '/delete', {});
+        S.project = null;
+        S.exhibitsIndex = 0;
+        S.lastEventId = 0;
+        S.events = [];
+        try { localStorage.removeItem(PROJECT_KEY); } catch (e) {}
         await bootProjects();
-        toast('已创建示例项目');
+        if (S.project) await reloadEvents(true);
+        render();
+        toast(`已删除「${data.name || p.name}」${data.audio_files_removed ? '，同时删除 ' + data.audio_files_removed + ' 个音频文件' : ''}`);
       } catch (error) { fail(error); }
     },
     help: () => showHelp(),
@@ -1033,9 +1212,10 @@
       if (Number.isInteger(next) && next >= 0) { S.exhibitIndex = next; render(); }
     },
     'content-tab': (value) => { S.contentTab = value || '主讲解'; render(); },
-    'nav-content': () => { location.hash = '#content'; },
-    'nav-tests': () => { location.hash = '#tests'; },
-    'goto-issues': () => { location.hash = '#tests'; },
+    'nav-content': () => go('content'),
+    'nav-tests': () => go('tests'),
+    'goto-live': () => go('live'),
+    'goto-issues': () => go('tests'),
     'read-content': () => openReader(),
     'reader-smaller': () => { S.readerSize = Math.max(14, S.readerSize - 2); $('#dialog-body').style.setProperty('--reader-size', S.readerSize + 'px'); },
     'reader-larger': () => { S.readerSize = Math.min(30, S.readerSize + 2); $('#dialog-body').style.setProperty('--reader-size', S.readerSize + 'px'); },
@@ -1126,6 +1306,18 @@
       body.op = 'candidate';
       await postAction('feedback', body);
       toast('已登记改进候选');
+    },
+    'new-project': async (form) => {
+      const body = readForm(form);
+      if (!body.name) { toast('项目名称不能为空', 'error'); return; }
+      const data = await api.post('/api/studio/projects', body);
+      closeDialog();
+      try { localStorage.setItem(PROJECT_KEY, data.project.id); } catch (e) {}
+      S.project = data.project;
+      await bootProjects();
+      await reloadEvents(true);
+      render();
+      toast('已创建「' + data.project.name + '」，下一步导入资料');
     }
   };
 
@@ -1161,28 +1353,16 @@
       try { localStorage.setItem(CHATW_KEY, el.value); } catch (e) {}
       return;
     }
-    if (el.id === 'material-file' && el.files && el.files[0]) {
+    if (el.matches('[data-upload="material"]') && el.files && el.files[0]) {
       const file = el.files[0];
-      if (file.size > 200 * 1024) { toast('文件超过 200 KB，请拆分后再导入', 'error'); el.value = ''; return; }
-      try {
-        const text = await file.text();
-        await postAction('material', { name: file.name, text });
-        toast(`已导入 ${file.name}（${byteText(file.size)}）`);
-      } catch (error) { fail(error); }
       el.value = '';
+      try {
+        const data = await uploadMaterial(file);
+        const doc = data.doc || {};
+        const bits = [doc.kind ? doc.kind : '', doc.chars ? doc.chars + ' 字' : ''].filter(Boolean).join(' · ');
+        toast(`已收下《${file.name}》${bits ? '（' + bits + '）' : ''}${doc.note ? ' ' + doc.note : ''}`);
+      } catch (error) { fail(error); }
       return;
-    }
-    if (el.id === 'text-file' && el.files && el.files[0]) {
-      const file = el.files[0];
-      try {
-        const text = await file.text();
-        const preview = $('#attachment-preview');
-        preview.innerHTML = `<span class="pill blue">${esc(file.name)} · ${byteText(file.size)}</span>`;
-        $('#message').value = (($('#message').value || '') + '\n' + text).trim().slice(0, 4000);
-        preview.dataset.pending = '1';
-        toast('已填入输入框，发送后才会写入项目资料');
-      } catch (error) { fail(error); }
-      el.value = '';
     }
   });
 
@@ -1192,19 +1372,48 @@
     const message = (input.value || '').trim();
     if (!message) return;
     if (!P()) { toast('还没有读到项目', 'error'); return; }
+    if (S.chatPending) { toast('我还在回上一句，稍等一下', 'error'); return; }
     input.value = '';
     S.chatPending = true;
+    S.chatTools = [];
     renderChat();
+    renderChrome();
     try {
       await api.post('/api/studio/projects/' + S.project.id + '/chat', { message });
-      S.chatPending = false;
+      // 服务端立刻返回 202，回话与工具进度由轮询的 chat.tool / chat.agent 事件补上。
       await reloadProject();
-      await reloadEvents(false);
     } catch (error) {
       S.chatPending = false;
+      S.chatTools = [];
       renderChat();
       fail(error);
     }
+  });
+
+  // 拖文件到对话区就是上传资料——不用先找按钮。
+  let dragDepth = 0;
+  const dropZone = () => $('.composer-wrap') || document.body;
+  document.addEventListener('dragenter', (ev) => {
+    if (!ev.dataTransfer || !Array.from(ev.dataTransfer.types || []).includes('Files')) return;
+    dragDepth += 1;
+    const z = dropZone();
+    if (z) z.classList.add('is-drop');
+  });
+  document.addEventListener('dragleave', () => {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) { const z = dropZone(); if (z) z.classList.remove('is-drop'); }
+  });
+  document.addEventListener('dragover', (ev) => {
+    if (ev.dataTransfer && Array.from(ev.dataTransfer.types || []).includes('Files')) ev.preventDefault();
+  });
+  document.addEventListener('drop', async (ev) => {
+    const files = ev.dataTransfer && ev.dataTransfer.files;
+    if (!files || !files.length) return;
+    ev.preventDefault();
+    dragDepth = 0;
+    const z = dropZone();
+    if (z) z.classList.remove('is-drop');
+    await uploadMany(files);
   });
 
   $('#message').addEventListener('keydown', (ev) => {
@@ -1219,11 +1428,10 @@
   async function bootProjects() {
     const list = await api.get('/api/studio/projects');
     S.projects = list.projects || [];
+    S.listLoaded = true;
     if (!S.projects.length) {
-      const created = await api.post('/api/studio/seed', {});
-      const project = created.project || created;
-      S.projects = [{ id: project.id, name: project.name, status: project.status, version: project.version, updated_at: project.updated_at }];
-      S.project = project;
+      // 空库就是空库：不自动建任何项目，交给使用者自己新建。
+      S.project = null;
       return;
     }
     let want = '';

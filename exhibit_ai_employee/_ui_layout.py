@@ -66,10 +66,16 @@ def main():
         print("端口 %d 已被占用" % PORT)
         return 2
     tmp = tempfile.mkdtemp(prefix="studio_layout_")
-    db_copy = os.path.join(tmp, "ui.sqlite3")
-    shutil.copy(os.path.join(ROOT, "studio.sqlite3"), db_copy)
+    db_path = os.path.join(tmp, "ui.sqlite3")
+    audio_dir = os.path.join(tmp, "audio")
+    os.makedirs(audio_dir, exist_ok=True)
+    built = subprocess.run([sys.executable, "_fixture.py", db_path, audio_dir, "layoutfix"],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+    if built.returncode != 0:
+        print("夹具建不起来：\n" + (built.stderr or ""))
+        return 2
     env = clean_env()
-    env.update({"STUDIO_DB": db_copy, "STUDIO_AUDIO_DIR": os.path.join(ROOT, "audio"),
+    env.update({"STUDIO_DB": db_path, "STUDIO_AUDIO_DIR": audio_dir,
                 "STUDIO_PORT": str(PORT), "STUDIO_HOST": "127.0.0.1", "PYTHONIOENCODING": "utf-8"})
     server = subprocess.Popen([sys.executable, "studio_server.py"], cwd=ROOT, env=env,
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

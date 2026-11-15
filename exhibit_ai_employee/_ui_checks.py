@@ -7,6 +7,7 @@
   3) 页面上不出现占位式假数据标记（本地交互演示 / 示例任务 / DEMO 编号 等）；
   4) 关键交互真的打到后端：定位原文高亮、切换展项、运行自测、记录反馈与候选。
 """
+import json
 import os
 import shutil
 import socket
@@ -22,6 +23,9 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = int(os.environ.get("UI_CHECK_PORT", "4212"))
 BASE = "http://127.0.0.1:%d" % PORT
 SHOTS = os.path.join(ROOT, "_ui_shots")
+FIXTURE_ID = "uifix01"
+FIXTURE_NAME = "走查夹具项目"
+FIXTURE_TITLES = ["测试展项一", "测试展项二", "测试展项三"]
 
 FORBIDDEN = ["本地交互演示", "示例任务", "未调用真实", "PRJ-DEMO", "TASK-DEMO",
              "载入示例记录", "示例用例", "演示数据"]
@@ -74,14 +78,22 @@ def main():
         print("端口 %d 已被占用，先停掉再用" % PORT)
         return 2
     tmp = tempfile.mkdtemp(prefix="studio_ui_")
-    db_copy = os.path.join(tmp, "ui.sqlite3")
-    shutil.copy(os.path.join(ROOT, "studio.sqlite3"), db_copy)
-    audio_dir = os.path.join(ROOT, "audio")          # 只读引用真实音频，验证播放路径
+    db_path = os.path.join(tmp, "ui.sqlite3")
+    audio_dir = os.path.join(tmp, "audio")            # 夹具现场合成音频，不碰真实数据
+    os.makedirs(audio_dir, exist_ok=True)
     os.makedirs(SHOTS, exist_ok=True)
+
+    # 夹具项目由 _fixture.py 现场造，不复制真实库（空库起步后本机可能什么都没有）
+    built = subprocess.run([sys.executable, "_fixture.py", db_path, audio_dir, FIXTURE_ID],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+    if built.returncode != 0:
+        print("夹具建不起来：\n" + (built.stderr or ""))
+        return 2
+    fixture = json.loads(built.stdout.strip().splitlines()[-1])
 
     env = clean_env()
     env.update({
-        "STUDIO_DB": db_copy,
+        "STUDIO_DB": db_path,
         "STUDIO_AUDIO_DIR": audio_dir,
         "STUDIO_PORT": str(PORT),
         "STUDIO_HOST": "127.0.0.1",
@@ -106,7 +118,7 @@ def main():
 
             check("顶栏显示已连接真实服务", "已连接" in page.inner_text("#conn-text"),
                   page.inner_text("#conn-text"))
-            check("项目切换器读到真实项目名", "光与声音探索展" in page.inner_text("#project-switch"),
+            check("项目切换器读到真实项目名", FIXTURE_NAME in page.inner_text("#project-switch"),
                   page.inner_text("#project-switch"))
 
             seen_text = {}
@@ -130,7 +142,8 @@ def main():
                 page.screenshot(path=os.path.join(SHOTS, "view-%s.png" % view), full_page=False)
 
             live = seen_text["执行现场"]
-            check("执行现场：真实展项标题", "光的折射" in live and "声音的传播" in live and "颜色的奥秘" in live)
+            check("执行现场：三个展项标题都在",
+                  all(t in live for t in FIXTURE_TITLES), [t for t in FIXTURE_TITLES if t not in live])
             check("执行现场：真实事件记录条数", "条" in live and "运行事件" in live)
 
             tests = seen_text["测试审核"]

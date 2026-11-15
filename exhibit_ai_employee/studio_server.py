@@ -23,7 +23,10 @@ import zipfile
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, quote, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlparse
+
+import docread
+import websearch
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("STUDIO_DB", ROOT / "studio.sqlite3"))
@@ -61,7 +64,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-d"
+CODE_REV = "studio-2026-11-15-f"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -141,6 +144,44 @@ def model_json(messages, project_id="-", max_tokens=4000, retries=2):
                 outcome = "success"
                 return json.loads(content)
             except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as error:
+                if attempt >= retries:
+                    raise ModelError("%s: %s" % (type(error).__name__, error)) from error
+                time.sleep(1.5 * (attempt + 1))
+    finally:
+        elapsed = int((time.monotonic() - started) * 1000)
+        with db() as c:
+            c.execute("INSERT INTO calls(project_id,created_at,elapsed_ms,outcome,usage) VALUES(?,?,?,?,?)",
+                      (project_id, now(), elapsed, outcome, json.dumps(usage)))
+
+
+def model_chat(messages, tools=None, project_id="-", max_tokens=1600, retries=2, temperature=0.55):
+    """一对一对话调用（自由文本，可带工具）。返回 assistant message 原文。
+
+    与 model_json 的区别：不强制 JSON —— 聊天要说得像人话，套 JSON 会把它变成填空题。
+    """
+    if not API_KEY:
+        raise ModelError("未配置模型凭据（AI_API_KEY / DEEPSEEK_API_KEY）")
+    body = {"model": MODEL, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+    if tools:
+        body["tools"] = tools
+        body["tool_choice"] = "auto"
+    started = time.monotonic()
+    outcome, usage = "failed", {}
+    try:
+        for attempt in range(retries + 1):
+            request = urllib.request.Request(
+                API_BASE + "/chat/completions",
+                data=json.dumps(body, ensure_ascii=False).encode(),
+                headers={"Authorization": "Bearer " + API_KEY, "Content-Type": "application/json"},
+            )
+            try:
+                with urllib.request.urlopen(request, timeout=180) as response:
+                    result = json.load(response)
+                usage = result.get("usage", {})
+                message = result["choices"][0]["message"] or {}
+                outcome = "success"
+                return message
+            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, KeyError) as error:
                 if attempt >= retries:
                     raise ModelError("%s: %s" % (type(error).__name__, error)) from error
                 time.sleep(1.5 * (attempt + 1))
@@ -368,83 +409,30 @@ def run_pipeline(project_id):
     threading.Thread(target=work, daemon=True).start()
 
 
-# ---------------------------------------------------------------- seeding
+# ---------------------------------------------------------------- 项目建档
 
-SEED = [
-    {
-        "id": "EX01", "title": "光的折射",
-        "material": "光的折射_展签资料.txt",
-        "text": """展项名称：光的折射
-展项位置：二层「光与声音探索展」A 区
+def create_project(name, audience="", language="", brief="", materials=None, project_id=None):
+    """建一个空项目。资料由使用者自己导入，这里不塞任何内置示例。
 
-光在不同介质中传播的速度不同。光在真空中的速度约为每秒 30 万公里，是自然界中最快的速度。光在空气中传播的速度与真空中非常接近，在玻璃中约减慢三成，在水中的速度约为真空中的四分之三。
-
-当光从一种透明介质斜射入另一种透明介质时，由于两种介质中的传播速度不同，光的传播方向在分界面上会发生改变，这种现象叫做光的折射。光从空气斜射入水中时，折射光线会向法线方向偏折；光从水斜射入空气时，折射光线会偏离法线。
-
-折射让我们的眼睛产生错觉。把一支笔斜插进装水的透明杯子里，从侧面看，水面上下的笔仿佛断成了两截。这是因为从水中射出的光线经过水面时方向发生改变，眼睛却仍沿着直线去判断位置，于是看到的位置比实际位置偏上。
-
-站在水池边看水底，会觉得池水比实际浅一些，这也是折射造成的。渔夫用鱼叉叉鱼时要瞄准看到的位置的下方，因为真实的位置比看到的位置更深。
-
-光的折射遵循折射定律：入射光线、折射光线和法线在同一平面内，折射光线与入射光线分居法线两侧；入射角的正弦与折射角的正弦之比，对确定的两种介质来说是一个常数。""",
-    },
-    {
-        "id": "EX02", "title": "声音的传播",
-        "material": "教育材料.txt",
-        "text": """展项名称：声音的传播
-适用观众：小学三年级以上亲子观众
-
-声音是由物体振动产生的。正在发声的音叉，用手轻轻一碰会有麻的感觉，说明它在振动。振动会带动周围的空气分子，空气分子再去推动旁边的空气分子，这样一环一环地把振动传出去，形成声波。
-
-声波是机械波，必须依靠介质才能传播。空气、水、木头、钢铁都可以传声，但声音不能在真空中传播。把正在响铃的闹钟放进玻璃罩里，逐渐抽出罩内的空气，铃声会越来越小，最后几乎听不见。
-
-声音在不同介质中的传播速度不同。在 15 摄氏度的空气中，声音的传播速度约为每秒 340 米；在水中约为每秒 1500 米；在钢铁中约为每秒 5000 米。所以声音在水里和钢铁里跑得比在空气中快。
-
-声音有三个基本特征：音调、响度和音色。音调由振动的快慢决定，振动越快音调越高；响度与振动的幅度有关，振幅越大声音越响；音色由发声体本身决定，所以不同的人说话，我们能分辨出是谁。
-
-在水中，声音传播的速度比空气中快，因此潜水员在水下能听到远处船只的螺旋桨声。声音在固体中传播得最快，把耳朵贴在铁轨上，可以更早听到远处火车驶来的声音。""",
-    },
-    {
-        "id": "EX03", "title": "颜色的奥秘",
-        "material": "颜色的奥秘_展签资料.txt",
-        "text": """展项名称：颜色的奥秘
-展区：二层「光与声音探索展」C 区
-
-白光看起来没有颜色，其实它是由多种颜色的光混合而成的。1666 年，牛顿把一束阳光通过三棱镜，在屏幕上得到了一条按红、橙、黄、绿、蓝、靛、紫排列的彩色光带，这就是光的色散。
-
-我们看到的物体颜色，取决于它反射的光。太阳光照射到物体上，物体表面会吸收一部分色光，反射另一部分色光。红色的苹果主要反射红光，吸收其他颜色的光，所以我们看到它是红色的。
-
-如果物体把各种颜色的光都吸收，我们看到的就是黑色；如果物体把各种颜色的光几乎都反射回来，我们看到的就是白色。白色物体在红光下会呈现红色，因为此时只有红光可以反射。
-
-色光的三原色是红、绿、蓝。把这三种色光按不同比例混合，可以得到各种颜色的光。红光和绿光混合得到黄光，红光和蓝光混合得到品红光，绿光和蓝光混合得到青光，三种光同时叠加得到白光。
-
-颜料的三原色是品红、黄、青，与色光的三原色不同。色光混合时亮度会叠加变亮，颜料混合时则因为吸收更多的光而变暗。""",
-    },
-]
-
-
-def seed(project_id=None, materials=None):
-    """建立项目。materials 为 [{'name','text','title'}]；不给时使用内置示例资料，
-    并在项目上标注 demo=True，前端据此如实提示「内置示例资料」。"""
-    demo = materials is None
-    if demo:
-        materials = [{"name": item["material"], "text": item["text"], "title": item["title"]}
-                     for item in SEED]
+    materials: [{"name","text","title"}]，可省略；省略就是完全没有资料的空项目。
+    """
+    materials = list(materials or [])
     project = {
         "id": project_id or uuid.uuid4().hex[:10],
         "task_no": None,
         "created_at": now(),
-        "name": materials[0].get("project") or "光与声音探索展",
-        "audience": "亲子观众",
-        "language": "中文",
+        "name": (name or "").strip() or "未命名项目",
+        "audience": (audience or "").strip(),
+        "language": (language or "").strip(),
         "status": "draft",
         "version": 0.1,
         "run_version": 0,
-        "brief": {"text": "把这三个展项做成适合亲子观众的互动讲解，每项约 45 秒。先给我草稿，我再审核。",
-                  "at": now()},
+        "brief": {"text": (brief or "").strip(), "at": now()},
         "authorization": None,
-        "demo": demo,
+        "demo": False,
         "materials": [{"id": "EX%02d" % (i + 1), "title": item.get("title", ""),
-                       "material": item["name"]} for i, item in enumerate(materials)],
+                       "material": item.get("text", ""),
+                       "source_refs": []} for i, item in enumerate(materials)],
         "sources": build_sources(materials),
         "exhibits": [],
         "issues": [],
@@ -456,13 +444,59 @@ def seed(project_id=None, materials=None):
     for index, item in enumerate(materials):
         if not project["materials"][index]["title"]:
             project["materials"][index]["title"] = "展项 %s" % (index + 1)
+    refs = [s["id"] for s in project["sources"]]
+    for item in project["materials"]:
+        item["source_refs"] = refs
     with db() as c:
         row = c.execute("SELECT COUNT(*) AS n FROM projects").fetchone()
     project["task_no"] = (row["n"] or 0) + 1
     save(project)
-    event(project["id"], "seed", {"message": "已载入 %d 个展项与 %d 份资料%s" % (
-        len(materials), len(materials), "（内置示例资料）" if demo else "")})
+    event(project["id"], "project", {"message": "已创建项目「%s」%s" % (
+        project["name"],
+        "，载入 %d 份资料" % len(materials) if materials else "，还没有资料")})
     return project
+
+
+def add_source(project, name, text):
+    """把一段资料追加进项目并重新编号 SRC，返回新资料编号。
+
+    编号必须整体重来：SRC-002 变成 SRC-003 之后，原有的 source_ref 也得跟着改，
+    否则老事实的引用会指向另一份资料。
+    """
+    new_source = build_sources([{"name": name, "text": text}])[0]
+    project.setdefault("sources", []).append(new_source)
+    for index, source in enumerate(project["sources"], start=1):
+        new_id = "SRC-%03d" % index
+        for para in source["paragraphs"]:
+            para["id"] = new_id + para["id"].split("·", 1)[1]
+        source["id"] = new_id
+    materials = project.setdefault("materials", [])
+    materials.append({"id": "M-%03d" % (len(materials) + 1), "title": name[:120],
+                      "material": text, "source_refs": [new_source["id"]]})
+    return new_source["id"]
+
+
+def delete_project(project):
+    """删掉项目档案、它的事件与调用记录、以及它的音频目录。返回删掉的音频文件数。"""
+    pid = project["id"]
+    with db() as c:
+        c.execute("DELETE FROM events WHERE project_id=?", (pid,))
+        c.execute("DELETE FROM calls WHERE project_id=?", (pid,))
+        c.execute("DELETE FROM projects WHERE id=?", (pid,))
+    removed = 0
+    folder = tts.AUDIO_ROOT / pid
+    if folder.is_dir():
+        for path in folder.glob("*"):
+            try:
+                path.unlink()
+                removed += 1
+            except OSError:
+                pass
+        try:
+            folder.rmdir()
+        except OSError:
+            pass
+    return removed
 
 
 # ---------------------------------------------------------------- tests
@@ -1000,17 +1034,21 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/studio/health":
                 return self.send_json(200, {"ok": True, "model": MODEL, "key_configured": bool(API_KEY),
                                             "database": DB_PATH.name, "code": CODE_REV, "pid": os.getpid(),
-                                            "auth_required": bool(ACCESS_TOKEN), "tts": tts.status()})
-            if path in ("/api/studio/projects", "/api/studio/seed"):
+                                            "auth_required": bool(ACCESS_TOKEN), "tts": tts.status(),
+                                            "web": websearch.status(), "docs": docread.status(),
+                                            "agent": {"max_rounds": AGENT_MAX_ROUNDS,
+                                                      "max_tool_calls": AGENT_MAX_TOOL_CALLS,
+                                                      "stale_seconds": CHAT_STALE_SECONDS}})
+            if path == "/api/studio/projects":
+                # 空库就是空库：不再自动塞入任何内置示例项目。
                 with db() as c:
                     rows = c.execute("SELECT body FROM projects ORDER BY updated_at DESC").fetchall()
                 items = []
                 for row in rows:
                     body = json.loads(row["body"])
                     items.append({"id": body["id"], "name": body["name"], "status": body["status"],
-                                  "version": body["version"], "updated_at": body["updated_at"]})
-                if path == "/api/studio/seed" or not items:
-                    return self.send_json(200, {"project": seed()})
+                                  "version": body["version"], "updated_at": body["updated_at"],
+                                  "task_no": body.get("task_no")})
                 return self.send_json(200, {"projects": items})
             match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)(/events)?", path)
             if match:
@@ -1074,32 +1112,88 @@ class Handler(BaseHTTPRequestHandler):
             traceback.print_exc()
             return self.send_json(500, {"error": "%s: %s" % (type(error).__name__, error)})
 
+    def handle_upload(self, project_id):
+        """收一个文件本体：原始字节 + ?name=<文件名>，不走 multipart。
+
+        前端直接 fetch(url, {method:"POST", body: file})，服务端不需要解析表单边界；
+        文件名放在查询参数里（浏览器的 body 是二进制，塞不进 JSON）。
+        """
+        query = parse_qs(urlparse(self.path).query)
+        name = (query.get("name") or [""])[0].strip()
+        if not name:
+            name = unquote(self.headers.get("X-File-Name") or "").strip()
+        if not name:
+            return self.send_json(400, {"error": "没拿到文件名。上传地址要带 ?name=文件名"})
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return self.send_json(400, {"error": "Content-Length 不合法"})
+        if length <= 0:
+            return self.send_json(400, {"error": "文件是空的（0 字节）"})
+        if length > docread.MAX_BYTES:
+            return self.send_json(413, {"error": "文件太大了（%.1f MB）。上限是 %d MB"
+                                        % (length / 1048576.0, docread.MAX_BYTES // 1048576)})
+        raw = self.rfile.read(length)
+        try:
+            doc = docread.read_bytes(raw, name)
+        except docread.ReadError as error:
+            return self.send_json(400, {"error": str(error)})
+        project = load(project_id)
+        title = name.rsplit(".", 1)[0].strip()[:80] or "未命名资料"
+        source_id = add_source(project, title, doc["text"])
+        save(project)
+        paragraphs = len(project["sources"][-1]["paragraphs"])
+        event(project_id, "material", {"message": "上传资料：《%s》，%d 段" % (name, paragraphs) if paragraphs
+                                       else "上传资料：《%s》，没有切出段落" % name,
+                                       "bytes": len(raw), "source_id": source_id})
+        return self.send_json(200, {"project": project, "source_id": source_id, "doc": doc})
+
     def do_POST(self):
         denied = self.require_auth()
         if denied is not None:
             return denied
         path = urlparse(self.path).path
         try:
+            upload = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/upload", path)
+            if upload:
+                return self.handle_upload(upload.group(1))
             data = self.read_json()
-            if path in ("/api/studio/projects", "/api/studio/seed"):
-                project = seed()
-                return self.send_json(200, {"project": project})
-            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/(run|review|chat|tests|issue|material|voice|publish|authorize|quote|exhibit|feedback|acceptance)", path)
+            if path == "/api/studio/projects":
+                name = str(data.get("name") or "").strip()
+                if not name:
+                    return self.send_json(400, {"error": "项目名称不能为空"})
+                if len(name) > 60:
+                    return self.send_json(400, {"error": "项目名称最多 60 字"})
+                project = create_project(
+                    name=name,
+                    audience=str(data.get("audience") or "").strip()[:40],
+                    language=str(data.get("language") or "").strip()[:20],
+                    brief=str(data.get("brief") or "").strip()[:2000],
+                )
+                return self.send_json(201, {"project": project})
+            match = re.fullmatch(r"/api/studio/projects/([A-Za-z0-9]+)/(run|review|chat|tests|issue|material|voice|publish|authorize|quote|exhibit|feedback|acceptance|delete)", path)
             if not match:
                 return self.send_json(404, {"error": "接口不存在"})
             project_id, action = match.group(1), match.group(2)
             project = load(project_id)
 
+            if action == "delete":
+                removed = delete_project(project)
+                return self.send_json(200, {"deleted": project_id, "name": project["name"],
+                                            "audio_files_removed": removed})
+
             if action == "run":
                 if project["status"] == "running":
                     return self.send_json(409, {"error": "正在执行，请等待本轮结束"})
+                if not project.get("materials"):
+                    return self.send_json(400, {"error": "还没有资料。先在「内容成果」页导入展签或教育材料文本，再生成。"})
                 for exhibit in project.get("materials", []):
                     exhibit["source_refs"] = [s["id"] for s in project["sources"]]
                 project["status"] = "running"
                 project["issues"] = []
                 save(project)
                 event(project_id, "step", {"step": "cards", "state": "running", "label": "知识卡",
-                                           "detail": "开始为 3 个展项抽取事实"})
+                                           "detail": "开始为 %d 个展项抽取事实" % len(project["materials"])})
                 run_pipeline(project_id)
                 return self.send_json(202, {"status": "running"})
 
@@ -1168,16 +1262,11 @@ class Handler(BaseHTTPRequestHandler):
                 text = str(data.get("text") or "").strip()
                 if len(text) < 20:
                     return self.send_json(400, {"error": "补充资料至少 20 字"})
-                project["sources"].append(build_sources([{"name": name, "text": text}])[0])
-                # 重新编号，避免 SRC 重复
-                for index, source in enumerate(project["sources"], start=1):
-                    new_id = "SRC-%03d" % index
-                    for para in source["paragraphs"]:
-                        para["id"] = new_id + para["id"].split("·", 1)[1]
-                    source["id"] = new_id
+                source_id = add_source(project, name, text)
                 save(project)
-                event(project_id, "material", {"message": "新增资料：" + name, "bytes": len(text.encode())})
-                return self.send_json(200, {"project": project})
+                event(project_id, "material", {"message": "新增资料：" + name, "bytes": len(text.encode()),
+                                               "source_id": source_id})
+                return self.send_json(200, {"project": project, "source_id": source_id})
 
             if action == "authorize":
                 if project.get("authorization"):
@@ -1280,9 +1369,14 @@ class Handler(BaseHTTPRequestHandler):
                 message = str(data.get("message") or "").strip()
                 if not message:
                     return self.send_json(400, {"error": "消息为空"})
-                project = handle_chat(project, message)
+                if len(message) > 2000:
+                    return self.send_json(400, {"error": "消息太长了（上限 2000 字），分几次说吧"})
+                if chat_busy(project):
+                    return self.send_json(409, {"error": "我还在回上一句，稍等一下"})
+                project["chat_running"] = now()
                 save(project)
-                return self.send_json(200, {"project": project})
+                threading.Thread(target=chat_worker, args=(project_id, message), daemon=True).start()
+                return self.send_json(202, {"status": "thinking"})
 
             return self.send_json(404, {"error": "接口不存在"})
         except PermissionError as error:
@@ -1298,41 +1392,298 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(500, {"error": "%s: %s" % (type(error).__name__, error)})
 
 
+# ---------------------------------------------------------------- 对话与联网
+# 员工说话，数字员工做事。这里不是「关键词分支 + 固定话术」的假对话：
+# 每一轮都真的调模型，模型自己决定要不要联网查、要不要读资料、要不要重做草稿。
+AGENT_MAX_ROUNDS = int(os.environ.get("STUDIO_CHAT_ROUNDS", "6"))
+AGENT_MAX_TOOL_CALLS = int(os.environ.get("STUDIO_CHAT_TOOLS", "14"))
+CHAT_STALE_SECONDS = int(os.environ.get("STUDIO_CHAT_STALE", "240"))
+
+PROJECT_TOOL_SPECS = [
+    {"type": "function", "function": {
+        "name": "project_digest",
+        "description": "读取当前项目最新的真实状态（资料、展项、字数、待核验引用、自测、审核、音频）。"
+                       "聊到「现在什么情况」之前先调它，不要凭记忆回答。",
+        "parameters": {"type": "object", "properties": {}}}},
+    {"type": "function", "function": {
+        "name": "read_source",
+        "description": "读取员工上传的某份资料原文。只给 source_id 返回段落目录；再给 paragraph_id 返回那一段原文。"
+                       "核对原文、找可引用的整句时必须用它。",
+        "parameters": {"type": "object", "properties": {
+            "source_id": {"type": "string", "description": "资料编号，如 SRC-001"},
+            "paragraph_id": {"type": "string", "description": "段落编号，如 SRC-001·P003，可省略"}},
+            "required": ["source_id"]}}},
+    {"type": "function", "function": {
+        "name": "add_material",
+        "description": "把一段真实资料登记进当前项目（员工说「把这个加进去」「我还有一段」时用）。"
+                       "text 必须是原文，不要改写、不要补写。",
+        "parameters": {"type": "object", "properties": {
+            "name": {"type": "string", "description": "资料名，如「光的折射_补充资料」"},
+            "text": {"type": "string", "description": "资料原文"}},
+            "required": ["name", "text"]}}},
+    {"type": "function", "function": {
+        "name": "start_generation",
+        "description": "按当前资料重新生成全部展项的草稿（要调模型，几十秒）。只有员工明确要你生成/重做时才调。",
+        "parameters": {"type": "object", "properties": {}}}},
+]
+
+
+def project_digest_text(project):
+    """给模型看的真实项目现状。不写「示例」，不写假进度。"""
+    lines = ["项目：%s（v%s，%s）" % (project.get("name"), project.get("version"),
+                                 STATUS_TEXT.get(project.get("status"), project.get("status")))]
+    for key, label in (("audience", "目标观众"), ("language", "语言")):
+        if project.get(key):
+            lines.append("%s：%s" % (label, project[key]))
+    sources = project.get("sources") or []
+    if sources:
+        lines.append("资料 %d 份：%s" % (len(sources), "；".join(
+            "%s《%s》%d 段" % (s["id"], s.get("name", ""), len(s.get("paragraphs") or [])) for s in sources)))
+    else:
+        lines.append("资料：还没导入，任何生成都会被拒绝。")
+    exhibits = project.get("exhibits") or []
+    if not exhibits:
+        lines.append("展项：还没生成草稿。")
+    for exhibit in exhibits:
+        main_len = len(((exhibit.get("main") or {}).get("text") or ""))
+        audio = (project.get("audio") or {}).get(exhibit["id"])
+        lines.append("展项 %s《%s》：主讲解 %d 字（目标 45 秒），事实 %d 条，待核验 %d 处%s" % (
+            exhibit["id"], exhibit.get("title", ""), main_len, len(exhibit.get("facts") or []),
+            len(exhibit.get("issues") or []), "，已合成音频" if audio else "，还没有音频"))
+    issues = project.get("issues") or []
+    if issues:
+        lines.append("待确认引用 %d 处：%s" % (len(issues), "；".join(
+            "%s %s" % (i.get("fact_id", ""), i.get("reason", "")) for i in issues[:3])))
+    tests = project.get("tests") or []
+    if tests:
+        passed = sum(1 for t in tests if t.get("status") == "passed")
+        lines.append("自测 %d/%d 通过" % (passed, len(tests)))
+    review = project.get("review") or {}
+    if review.get("decision"):
+        lines.append("审核：%s（%s）" % ("已通过" if review["decision"] == "approved" else "要求修改",
+                                     review.get("reviewer") or ""))
+    quote = quote_of(project) if project.get("quote") else None
+    if quote and quote.get("confirmed"):
+        lines.append("报价与范围：已确认，报价 %s 元" % quote.get("price"))
+    return "\n".join(lines)
+
+
+def agent_system_prompt(project):
+    return """你是这个展馆内容团队里的「展览互动内容制作员」，和用户是同事，不是客服，也不是一个表单。
+
+怎么说话：
+- 像人一样：短句，先给结论，再说下一步。别用「首先/其次/综上所述」，别把每句话都加粗，条目超过三条就改成一段话。
+- 现场情况你已经知道了（贴在最后），不用再问「请问您想让我做什么」，能动手就先动手。
+- 不确定的事实不要编。需要外部信息就调用 web_search，必要时 fetch_url 打开页面读正文；回答里说清用了哪个来源（给链接）。
+- 搜索词写 2~5 个关键词，像人在搜索框里打字：「光的折射 生活例子」而不是「请问光的折射在生活中有哪些例子呢」。长句会被搜索引擎截断。
+- 查证要收得住：搜 2~3 次、打开 1~2 页就该给结论了。查完先说结论，别一直查到没话说。
+- 查不到就直说查不到，别用「根据相关资料」糊过去，也不要说「已完成」来结束一个没做的事。
+- 一件事做完，用一句话说清「结果 + 下一步」，一般不超过 150 字。真要分点，最多三条，用「·」而不是长表格。
+
+边界：
+- 展项内容和引用必须来自员工上传的资料，正文的原文引用不许改写。外部查到的信息只能用来核对、补充背景、纠正说法，不能顶替资料原文。
+- 涉及生成（花钱、花时间）的动作，只有员工明确要求才做。
+
+项目现场（真实数据）：
+%s""" % project_digest_text(project)
+
+
+def agent_history(project, limit=10):
+    items = []
+    for entry in (project.get("chat") or [])[-limit:]:
+        text = str(entry.get("text") or "").strip()
+        if not text:
+            continue
+        role = "assistant" if entry.get("role") == "agent" else "user"
+        items.append({"role": role, "content": text[:2000]})
+    return items
+
+
+def agent_tools():
+    return list(websearch.TOOL_SPECS) + PROJECT_TOOL_SPECS
+
+
+def tool_label(name, args):
+    if name == "web_search":
+        return "正在搜「%s」" % str(args.get("query") or "")[:40]
+    if name == "fetch_url":
+        return "正在打开网页"
+    if name == "read_source":
+        return "正在读资料 %s" % str(args.get("source_id") or "")
+    if name == "add_material":
+        return "正在登记资料「%s」" % str(args.get("name") or "")[:20]
+    if name == "start_generation":
+        return "准备按当前资料重做草稿"
+    return "正在处理 %s" % name
+
+
+def _tool_project_digest(project, args):
+    return project_digest_text(project), {"status": project.get("status")}
+
+
+def _tool_read_source(project, args):
+    source_id = str(args.get("source_id") or "").strip()
+    paragraph_id = str(args.get("paragraph_id") or "").strip()
+    sources = project.get("sources") or []
+    source = next((s for s in sources if s.get("id") == source_id), None)
+    if source is None:
+        names = "、".join(s.get("id", "") for s in sources) or "（还没有任何资料）"
+        return "没有这份资料。现有资料：%s" % names, None
+    paragraphs = source.get("paragraphs") or []
+    if paragraph_id:
+        paragraph = next((p for p in paragraphs if p.get("id") == paragraph_id), None)
+        if paragraph is None:
+            first = paragraphs[0]["id"] if paragraphs else "无"
+            return "%s 里没有 %s 这一段。它有 %d 段，从 %s 开始。" % (source_id, paragraph_id, len(paragraphs), first), None
+        return "%s：%s" % (paragraph["id"], paragraph["text"]), {"source_id": source_id}
+    body = "\n".join("%s %s" % (p["id"], p["text"]) for p in paragraphs)
+    if len(body) > 6000:
+        index = "\n".join("%s %s…" % (p["id"], p["text"][:40]) for p in paragraphs)
+        return ("《%s》共 %d 段，太长，先给目录。要看某段就把 paragraph_id 给我：\n%s"
+                % (source.get("name", ""), len(paragraphs), index)), {"source_id": source_id, "paragraphs": len(paragraphs)}
+    return "《%s》共 %d 段：\n%s" % (source.get("name", ""), len(paragraphs), body), {"source_id": source_id}
+
+
+def _tool_add_material(project, args):
+    name = str(args.get("name") or "").strip()[:80] or "补充资料"
+    text = str(args.get("text") or "").strip()
+    if len(text) < 20:
+        return "这段只有 %d 字，不像资料正文。至少 20 字再说，或者直接把文件拖进对话框上传。" % len(text), None
+    source_id = add_source(project, name, text)
+    source = project["sources"][-1]
+    paragraphs = len(source.get("paragraphs") or [])
+    return ("已登记《%s》为 %s，切出 %d 段。原有草稿不会自己变——要让它进草稿就得重做一遍。"
+            % (name, source_id, paragraphs)), {"source_id": source_id, "paragraphs": paragraphs}
+
+
+def run_agent_tool(project, name, args, flags):
+    """执行一个工具调用。永不抛异常：失败也返回一句能继续往下聊的话。"""
+    try:
+        if name in ("web_search", "fetch_url"):
+            return websearch.run_tool(name, args)
+        if name == "project_digest":
+            return _tool_project_digest(project, args)
+        if name == "read_source":
+            return _tool_read_source(project, args)
+        if name == "add_material":
+            return _tool_add_material(project, args)
+        if name == "start_generation":
+            if not project.get("materials"):
+                return "现在还没有任何资料，生成会被服务端拒绝。先导入展签或教育材料。", None
+            flags["generate"] = True
+            return "好，等这轮说完我就按当前 %d 份资料重做草稿。" % len(project["materials"]), {"queued": True}
+        return "没有叫 %s 的工具。" % name, None
+    except websearch.WebError as error:
+        return "刚才没查成：%s" % error, None
+    except Exception as error:  # 工具坏掉不能把整轮对话弄崩
+        traceback.print_exc()
+        return "这个操作没成功：%s: %s" % (type(error).__name__, error), None
+
+
+def chat_turn(project, message, flags):
+    """跑一轮对话（可多轮工具调用）。返回 (回复文本, 工具轨迹)。"""
+    messages = [{"role": "system", "content": agent_system_prompt(project)}]
+    messages.extend(agent_history(project))
+    trace, calls = [], 0
+    for round_index in range(AGENT_MAX_ROUNDS):
+        # 最后一轮把工具撤掉：模型必须拿已经查到的东西说话，而不是无限查下去。
+        last_round = round_index == AGENT_MAX_ROUNDS - 1
+        reply = model_chat(messages, tools=None if last_round else agent_tools(),
+                           project_id=project.get("id", "-"))
+        tool_calls = reply.get("tool_calls") or []
+        content = (reply.get("content") or "").strip()
+        if not tool_calls:
+            return content or "我在。需要我查点什么，或者直接动手改哪一块？", trace
+        if last_round:
+            return content or "我把查到的先放这儿，你想继续我再往下深挖。", trace
+        messages.append({"role": "assistant", "content": content, "tool_calls": tool_calls})
+        for call in tool_calls:
+            function = call.get("function") or {}
+            name = function.get("name") or ""
+            try:
+                args = json.loads(function.get("arguments") or "{}")
+                if not isinstance(args, dict):
+                    args = {}
+            except json.JSONDecodeError:
+                args = {}
+            calls += 1
+            if calls > AGENT_MAX_TOOL_CALLS:
+                messages.append({"role": "tool", "tool_call_id": call.get("id", ""),
+                                 "content": "工具调用次数到上限了，请直接给结论。"})
+                continue
+            label = tool_label(name, args)
+            event(project.get("id", "-"), "chat.tool",
+                  {"tool": name, "arg": str(args.get("query") or args.get("url") or args.get("source_id")
+                                             or args.get("name") or "")[:60],
+                   "state": "start", "message": label})
+            text, data = run_agent_tool(project, name, args, flags)
+            ok = data is not None
+            summary = text.split("\n")[0][:80]
+            trace.append({"tool": name, "arg": label, "ok": ok, "summary": summary})
+            event(project.get("id", "-"), "chat.tool",
+                  {"tool": name, "arg": str(args.get("query") or args.get("url") or "")[:60],
+                   "state": "done" if ok else "fail", "message": summary})
+            if name == "add_material" and ok:
+                save(project)
+            messages.append({"role": "tool", "tool_call_id": call.get("id", ""), "content": text})
+    return "我这轮查得有点久，先说到这儿——你要继续我就接着往下查。", trace
+
+
 def handle_chat(project, message):
+    """一问一答：真调模型，模型可自己决定联网查证、读资料、重做草稿。"""
     history = project.setdefault("chat", [])
     history.append({"role": "user", "text": message, "at": now()})
-    if re.search(r"重新生成|再生成|重跑|生成一遍", message):
-        for exhibit in project.get("materials", []):
-            exhibit["source_refs"] = [s["id"] for s in project["sources"]]
-        project["status"] = "running"
-        project["issues"] = []
-        save(project)
-        reply = "收到，我按当前资料重新生成 3 个展项的草稿，生成后会逐条核对原文引用，无法定位的地方会单独列出来。"
-        history.append({"role": "agent", "text": reply, "at": now()})
-        run_pipeline(project["id"])
-        return project
-
-    summary = []
-    for exhibit in project.get("exhibits", [])[:3]:
-        summary.append("%s《%s》：主讲解 %d 字，事实 %d 条，待核验 %d 处" % (
-            exhibit["id"], exhibit["title"], len((exhibit.get("main") or {}).get("text", "")),
-            len(exhibit.get("facts", [])), len(exhibit.get("issues", []))))
-    state = "尚未生成草稿" if not project.get("exhibits") else "；".join(summary)
-    messages = [
-        {"role": "system", "content": "你是展览互动内容制作员。回答必须简洁（80 字内），只能依据当前项目状态和资料，不得编造。"
-                                     "请输出 JSON：{\"reply\":\"...\"}"},
-        {"role": "user", "content": "项目：%s，版本 v%s，状态 %s。当前成果：%s。待核验 %d 处。用户说：%s"
-                                    % (project["name"], project["version"], project["status"], state,
-                                       len(project.get("issues", [])), message)},
-    ]
+    save(project)
+    flags = {}
     try:
-        data = model_json(messages, project["id"], max_tokens=400)
-        reply = str(data.get("reply") or "").strip() or "我在。你可以让我重新生成、查看待核验引用，或告诉我下一步怎么做。"
-    except ModelError:
-        reply = ("我在。当前 v%s 共 %d 个展项，%d 处引用待确认。你可以说「重新生成」，或点右侧的待确认卡片处理。"
-                 % (project["version"], len(project.get("exhibits", [])), len(project.get("issues", []))))
-    history.append({"role": "agent", "text": reply, "at": now()})
-    return project
+        text, trace = chat_turn(project, message, flags)
+    except ModelError as error:
+        text = "模型这边没接通：%s。你这句话我先记着了，等接通再回你。" % str(error)[:160]
+        trace = []
+    history.append({"role": "agent", "text": text, "at": now(), "tools": trace})
+    return project, flags
+
+
+def chat_worker(project_id, message):
+    """后台跑一轮对话。前端靠 /events 轮询看到 streaming 的工具动静。"""
+    try:
+        project = load(project_id)
+        project, flags = handle_chat(project, message)
+        project.pop("chat_running", None)
+        save(project)
+        last = (project.get("chat") or [{}])[-1]
+        event(project_id, "chat.agent", {"text": last.get("text", ""), "tools": last.get("tools") or []})
+        if flags.get("generate"):
+            if not project.get("materials"):
+                event(project_id, "chat.failed", {"message": "还没有资料，生成不了。"})
+                return
+            for material in project.get("materials", []):
+                material["source_refs"] = [s["id"] for s in project["sources"]]
+            project["status"] = "running"
+            project["issues"] = []
+            save(project)
+            run_pipeline(project_id)
+    except Exception as error:
+        traceback.print_exc()
+        try:
+            stale = load(project_id)
+            stale.pop("chat_running", None)
+            save(stale)
+        except Exception:
+            pass
+        event(project_id, "chat.failed", {"message": "%s: %s" % (type(error).__name__, error)})
+
+
+def chat_busy(project):
+    """同一项目同时只跑一轮对话。超时的旧标记视为失效，否则一次崩溃会让对话永久卡住。"""
+    started = project.get("chat_running")
+    if not started:
+        return False
+    try:
+        elapsed = (datetime.now(timezone.utc) - datetime.fromisoformat(started)).total_seconds()
+    except (TypeError, ValueError):
+        return False
+    return elapsed < CHAT_STALE_SECONDS
 
 
 def main():
