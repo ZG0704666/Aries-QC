@@ -62,7 +62,7 @@ def build_task_plan(batch: Batch, spec: dict, class_map: ClassMap, coverage: dic
     ]
 
     milestones = [
-        {'day': 'D0', 'name': '接单与规范冻结', 'output': '规范编译结果、类别映射、缺项/冲突清单',
+        {'day': 'D0', 'name': '工作台与规范冻结', 'output': '规范编译结果、类别映射、缺项/冲突清单',
          'gate': 'P0：类别表与映射无冲突'},
         {'day': 'D1', 'name': '采集/补采与标注', 'output': '批次数据、标注文件、采集记录',
          'gate': 'P0：标签格式与类别 ID 合法'},

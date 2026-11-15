@@ -1,4 +1,4 @@
-project: 怀柔机器人产线动作采集（一期）
+project: 怀柔机器人产线动作采集
 label_format: segmentation
 classes:
   - name: agv
@@ -55,4 +55,4 @@ norms:
   qa_images_per_hour: 200
   workday_hours: 8
   deadline_days: 3
-notes: 机器人产线一期，含 AGV、机械臂、轨道门三类目标；分割多边形交付。
+notes: 机器人产线，含 AGV、机械臂、轨道门三类目标；分割多边形交付。

@@ -3,7 +3,7 @@ global_health:
   recall: 0.95
   conf_drift: 0.0
   bbox_jitter: 0.01
-  false_positive_rate: 0.03
+  false_positive_rate: 0.12
 per_class_health:
   agv:
     recall: 0.65

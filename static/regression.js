@@ -5,6 +5,7 @@
     runId: null, run: null, tab: 'overview',
     pollTimer: null, renderKey: '',
     cases: { missed: [], falsePositive: [], loaded: false },
+    caseFilter: { kind: '', className: '' },
   };
 
   async function init() {
@@ -40,10 +41,10 @@
   }
 
   function bind() {
-    $('#regStartBtn').addEventListener('click', startRun);
-    $('#regHeroStart').addEventListener('click', () => quickDemo('v2'));
+    $('#regStartBtn')?.addEventListener('click', startRun);
+    $('#regHeroStart')?.addEventListener('click', () => quickDemo('v2'));
     $$('[data-reg-demo]').forEach((button) => button.addEventListener('click', () => quickDemo(button.dataset.regDemo)));
-    $('#regTabs').addEventListener('click', (event) => {
+    $('#regTabs')?.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-tab]');
       if (!button) return;
       RS.tab = button.dataset.tab;
@@ -84,14 +85,16 @@
       });
       RS.runId = created.id;
       localStorage.setItem('ariesqc.regRun', created.id);
-      RS.run = null; RS.renderKey = ''; RS.tab = 'overview'; RS.cases = { missed: [], falsePositive: [], loaded: false };
+      RS.run = null; RS.renderKey = ''; RS.tab = 'overview';
+      RS.caseFilter = { kind: '', className: '' };
+      RS.cases = { missed: [], falsePositive: [], loaded: false };
       $$('#regTabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'overview'));
       $('#regWelcome').hidden = true;
       $('#regRunView').hidden = false;
       await openRun(created.id);
-      toast('回归检测已接单');
+      toast('回归检测已开始');
     } catch (error) {
-      toast(`接单失败：${error.message}`, true);
+      toast(`启动失败：${error.message}`, true);
     } finally {
       $('#regStartBtn').disabled = false;
     }
@@ -153,7 +156,7 @@
     const steps = RS.run?.steps || [];
     const trace = $('#regTrace');
     if (!steps.length) {
-      trace.innerHTML = '<div class="trace-empty">等待接单…</div>';
+      trace.innerHTML = '<div class="trace-empty">等待开始…</div>';
       return;
     }
     trace.innerHTML = steps.map((step) => `
@@ -197,16 +200,21 @@
 
     const busyStates = ['created', 'queued', 'running'];
     if (busyStates.includes(run.status)) {
-      const steps = run.steps || [];
-      const done = steps.filter((s) => s.status === 'ok').length;
-      const total = steps.length || 1;
-      const current = steps.find((s) => s.status === 'running');
-      const label = current ? current.title : (run.progress || {}).label || '等待开始…';
       $('#regKpis').innerHTML = '';
-      $('#regTabContent').innerHTML = window.Viz
-        ? Viz.loaderHTML(done / total, '回归检测执行中', `▸ ${label}`)
-        : `<div class="empty-note">执行中 · ${done}/${total}</div>`;
-      if (window.Viz) Viz.mount($('#regTabContent'));
+      const label = (run.progress || {}).label || '正在准备分析…';
+      $('#regTabContent').innerHTML = `<div class="ai-analyzing" role="status" aria-live="polite">
+        <div class="ai-analyzing-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="ai-analyzing-title">AI员工正在分析</div>
+        <div class="ai-analyzing-text">${esc(label)}</div>
+      </div>`;
+      return;
+    }
+
+    if (run.status === 'failed') {
+      $('#regKpis').innerHTML = '';
+      $('#regTabContent').innerHTML = `<div class="section"><div class="empty-note" style="color:var(--red)">
+        回归检测失败：${esc(run.error || '后台未提供错误信息')}
+      </div></div>`;
       return;
     }
 
@@ -223,7 +231,7 @@
     $('#regKpis').innerHTML = kpiItems.map((it) =>
       `<div class="kpi ${it.cls || ''}"><b>${esc(it.value)}</b><span>${esc(it.label)}${it.unit ? ' · ' + esc(it.unit) : ''}</span></div>`).join('');
 
-    const key = `${run.status}|${RS.tab}|${RS.cases.loaded}`;
+    const key = `${run.status}|${RS.tab}|${RS.cases.loaded}|${RS.caseFilter.kind}|${RS.caseFilter.className}`;
     if (key === RS.renderKey) return;
     RS.renderKey = key;
     $('#regTabContent').innerHTML = renderTab();
@@ -277,24 +285,24 @@
     <div class="compare-legend"><span><i class="baseline-dot"></i>基线</span><span><i class="candidate-dot"></i>候选</span></div>
     <div class="panel">
       ${names.map((name) => {
-        const row = comparison.per_class[name];
-        const baseline = row.baseline.ap50, candidate = row.candidate.ap50;
-        const drop = row.drop.ap50;
-        return `<div class="compare-bar-row">
+      const row = comparison.per_class[name];
+      const baseline = row.baseline.ap50, candidate = row.candidate.ap50;
+      const drop = row.drop.ap50;
+      return `<div class="compare-bar-row">
           <div class="cls-name ${row.degraded ? 'degraded' : ''}">${esc(name)}</div>
           <div class="compare-bar-track"><div class="compare-bar-fill baseline" style="width:${(baseline * 100).toFixed(1)}%"></div></div>
           <div class="compare-bar-track"><div class="compare-bar-fill candidate ${row.degraded ? 'degraded' : ''}" style="width:${(candidate * 100).toFixed(1)}%"></div></div>
           <div class="compare-drop ${drop > 0 ? 'up' : 'down'}">${drop > 0 ? '↓' : '↑'} ${(Math.abs(drop) * 100).toFixed(1)}%</div>
         </div>`;
-      }).join('')}
+    }).join('')}
     </div></div>
     <div class="section"><h3>整体指标</h3><div class="panel"><table>
       <tr><th>指标</th><th>基线</th><th>候选</th><th>变化</th></tr>
       ${['precision', 'recall', 'f1', 'ap50'].map((key) => {
-        const label = { precision: '精确率', recall: '召回率', f1: 'F1 分数', ap50: 'mAP50' }[key];
-        const o = comparison.overall;
-        return `<tr><td>${label}</td><td>${fmtNum(o.baseline[key])}</td><td>${fmtNum(o.candidate[key])}</td><td>${o.drop[key] > 0 ? '↓' : '↑'} ${fmtNum(Math.abs(o.drop[key]))}</td></tr>`;
-      }).join('')}
+      const label = { precision: '精确率', recall: '召回率', f1: 'F1 分数', ap50: 'mAP50' }[key];
+      const o = comparison.overall;
+      return `<tr><td>${label}</td><td>${fmtNum(o.baseline[key])}</td><td>${fmtNum(o.candidate[key])}</td><td>${o.drop[key] > 0 ? '↓' : '↑'} ${fmtNum(Math.abs(o.drop[key]))}</td></tr>`;
+    }).join('')}
     </table></div></div>`;
   }
 
@@ -307,30 +315,61 @@
     <div class="section"><div class="panel"><table>
       <tr><th>类别</th><th>基线 AP50</th><th>候选 AP50</th><th>跌幅</th><th>召回率跌幅</th><th>关键类别</th></tr>
       ${names.map((name) => {
-        const row = comparison.per_class[name];
-        return `<tr><td><b>${esc(name)}</b></td><td>${fmtNum(row.baseline.ap50)}</td><td>${fmtNum(row.candidate.ap50)}</td>
+      const row = comparison.per_class[name];
+      return `<tr><td><b>${esc(name)}</b></td><td>${fmtNum(row.baseline.ap50)}</td><td>${fmtNum(row.candidate.ap50)}</td>
           <td class="compare-drop up">${fmtNum(row.drop.ap50)}</td><td>${fmtNum(row.drop.recall)}</td>
           <td>${critical.has(name) ? '<span class="badge p0">关键</span>' : '<span class="badge muted">普通</span>'}</td></tr>`;
-      }).join('')}
+    }).join('')}
     </table></div></div>`;
   }
 
   function renderCases() {
     if (!RS.cases.loaded) return '<div class="empty-note">正在加载案例…</div>';
-    const missed = RS.cases.missed, fp = RS.cases.falsePositive;
+    const all = [
+      ...RS.cases.missed.map((c, index) => ({ ...c, kind: 'missed', sourceIndex: index })),
+      ...RS.cases.falsePositive.map((c, index) => ({ ...c, kind: 'fp', sourceIndex: index })),
+    ];
+    const classes = [...new Set(all.map((c) => {
+      const box = c.kind === 'missed' ? c.gt_box : c.pred_box;
+      return box?.cls_name;
+    }).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    const filtered = all.filter((c) => {
+      const box = c.kind === 'missed' ? c.gt_box : c.pred_box;
+      return (!RS.caseFilter.kind || c.kind === RS.caseFilter.kind)
+        && (!RS.caseFilter.className || box?.cls_name === RS.caseFilter.className);
+    });
+    const missed = filtered.filter((c) => c.kind === 'missed');
+    const fp = filtered.filter((c) => c.kind === 'fp');
     return `
-    <div class="section"><h3>候选模型新增漏检（${missed.length}）</h3><div id="missedCaseList">
-      ${missed.length ? missed.slice(0, 50).map((c, i) => caseRow(c, 'missed', i)).join('') : '<div class="empty-note">没有新增漏检</div>'}
+    <div class="toolbar case-filters" aria-label="案例筛选">
+      ${caseFilterChip('', '全部案例', RS.caseFilter.kind === '' && RS.caseFilter.className === '')}
+      ${caseFilterChip('missed', '漏检', RS.caseFilter.kind === 'missed')}
+      ${caseFilterChip('fp', '错检', RS.caseFilter.kind === 'fp')}
+      <span class="case-filter-divider"></span>
+      ${classes.map((name) => classFilterChip(name)).join('')}
+      <span class="muted case-filter-count">${filtered.length} / ${all.length} 条</span>
+    </div>
+    <div class="section"><h3><span class="badge p1">漏检</span> 候选模型新增漏检（${missed.length}）</h3><div id="missedCaseList">
+      ${missed.length ? missed.slice(0, 50).map((c) => caseRow(c, 'missed', c.sourceIndex)).join('') : '<div class="empty-note">没有符合筛选条件的漏检</div>'}
     </div></div>
-    <div class="section"><h3>候选模型新增错检（${fp.length}）</h3><div id="fpCaseList">
-      ${fp.length ? fp.slice(0, 50).map((c, i) => caseRow(c, 'fp', i)).join('') : '<div class="empty-note">没有新增错检</div>'}
+    <div class="section"><h3><span class="badge candidate">错检</span> 候选模型新增错检（${fp.length}）</h3><div id="fpCaseList">
+      ${fp.length ? fp.slice(0, 50).map((c) => caseRow(c, 'fp', c.sourceIndex)).join('') : '<div class="empty-note">没有符合筛选条件的错检</div>'}
     </div></div>`;
+  }
+
+  function caseFilterChip(value, label, active) {
+    return `<button class="chip ${active ? 'active' : ''}" data-case-kind="${value}">${label}</button>`;
+  }
+
+  function classFilterChip(name) {
+    return `<button class="chip ${RS.caseFilter.className === name ? 'active' : ''}" data-case-class="${esc(name)}">${esc(name)}</button>`;
   }
 
   function caseRow(c, kind, index) {
     const box = kind === 'missed' ? c.gt_box : c.pred_box;
     const url = `/api/regression/runs/${RS.runId}/image?path=${encodeURIComponent(c.image)}`;
-    const extra = kind === 'missed' ? `<span class="badge p1">${esc(c.severity)}</span>` : `<span class="badge candidate">conf ${fmtNum(c.conf)}</span>`;
+    const category = c.category_label || (kind === 'missed' ? '漏检' : '错检');
+    const extra = kind === 'missed' ? `<span class="badge p1">${esc(category)} · ${esc(c.severity)}</span>` : `<span class="badge candidate">${esc(category)} · conf ${fmtNum(c.conf)}</span>`;
     return `<div class="case-row" data-kind="${kind}" data-index="${index}">
       <img class="case-thumb" src="${url}" loading="lazy" alt="">
       <div><span class="badge muted">${esc(box.cls_name)}</span></div>
@@ -340,6 +379,17 @@
   }
 
   function bindCaseRows() {
+    $$('#regTabContent [data-case-kind]').forEach((button) => button.addEventListener('click', () => {
+      RS.caseFilter.kind = button.dataset.caseKind;
+      RS.caseFilter.className = '';
+      RS.renderKey = '';
+      renderRun();
+    }));
+    $$('#regTabContent [data-case-class]').forEach((button) => button.addEventListener('click', () => {
+      RS.caseFilter.className = button.dataset.caseClass;
+      RS.renderKey = '';
+      renderRun();
+    }));
     $$('#regTabContent .case-row').forEach((row) => row.addEventListener('click', () => {
       const kind = row.dataset.kind;
       const index = Number(row.dataset.index);

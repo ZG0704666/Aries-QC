@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,254 +8,259 @@
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/viz.css">
 </head>
+
 <body>
-<div class="bg-grid"></div>
-<header class="topbar">
-  <div class="brand">
-    <img class="mark-img" src="/static/logo.png" alt="Aries QC logo">
-    <div>
-      <div class="brand-name">Aries QC <span>QUALITY CONTROL ENGINE</span></div>
-      <div class="brand-sub">AI 数据采集与标注质检专员 · 每一帧都有依据</div>
-    </div>
-  </div>
-  <div class="mode-switch" id="modeSwitch" role="tablist">
-    <button class="mode-btn active" data-mode="quality" role="tab">数据质检</button>
-    <button class="mode-btn" data-mode="regression" role="tab">模型回归门禁</button>
-  </div>
-  <div class="top-status">
-    <span class="pill" id="llmStatus"><i></i> 模型服务检测中</span>
-    <span class="pill" id="modelStatus"><i></i> 复核权重</span>
-    <span class="pill subtle" id="runCount">0 次运行</span>
-  </div>
-</header>
-
-<div class="shell" id="qualityShell">
-  <aside class="sidebar">
-    <section class="card intake">
-      <div class="card-title">
-        <span>接单</span>
-        <span class="tiny">NEW JOB</span>
-      </div>
-
-      <div class="quick">
-        <button class="quick-btn" data-demo="single">单批次示例</button>
-        <button class="quick-btn" data-demo="merge">合并批次 · ID 冲突</button>
-        <button class="quick-btn" data-demo="gate">规范缺失 · 停机提问</button>
-      </div>
-
-      <label class="field-label">数据批次</label>
-      <select id="batchSelect" class="input"></select>
-      <input id="batchPath" class="input mono" placeholder="或粘贴批次目录路径">
-      <div class="drop" id="batchDrop">
-        <b>拖入批次 zip</b>
-        <span>或点击选择 · 自动解压到本地</span>
-        <input type="file" id="batchFile" accept=".zip" hidden>
-      </div>
-
-      <label class="field-label">采集 / 标注规范</label>
-      <select id="specSelect" class="input"></select>
-      <textarea id="specText" class="input mono" rows="3" placeholder="或粘贴规范文本（PDF/MD/YAML 均可选文件）"></textarea>
-      <div class="drop" id="specDrop">
-        <b>拖入规范 PDF / MD / YAML</b>
-        <span>或点击选择 · 不超过 12MB</span>
-        <input type="file" id="specFile" accept=".pdf,.md,.txt,.yaml,.yml,.json,.docx" hidden>
-      </div>
-
-      <div class="toggles">
-        <label class="switch"><input type="checkbox" id="useModel" checked><span></span>模型交叉复核</label>
-        <label class="switch"><input type="checkbox" id="strictSpec"><span></span>歧义时停下问人</label>
-      </div>
-
-      <button class="primary" id="startBtn">开始质检 <span>→</span></button>
-      <div class="hint" id="intakeHint">已有批次与规范时，可一键开始；运行中可查看实时轨迹。</div>
-    </section>
-
-    <section class="card trace-card">
-      <div class="card-title"><span>执行轨迹</span><span class="tiny" id="traceState">IDLE</span></div>
-      <div class="trace" id="trace">
-        <div class="trace-empty">等待接单…</div>
-      </div>
-    </section>
-  </aside>
-
-  <main class="main">
-    <section id="welcome" class="welcome">
-      <div class="hero">
-        <div class="eyebrow">OPC · FIRST AI EMPLOYEE</div>
-        <h1>把一批原始数据，<br>变成<span>可验收的交付包</span>。</h1>
-        <p>输入「原始图 + 采集/标注规范」，自主产出任务拆解、标签体系、质检报告与补采清单。数字全部由脚本计算，模型只做规范编译与归纳；候选问题必须人工裁定。</p>
-        <div class="hero-actions">
-          <button class="primary" id="heroStart">用示例跑一遍</button>
-          <span class="mono muted">真实批次 · 真实缺陷 · 可审计</span>
-        </div>
-      </div>
-      <div class="outputs">
-        <div class="output"><span>01</span><b>任务拆解</b><p>批次、角色、工时、抽样、里程碑。工时用脚本按客户基准算。</p></div>
-        <div class="output"><span>02</span><b>标签体系</b><p>类别定义、包含/排除、跨批次 ID 映射与冲突处理。</p></div>
-        <div class="output"><span>03</span><b>质检报告</b><p>漏标、错标、ID 冲突、误检热点；每条带图、行号与数值证据。</p></div>
-        <div class="output"><span>04</span><b>补采清单</b><p>按配额与场景缺口生成可派工、可验收的补采工单。</p></div>
-      </div>
-      <div class="pipeline">
-        <span>规范编译</span><i></i><span>类别对齐</span><i></i><span>双通道质检</span><i></i><span>人工裁定</span><i></i><span>补采闭环</span>
-      </div>
-      <button class="chip mode-jump" data-jump="regression">需要检查模型回归？切到「模型回归门禁」 →</button>
-    </section>
-
-    <section id="runView" hidden>
-      <div class="run-head">
-        <div>
-          <div class="eyebrow" id="runIdLabel">RUN</div>
-          <h1 id="projectName">—</h1>
-          <p id="headline">—</p>
-        </div>
-        <div class="gate" id="gateBadge">—</div>
-      </div>
-      <div class="kpis" id="kpis"></div>
-      <div class="tabs" id="tabs">
-        <button data-tab="overview" class="active">概览</button>
-        <button data-tab="tasks">任务拆解</button>
-        <button data-tab="classes">标签体系</button>
-        <button data-tab="findings">质检报告</button>
-        <button data-tab="recollect">补采清单</button>
-        <button data-tab="fix">修复预览</button>
-        <button data-tab="delivery">交付包</button>
-      </div>
-      <div id="tabContent" class="tab-content"></div>
-    </section>
-  </main>
-</div>
-
-<div class="shell" id="regressionShell" hidden>
-  <aside class="sidebar">
-    <section class="card intake">
-      <div class="card-title">
-        <span>回归门禁 · 接单</span>
-        <span class="tiny">NEW RUN</span>
-      </div>
-
-      <div class="quick">
-        <button class="quick-btn" data-reg-demo="v2">候选 v2 · 预期拦截</button>
-        <button class="quick-btn" data-reg-demo="v3">候选 v3 · 预期放行</button>
-      </div>
-
-      <label class="field-label">旧展项数据集</label>
-      <select id="regDatasetSelect" class="input"></select>
-
-      <label class="field-label">基线模型档案</label>
-      <select id="regBaselineSelect" class="input"></select>
-
-      <label class="field-label">候选模型档案</label>
-      <select id="regCandidateSelect" class="input"></select>
-
-      <label class="field-label">验收阈值</label>
-      <div class="reg-thresholds">
-        <div class="reg-th-row"><span>mAP50 下限</span><input id="regThMap50" class="input mono" type="number" step="0.01" min="0" max="1"></div>
-        <div class="reg-th-row"><span>逐类 AP50 跌幅上限</span><input id="regThDrop" class="input mono" type="number" step="0.01" min="0" max="1"></div>
-        <div class="reg-th-row"><span>召回率跌幅上限</span><input id="regThRecall" class="input mono" type="number" step="0.01" min="0" max="1"></div>
-      </div>
-
-      <button class="primary" id="regStartBtn">开始回归检测 <span>→</span></button>
-      <div class="hint">模拟后端演示：换候选档案即可模拟"换权重"，匹配与指标走真实 IoU 逻辑，结论是算出来的。</div>
-    </section>
-
-    <section class="card trace-card">
-      <div class="card-title"><span>执行轨迹</span><span class="tiny" id="regTraceState">IDLE</span></div>
-      <div class="trace" id="regTrace">
-        <div class="trace-empty">等待接单…</div>
-      </div>
-    </section>
-  </aside>
-
-  <main class="main">
-    <section id="regWelcome" class="welcome">
-      <div class="hero">
-        <div class="eyebrow">MODEL GATE · ANTI CATASTROPHIC FORGETTING</div>
-        <h1>换一次权重前，<br>先看<span>旧展项会不会被遗忘</span>。</h1>
-        <p>对比基线模型和候选模型在旧展项数据集上的表现，逐类定位退化，给出放行、警告或拦截的结论，并附带回补数据、调阈值、冻结层等处理建议。</p>
-        <div class="hero-actions">
-          <button class="primary" id="regHeroStart">用候选 v2 跑一遍</button>
-          <span class="mono muted">模拟后端 · 真实 IoU 匹配 · 可复现</span>
-        </div>
-      </div>
-      <div class="outputs">
-        <div class="output"><span>01</span><b>指标对比</b><p>基线与候选逐类 AP50、召回率、精确率对比，带跌幅方向。</p></div>
-        <div class="output"><span>02</span><b>退化定位</b><p>逐类判定是否退化，关键类别命中直接拦截。</p></div>
-        <div class="output"><span>03</span><b>漏检错检案例</b><p>候选模型新增的漏检、错检案例，带证据框可核验。</p></div>
-        <div class="output"><span>04</span><b>处理建议</b><p>按优先级给出回补数据、调阈值、冻结层、重训练建议。</p></div>
-      </div>
-      <div class="pipeline">
-        <span>加载数据集</span><i></i><span>加载档案</span><i></i><span>双模型评估</span><i></i><span>逐类对比</span><i></i><span>阈值判定</span>
-      </div>
-    </section>
-
-    <section id="regRunView" hidden>
-      <div class="run-head">
-        <div>
-          <div class="eyebrow" id="regRunIdLabel">RUN</div>
-          <h1 id="regDatasetName">—</h1>
-          <p id="regHeadline">—</p>
-        </div>
-        <div class="gate" id="regVerdictBadge">—</div>
-      </div>
-      <div class="kpis" id="regKpis"></div>
-      <div class="tabs" id="regTabs">
-        <button data-tab="overview" class="active">概览</button>
-        <button data-tab="compare">指标对比</button>
-        <button data-tab="degraded">退化定位</button>
-        <button data-tab="cases">案例</button>
-        <button data-tab="suggestions">处理建议</button>
-        <button data-tab="delivery">交付包</button>
-      </div>
-      <div id="regTabContent" class="tab-content"></div>
-    </section>
-  </main>
-</div>
-
-
-<div id="drawer" class="drawer" hidden>
-  <div class="drawer-backdrop"></div>
-  <aside class="drawer-panel">
-    <div class="drawer-head">
+  <div class="bg-grid"></div>
+  <header class="topbar">
+    <div class="brand">
+      <img class="mark-img" src="/static/logo.png" alt="Aries QC logo">
       <div>
-        <div class="eyebrow">EVIDENCE VIEWER</div>
-        <h2 id="drawerTitle">证据</h2>
+        <div class="brand-name">Aries QC <span>QUALITY CONTROL ENGINE</span></div>
+        <div class="brand-sub">AI 数据采集与标注质检专员 · 每一帧都有依据</div>
       </div>
-      <button class="icon-btn" id="drawerClose">×</button>
     </div>
-    <div class="drawer-body">
-      <div class="canvas-wrap">
-        <canvas id="evidenceCanvas"></canvas>
-        <div class="canvas-legend">
-          <span><i class="gt"></i>标注</span>
-          <span><i class="p0"></i>P0</span>
-          <span><i class="p1"></i>P1</span>
-          <span><i class="p2"></i>P2</span>
+    <div class="mode-switch" id="modeSwitch" role="tablist">
+      <button class="mode-btn active" data-mode="quality" role="tab">数据质检</button>
+      <button class="mode-btn" data-mode="regression" role="tab">模型回归门禁</button>
+    </div>
+    <div class="top-status">
+      <span class="pill" id="llmStatus"><i></i> 模型服务检测中</span>
+      <span class="pill" id="modelStatus"><i></i> 复核权重</span>
+      <span class="pill subtle" id="runCount">0 次运行</span>
+    </div>
+  </header>
+
+  <div class="shell" id="qualityShell">
+    <aside class="sidebar">
+      <section class="card intake">
+        <div class="card-title">
+          <span>工作台</span>
+          <span class="tiny">NEW JOB</span>
         </div>
-      </div>
-      <div class="evidence-meta" id="evidenceMeta"></div>
-      <div class="evidence-list" id="evidenceList"></div>
-    </div>
-  </aside>
-</div>
 
-<div id="modal" class="modal" hidden>
-  <div class="modal-backdrop"></div>
-  <div class="modal-card">
-    <div class="eyebrow">HUMAN IN THE LOOP</div>
-    <h2>规范缺项，先停机确认</h2>
-    <p class="muted">质量门 P0：没有类别定义时，无法判断漏标/错标。确认后继续，不会由模型自行补造。</p>
-    <div id="questionList"></div>
-    <div id="questionForm"></div>
-    <div class="modal-actions">
-      <button class="ghost" id="modalCancel">稍后处理</button>
-      <button class="primary" id="modalSubmit">确认并继续 →</button>
-    </div>
+        <div class="quick">
+          <button class="quick-btn" data-demo="single">单批次示例</button>
+          <button class="quick-btn" data-demo="merge">合并批次 · ID 冲突</button>
+          <button class="quick-btn" data-demo="gate">规范缺失 · 自动补齐默认值</button>
+        </div>
+
+        <label class="field-label">数据批次</label>
+        <select id="batchSelect" class="input"></select>
+        <input id="batchPath" class="input mono" placeholder="或粘贴批次目录路径">
+        <div class="drop" id="batchDrop">
+          <b>拖入批次 zip</b>
+          <span>或点击选择 · 自动解压到本地</span>
+          <input type="file" id="batchFile" accept=".zip" hidden>
+        </div>
+
+        <label class="field-label">采集 / 标注规范</label>
+        <select id="specSelect" class="input"></select>
+        <textarea id="specText" class="input mono" rows="3" placeholder="或粘贴规范文本（PDF/MD/YAML 均可选文件）"></textarea>
+        <div class="drop" id="specDrop">
+          <b>拖入规范 PDF / MD / YAML</b>
+          <span>或点击选择 · 不超过 12MB</span>
+          <input type="file" id="specFile" accept=".pdf,.md,.txt,.yaml,.yml,.json,.docx" hidden>
+        </div>
+
+        <div class="toggles">
+          <label class="switch"><input type="checkbox" id="useModel" checked><span></span>模型交叉复核</label>
+          <label class="switch"><input type="checkbox" id="strictSpec"><span></span>歧义时停下问人</label>
+        </div>
+
+        <button class="primary" id="startBtn">开始质检 <span>→</span></button>
+        <div class="hint" id="intakeHint">已有批次与规范时，可一键开始；运行中可查看实时轨迹。</div>
+      </section>
+
+      <section class="card trace-card">
+        <div class="card-title"><span>执行轨迹</span><span class="tiny" id="traceState">IDLE</span></div>
+        <div class="trace" id="trace">
+          <div class="trace-empty">等待开始…</div>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section id="welcome" class="welcome">
+        <div class="hero">
+          <div class="eyebrow">OPC · FIRST AI EMPLOYEE</div>
+          <h1>把一批原始数据，<br>变成<span>可验收的交付包</span>。</h1>
+          <p>输入「原始图 + 采集/标注规范」，自主产出任务拆解、标签体系、质检报告与补采清单。数字全部由脚本计算，模型只做规范编译与归纳；候选问题必须人工裁定。</p>
+          <div class="hero-actions">
+            <button class="primary" id="heroStart">用示例跑一遍</button>
+            <span class="mono muted">真实批次 · 真实缺陷 · 可审计</span>
+          </div>
+        </div>
+        <div class="outputs">
+          <div class="output"><span>01</span><b>任务拆解</b>
+            <p>批次、角色、工时、抽样、里程碑。工时用脚本按客户基准算。</p>
+          </div>
+          <div class="output"><span>02</span><b>标签体系</b>
+            <p>类别定义、包含/排除、跨批次 ID 映射与冲突处理。</p>
+          </div>
+          <div class="output"><span>03</span><b>质检报告</b>
+            <p>漏标、错标、ID 冲突、误检热点；每条带图、行号与数值证据。</p>
+          </div>
+          <div class="output"><span>04</span><b>补采清单</b>
+            <p>按配额与场景缺口生成可派工、可验收的补采工单。</p>
+          </div>
+        </div>
+        <div class="pipeline">
+          <span>规范编译</span><i></i><span>类别对齐</span><i></i><span>双通道质检</span><i></i><span>人工裁定</span><i></i><span>补采闭环</span>
+        </div>
+        <button class="chip mode-jump" data-jump="regression">需要检查模型回归？切到「模型回归门禁」 →</button>
+      </section>
+
+      <section id="runView" hidden>
+        <div class="run-head">
+          <div>
+            <div class="eyebrow" id="runIdLabel">RUN</div>
+            <h1 id="projectName">—</h1>
+            <p id="headline">—</p>
+          </div>
+          <div class="gate" id="gateBadge">—</div>
+        </div>
+        <div class="kpis" id="kpis"></div>
+        <div class="tabs" id="tabs">
+          <button data-tab="overview" class="active">概览</button>
+          <button data-tab="tasks">任务拆解</button>
+          <button data-tab="classes">标签体系</button>
+          <button data-tab="findings">质检报告</button>
+          <button data-tab="recollect">补采清单</button>
+          <button data-tab="fix">修复预览</button>
+          <button data-tab="delivery">交付包</button>
+        </div>
+        <div id="tabContent" class="tab-content"></div>
+      </section>
+    </main>
   </div>
-</div>
 
-<div id="toast" class="toast" hidden></div>
-<script src="/static/viz.js"></script>
-<script src="/static/app.js"></script>
-<script src="/static/regression.js"></script>
+  <div class="shell" id="regressionShell" hidden>
+    <aside class="sidebar">
+      <section class="card intake">
+        <div class="card-title">
+          <span>回归门禁 · 工作台</span>
+          <span class="tiny">NEW RUN</span>
+        </div>
+
+        <div class="quick">
+          <button class="quick-btn" data-reg-demo="v2">候选 v2 · 预期拦截</button>
+        </div>
+
+        <label class="field-label">旧展项数据集</label>
+        <select id="regDatasetSelect" class="input"></select>
+
+        <label class="field-label">基线模型档案</label>
+        <select id="regBaselineSelect" class="input"></select>
+
+        <label class="field-label">候选模型档案</label>
+        <select id="regCandidateSelect" class="input"></select>
+
+        <label class="field-label">验收阈值</label>
+        <div class="reg-thresholds">
+          <div class="reg-th-row"><span>mAP50 下限</span><input id="regThMap50" class="input mono" type="number"
+              step="0.01" min="0" max="1"></div>
+          <div class="reg-th-row"><span>逐类 AP50 跌幅上限</span><input id="regThDrop" class="input mono" type="number"
+              step="0.01" min="0" max="1"></div>
+          <div class="reg-th-row"><span>召回率跌幅上限</span><input id="regThRecall" class="input mono" type="number"
+              step="0.01" min="0" max="1"></div>
+        </div>
+
+        <button class="primary" id="regStartBtn">开始回归检测 <span>→</span></button>
+        <div class="hint">模拟后端演示：换候选档案即可模拟"换权重"，匹配与指标走真实 IoU 逻辑，结论是算出来的。</div>
+      </section>
+
+      <section class="card trace-card">
+        <div class="card-title"><span>执行轨迹</span><span class="tiny" id="regTraceState">IDLE</span></div>
+        <div class="trace" id="regTrace">
+          <div class="trace-empty">等待开始…</div>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section id="regWelcome" class="welcome">
+        <div class="hero">
+          <div class="eyebrow">MODEL GATE · ANTI CATASTROPHIC FORGETTING</div>
+          <h1>换一次权重前，<br>先看<span>旧展项会不会被遗忘</span>。</h1>
+          <p>对比基线模型和候选模型在旧展项数据集上的表现，逐类定位退化，给出放行、警告或拦截的结论，并附带回补数据、调阈值、冻结层等处理建议。</p>
+          <div class="hero-actions">
+            <button class="primary" id="regHeroStart">用候选 v2 跑一遍</button>
+            <span class="mono muted">模拟后端 · 真实 IoU 匹配 · 可复现</span>
+          </div>
+        </div>
+        <div class="outputs">
+          <div class="output"><span>01</span><b>指标对比</b>
+            <p>基线与候选逐类 AP50、召回率、精确率对比，带跌幅方向。</p>
+          </div>
+          <div class="output"><span>02</span><b>退化定位</b>
+            <p>逐类判定是否退化，关键类别命中直接拦截。</p>
+          </div>
+          <div class="output"><span>03</span><b>漏检错检案例</b>
+            <p>候选模型新增的漏检、错检案例，带证据框可核验。</p>
+          </div>
+          <div class="output"><span>04</span><b>处理建议</b>
+            <p>按优先级给出回补数据、调阈值、冻结层、重训练建议。</p>
+          </div>
+        </div>
+        <div class="pipeline">
+          <span>加载数据集</span><i></i><span>加载档案</span><i></i><span>双模型评估</span><i></i><span>逐类对比</span><i></i><span>阈值判定</span>
+        </div>
+      </section>
+
+      <section id="regRunView" hidden>
+        <div class="run-head">
+          <div>
+            <div class="eyebrow" id="regRunIdLabel">RUN</div>
+            <h1 id="regDatasetName">—</h1>
+            <p id="regHeadline">—</p>
+          </div>
+          <div class="gate" id="regVerdictBadge">—</div>
+        </div>
+        <div class="kpis" id="regKpis"></div>
+        <div class="tabs" id="regTabs">
+          <button data-tab="overview" class="active">概览</button>
+          <button data-tab="compare">指标对比</button>
+          <button data-tab="degraded">退化定位</button>
+          <button data-tab="cases">案例</button>
+          <button data-tab="suggestions">处理建议</button>
+          <button data-tab="delivery">交付包</button>
+        </div>
+        <div id="regTabContent" class="tab-content"></div>
+      </section>
+    </main>
+  </div>
+
+
+  <div id="drawer" class="drawer" hidden>
+    <div class="drawer-backdrop"></div>
+    <aside class="drawer-panel">
+      <div class="drawer-head">
+        <div>
+          <div class="eyebrow">EVIDENCE VIEWER</div>
+          <h2 id="drawerTitle">证据</h2>
+        </div>
+        <button class="icon-btn" id="drawerClose">×</button>
+      </div>
+      <div class="drawer-body">
+        <div class="canvas-wrap">
+          <canvas id="evidenceCanvas"></canvas>
+          <div class="canvas-legend">
+            <span><i class="gt"></i>标注</span>
+            <span><i class="p0"></i>P0</span>
+            <span><i class="p1"></i>P1</span>
+            <span><i class="p2"></i>P2</span>
+          </div>
+        </div>
+        <div class="evidence-meta" id="evidenceMeta"></div>
+        <div class="evidence-list" id="evidenceList"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/viz.js"></script>
+  <script src="/static/app.js"></script>
+  <script src="/static/regression.js"></script>
 </body>
+
 </html>

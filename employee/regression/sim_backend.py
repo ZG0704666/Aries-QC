@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import platform
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -33,6 +34,8 @@ class SimBackend:
         self.global_health = self.profile.get('global_health', {})
         self._rng = np.random.default_rng(seed)
         self._call_count = 0
+        # 这是当前实际执行预测的设备：SimBackend 不依赖 torch，始终在 Python CPU 上运行。
+        self.device = 'CPU'
 
     def predict(self, image_path: Path, conf_thres: float = 0.25) -> List[dict]:
         """对单张图片生成预测框（同一张图多次调用结果一致）。"""
@@ -99,7 +102,11 @@ class SimBackend:
         with Image.open(image_path) as img:
             img_w, img_h = img.size
         predictions = []
-        for _ in range(int(len(gt_boxes) * fp_rate)):
+        # 按每个真实目标进行概率采样，避免单目标图片因 int(目标数 * 率) 被截断为 0。
+        # 这样 false_positive_rate 才能在真实数据规模下稳定体现为可观测的错检案例。
+        for _ in gt_boxes:
+            if self._rng.random() >= fp_rate:
+                continue
             x1 = self._rng.uniform(0, img_w * 0.8)
             y1 = self._rng.uniform(0, img_h * 0.8)
             w = self._rng.uniform(img_w * 0.05, img_w * 0.2)
@@ -118,6 +125,15 @@ class SimBackend:
 
     def name(self) -> str:
         return f'SimBackend({self.model_name})'
+
+    def runtime_info(self) -> dict:
+        return {
+            'backend': self.name(),
+            'device': self.device,
+            'engine': 'SimBackend · Python/NumPy',
+            'python': platform.python_version(),
+            'calls': self._call_count,
+        }
 
     def reset(self) -> None:
         self._rng = np.random.default_rng(self.seed)

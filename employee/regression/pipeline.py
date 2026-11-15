@@ -22,7 +22,7 @@ from .sim_backend import SimBackend
 from .yolo_dataset import YoloDataset
 
 STEP_TITLES = {
-    'intake': '接单：加载旧展项数据集',
+    'intake': '工作台：加载旧展项数据集',
     'profiles': '加载基线与候选模拟档案',
     'evaluate_baseline': '评估基线模型',
     'evaluate_candidate': '评估候选模型',
@@ -114,7 +114,10 @@ class RegressionRunner:
         entry = self._trace_add('profiles', STEP_TITLES['profiles'], 'running')
         self.baseline_backend = SimBackend(Path(self.baseline_path), self.dataset)
         self.candidate_backend = SimBackend(Path(self.candidate_path), self.dataset)
-        detail = {'baseline': self.baseline_backend.name(), 'candidate': self.candidate_backend.name()}
+        detail = {
+            'baseline': self.baseline_backend.runtime_info(),
+            'candidate': self.candidate_backend.runtime_info(),
+        }
         self._save()
         self._trace_end(entry, 'ok', detail=detail)
 
@@ -125,6 +128,7 @@ class RegressionRunner:
         self._evaluate_one('evaluate_candidate', self.candidate_backend, 'candidate_result')
 
     def _evaluate_one(self, step: str, backend, attr: str) -> None:
+        started = time.perf_counter()
         entry = self._trace_add(step, STEP_TITLES[step], 'running')
         evaluator = RegressionEvaluator(self.dataset)
         total = len(self.dataset.images)
@@ -135,7 +139,15 @@ class RegressionRunner:
                 self._save()
 
         result = evaluator.evaluate(backend, on_progress=on_progress)
+        elapsed = time.perf_counter() - started
         setattr(self, attr, result)
+        result['runtime'] = {
+            **backend.runtime_info(),
+            'elapsed_seconds': round(elapsed, 6),
+            'images': total,
+            'images_per_second': round(total / elapsed, 3) if elapsed > 0 else 0.0,
+        }
+        result['overall']['runtime'] = result['runtime']
         self._save()
         self._trace_end(entry, 'ok', detail={
             'precision': round(result['overall']['precision'], 4),
@@ -143,6 +155,7 @@ class RegressionRunner:
             'ap50': round(result['overall']['ap50'], 4),
             'missed': len(result['missed_cases']),
             'false_positive': len(result['false_positive_cases']),
+            'runtime': result['runtime'],
         })
 
     def _step_compare(self) -> None:

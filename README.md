@@ -52,7 +52,7 @@ python -m pytest tests -q
 
 Web 页面顶部可切换「数据质检」和「模型回归门禁」。回归模式使用仓库内的旧展项 YOLO 验证集，比较基线与候选模型的逐类指标，并展示漏检、错检证据、发布判定、处理建议和可下载的交付包。
 
-在「模型回归门禁」接单台选择数据集、基线和候选档案后，点击「快速演示」即可启动回归。内置 `candidate_v2` 和 `candidate_v3` 均包含退化类别，预期判定为 `BLOCK`；可通过复制并调整候选档案的类别健康度，演示 `WARNING` 或 `RELEASE` 情形。运行产物写入 `runs/reg_<run_id>/`。
+在「模型回归门禁」工作台选择数据集、基线和候选档案后，点击「快速演示」即可启动回归。内置 `candidate_v2` 和 `candidate_v3` 均包含退化类别，预期判定为 `BLOCK`；可通过复制并调整候选档案的类别健康度，演示 `WARNING` 或 `RELEASE` 情形。运行产物写入 `runs/reg_<run_id>/`。
 
 此演示使用零 ML 依赖的模拟推理后端，因此无需安装 PyTorch 或 Ultralytics；数据集加载、检测框 IoU 匹配和汇总指标由项目代码计算。模拟得出的 AP50 以 F1 近似，适用于验证门禁交互和流程，不代表真实模型评估结果。真实模型接入不属于当前模拟演示范围。
 
@@ -63,7 +63,7 @@ Web 页面顶部可切换「数据质检」和「模型回归门禁」。回归�
 仓库不携带大体积图像。演示时把真实批次（约 145MB）放在 `ARIES_QC_DATA_ROOT` 指向的目录，
 仓库内只有规范文件 `fixtures/specs/`：
 
-- `robot_ops.yaml` / `robot_ops.md`：怀柔机器人产线一期规范（检测/分割，类别 agv / robotic arm / rail door）。
+- `robot_ops.yaml` / `robot_ops.md`：怀柔机器人产线规范（检测/分割，类别 agv / robotic arm / rail door）。
 - `all_batches.yaml`：跨批次合并场景，用于演示类别 ID 冲突（hr1 的 0=agv vs hr2 的 0=sliding door）。
 - `missing_spec.md` / `vague.md`：规范缺失/含糊场景，用于演示「停机提问」质量门。
 
@@ -122,7 +122,7 @@ scripts/                   UI 冒烟测试
 48h 内的新工作：
 
 - 全部 `employee/` 业务库（dataset/merge_guard/rules/probe/spec/coverage/plan/recollect/fix/runner/report）。
-- `server.py` + `static/` 本地 Web 接单台、实时轨迹、证据查看、人工裁定、交付下载。
+- `server.py` + `static/` 本地 Web 工作台、实时轨迹、证据查看、人工裁定、交付下载。
 - `run.py` CLI 与 `tests/` 单元/端到端测试。
 - 规范编译器、任务拆解、补采清单、修复预览、类别 ID 冲突处理。
 - 全部交付材料：岗位说明书、商业模式画布、演示脚本、验证报告。

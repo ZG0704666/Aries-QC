@@ -68,6 +68,20 @@ def test_yolo_dataset_loads_ground_truth(tmp_path: Path):
     assert boxes[0]['bbox'] == pytest.approx([80.0, 80.0, 120.0, 120.0])
 
 
+def test_yolo_dataset_falls_back_when_yaml_path_is_from_another_machine(tmp_path: Path):
+    data_yaml = _make_dataset(tmp_path / 'portable', ['agv'], {
+        'img_0001': [[0, 0.5, 0.5, 0.2, 0.2]],
+    })
+    content = data_yaml.read_text(encoding='utf-8').replace(
+        f'path: {tmp_path / "portable"}', 'path: F:/old-machine/old-exhibits')
+    data_yaml.write_text(content, encoding='utf-8')
+
+    dataset = YoloDataset(data_yaml)
+
+    assert dataset.root == data_yaml.parent
+    assert len(dataset.images) == 1
+
+
 def test_sim_backend_degraded_recall_reduces_detections(tmp_path: Path):
     boxes = {f'img_{i:04d}': [[0, 0.5, 0.5, 0.2, 0.2]] for i in range(60)}
     data_yaml = _make_dataset(tmp_path / 'ds', ['agv'], boxes)
@@ -91,6 +105,10 @@ def test_evaluator_compare_flags_degraded_class(tmp_path: Path):
     comparison = evaluator.compare(baseline_result, candidate_result)
     assert 'agv' in comparison['degraded_classes']
     assert comparison['overall']['drop']['recall'] > 0
+    assert all(case['category'] == 'missed' and case['category_label'] == '漏检'
+               for case in candidate_result['missed_cases'])
+    assert all(case['category'] == 'false_positive' and case['category_label'] == '错检'
+               for case in candidate_result['false_positive_cases'])
 
 
 def test_regression_runner_end_to_end_blocks_on_critical_degradation(monkeypatch, tmp_path: Path):

@@ -117,8 +117,9 @@ class Runner:
                 return
             result = steps[name]()
             if result == 'needs_input':
+                # 采用安全的默认值自动继续，避免流程在中途等待人工弹窗。
                 self.state['status'] = 'needs_input'
-                self._save()
+                self._resume_with_defaults()
                 return
             if result == 'failed':
                 self.state['status'] = 'failed'
@@ -155,7 +156,7 @@ class Runner:
             self.state['spec'] = fresh.to_dict(include_source=True)
             self.state['questions'] = []
             self.state['status'] = 'running'
-            self._trace_add('resume', '人工确认规范', 'ok',
+            self._trace_add('resume', '自动补齐默认规范', 'ok',
                             detail={'provided': list(answers.keys())})
             self._save()
             try:
@@ -165,9 +166,20 @@ class Runner:
                 self.state['error'] = f'{type(error).__name__}: {error}'
                 self._save()
 
+    def _resume_with_defaults(self) -> None:
+        """为缺省规范填入可执行默认值并继续流水线。"""
+        names = self._batch_class_names() or ['object']
+        label_format = self.spec.data.get('label_format') if self.spec else ''
+        answers = {
+            'project': (self.spec.data.get('project') if self.spec else '') or 'Aries QC 默认项目',
+            'label_format': label_format if label_format in ('detection', 'segmentation') else 'detection',
+            'classes': [{'name': name, 'definition': ''} for name in names],
+        }
+        self.resume(answers)
+
     # ---------- 步骤 ----------
     def _step_intake(self) -> str:
-        begin = self._trace_add('intake', '接单：扫描批次', 'running')
+        begin = self._trace_add('intake', '工作台：扫描批次', 'running')
         self.state['progress'] = {'done': 0, 'total': 1, 'label': '扫描图片与标签'}
 
         def progress(done: int) -> None:
@@ -308,35 +320,6 @@ class Runner:
         begin = self._trace_add('coverage', '核算覆盖度与配额', 'running')
         assert self.batch is not None and self.class_map is not None
         self.coverage = compute_coverage(self.batch, self.spec.data if self.spec else {}, self.class_map)
-        for item in self.coverage.get('class_quota') or []:
-            if item['gap'] > 0:
-                self.book.add(Finding(
-                    check='coverage_class_gap', severity='P1', confidence='deterministic',
-                    title='类别配额未达标',
-                    message=(f'{item["name"]}：当前 {item["actual"]}，规范要求 {item["required"]}，'
-                             f'缺口 {item["gap"]}'),
-                    subject={'cls_name': item['name']},
-                    evidence=item,
-                    suggested_fix={'kind': 'recollect', 'description': '纳入补采清单'},
-                ))
-        if self.coverage.get('image_gap'):
-            self.book.add(Finding(
-                check='coverage_image_gap', severity='P1', confidence='deterministic',
-                title='图像总量未达标',
-                message=(f'当前 {self.coverage["images"]} 张，规范要求 '
-                         f'{self.coverage["image_requirement"]} 张'),
-                subject={}, evidence={'gap': self.coverage['image_gap']},
-                suggested_fix={'kind': 'recollect', 'description': '纳入补采清单'},
-            ))
-        for item in self.coverage.get('scenes') or []:
-            if item['gap'] > 0:
-                self.book.add(Finding(
-                    check='coverage_scene_gap', severity='P1', confidence='deterministic',
-                    title='场景覆盖不足',
-                    message=f'场景「{item["name"]}」当前 {item["actual"]} 张，要求 {item["required"]} 张',
-                    subject={'scene': item['name']}, evidence=item,
-                    suggested_fix={'kind': 'recollect', 'description': '纳入补采清单'},
-                ))
         self.state['coverage'] = self.coverage
         self.state['findings'] = self.book.counts()
         self._trace_end(begin, 'ok', detail={

@@ -6,6 +6,7 @@ const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({
 const fmt = (n) => (n === null || n === undefined || Number.isNaN(Number(n)))
   ? '—' : Number(n).toLocaleString('zh-CN');
 const pct = (n) => (n === null || n === undefined) ? '—' : `${Math.round(Number(n) * 100)}%`;
+const IGNORED_COVERAGE_CHECKS = new Set(['coverage_class_gap', 'coverage_image_gap', 'coverage_scene_gap']);
 
 const S = {
   health: null, batches: [], specs: [], runId: null, run: null,
@@ -14,6 +15,7 @@ const S = {
   pollTimer: null, renderKey: '', modalFor: '', sample: null, selectedFinding: null,
   drawerSampleId: null, busy: false,
   overviewKey: '', headlineKey: '',
+  progressDisplay: 0,
   snapshots: [],      // 上一次轮询的步骤计时快照，供后端心跳对账，防刷新后状态丢失
   historyDurations: null, // 历史运行各步骤耗时，用作进度环预估总量
 };
@@ -55,18 +57,23 @@ function tickLoader() {
   const stepLabel = prog.label || (current ? current.title : '');
   const stepText = (current || prog.label)
     ? `▸ ${stepLabel}${current?.detail?.error ? ' · ' + current.detail.error : ''}${elapsedText}`
-    : '等待接单…';
-  const fraction = estimateProgress(steps, S.historyDurations);
-  Viz.updateLoader($('#tabContent'), fraction, stepText);
-  const titleEl = $('#tabContent .viz-loader-title');
-  if (titleEl) titleEl.textContent = `质检执行中 · ${doneCountText(steps)}`;
+    : '等待开始…';
+  const analyzing = $('#tabContent .ai-analyzing-text');
+  if (analyzing) analyzing.textContent = stepLabel ? `AI员工正在分析 · ${stepLabel}` : 'AI员工正在分析';
 }
 
 // 进度估算：优先用历史耗时加权，缺历史时按步数均分
-function estimateProgress(steps, history) {
+function estimateProgress(steps, history, progress = {}) {
   const total = steps.length || 1;
+  if (!steps.length) return 0.02;
+  const currentIndex = steps.findIndex((step) => step.status === 'running');
+  const hasBackendProgress = currentIndex >= 0
+    && Number.isFinite(Number(progress.done))
+    && Number(progress.total) > 0;
   if (!history || typeof history !== 'object') {
-    return steps.filter((s) => s.status === 'ok').length / total;
+    const base = steps.filter((s) => s.status === 'ok').length / total;
+    if (hasBackendProgress) return Math.min(0.99, (currentIndex + Math.min(1, Number(progress.done) / Number(progress.total))) / total);
+    return base;
   }
   let done = 0, runningWeight = 0, totalWeight = 0;
   steps.forEach((step, i) => {
@@ -75,13 +82,27 @@ function estimateProgress(steps, history) {
     totalWeight += w;
     if (step.status === 'ok') done += w;
     else if (step.status === 'running') {
-      // 运行中步骤按 elapsed/history 给出部分进度，上限 0.95 避免虚满
-      const e = step._elapsed || 0;
-      runningWeight += Math.min(0.95, w > 0 ? e / w : 0) * w;
+      let ratio;
+      if (i === currentIndex && hasBackendProgress) {
+        ratio = Number(progress.done) / Number(progress.total);
+      } else {
+        // 没有细粒度进度时，按历史耗时平滑估算当前步骤完成比例。
+        const e = step._elapsed || 0;
+        ratio = w > 0 ? e / w : 0;
+      }
+      runningWeight += Math.min(0.95, Math.max(0, ratio)) * w;
     }
   });
   if (totalWeight <= 0) return steps.filter((s) => s.status === 'ok').length / total;
   return Math.min(0.99, (done + runningWeight) / totalWeight);
+}
+function smoothProgress(target) {
+  const next = Math.max(0.02, Math.min(0.99, Number(target) || 0));
+  const previous = Number.isFinite(S.progressDisplay) ? S.progressDisplay : 0.02;
+  // 后端真实进度作为目标值，视觉上用阻尼追赶，避免轮询间隔造成跳变。
+  S.progressDisplay = Math.max(previous, previous + (next - previous) * 0.24);
+  if (next - S.progressDisplay < 0.002) S.progressDisplay = next;
+  return S.progressDisplay;
 }
 function stepTitle(step, i) { return step?.title || `step-${i}`; }
 function doneCountText(steps) {
@@ -225,11 +246,11 @@ function bind() {
   });
   $('#drawerClose').addEventListener('click', closeDrawer);
   $('#drawer .drawer-backdrop').addEventListener('click', closeDrawer);
-  $('#modalCancel').addEventListener('click', () => { $('#modal').hidden = true; });
-  $('#modalSubmit').addEventListener('click', submitQuestions);
+  $('#modalCancel')?.addEventListener('click', () => { $('#modal').hidden = true; });
+  $('#modalSubmit')?.addEventListener('click', submitQuestions);
   bindUploads();
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { closeDrawer(); $('#modal').hidden = true; }
+    if (event.key === 'Escape') { closeDrawer(); if ($('#modal')) $('#modal').hidden = true; }
   });
 }
 
@@ -303,17 +324,18 @@ async function startRun() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
     S.runId = created.id;
+    S.progressDisplay = 0.02;
     localStorage.setItem('ariesqc.run', created.id);
     S.run = null; S.findings = []; S.findingsLoaded = false; S.renderKey = ''; S.tab = 'overview';
     const traceEl = $('#trace');
-    if (traceEl) { traceEl.innerHTML = '<div class="trace-empty">等待接单…</div>'; traceEl.dataset.rendered = '0'; }
+    if (traceEl) { traceEl.innerHTML = '<div class="trace-empty">等待开始…</div>'; traceEl.dataset.rendered = '0'; }
     $$('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'overview'));
     $('#welcome').hidden = true;
     $('#runView').hidden = false;
     await openRun(created.id);
-    toast('已接单，开始执行');
+    toast('已开始执行');
   } catch (error) {
-    toast(`接单失败：${error.message}`, true);
+    toast(`启动失败：${error.message}`, true);
   } finally {
     S.busy = false;
     $('#startBtn').disabled = false;
@@ -349,6 +371,7 @@ function quickDemo(kind) {
 
 async function openRun(runId) {
   S.runId = runId;
+  S.progressDisplay = 0.02;
   localStorage.setItem('ariesqc.run', runId);
   try {
     S.run = await api(`/api/runs/${runId}`);
@@ -357,7 +380,6 @@ async function openRun(runId) {
     S.renderKey = '';
     renderRun();
     renderTrace();
-    if (S.run.status === 'needs_input') openQuestions();
     if (['running', 'queued', 'created'].includes(S.run.status)) schedulePoll();
     else if (S.run.status === 'done') await loadFindings();
   } catch (error) {
@@ -490,8 +512,6 @@ async function poll() {
       await loadFindings();
       renderRun();
       toast('质检完成，交付包已生成');
-    } else if (status === 'needs_input') {
-      openQuestions();
     } else if (status === 'failed' || status === 'cancelled') {
       toast(`运行${status === 'failed' ? '失败' : '已取消'}：${S.run.error || ''}`, status === 'failed');
     } else {
@@ -506,8 +526,12 @@ async function loadFindings() {
   if (!S.runId) return;
   try {
     const data = await api(`/api/runs/${S.runId}/findings?limit=500&offset=0`);
-    S.findings = data.items || [];
-    S.findingsMeta = { total: data.total, checks: data.checks || {} };
+    S.findings = (data.items || []).filter((item) => !IGNORED_COVERAGE_CHECKS.has(item.check));
+    S.findingsMeta = {
+      total: S.findings.length,
+      checks: Object.fromEntries(Object.entries(data.checks || {})
+        .filter(([name]) => !IGNORED_COVERAGE_CHECKS.has(name))),
+    };
     S.findingsLoaded = true;
   } catch (error) {
     toast(`证据加载失败：${error.message}`, true);
@@ -521,7 +545,7 @@ function renderTrace() {
   const trace = $('#trace');
   if (!steps.length) {
     if (trace.dataset.built !== 'empty') {
-      trace.innerHTML = '<div class="trace-empty">等待接单…</div>';
+      trace.innerHTML = '<div class="trace-empty">等待开始…</div>';
       trace.dataset.built = 'empty';
     }
     return;
@@ -610,40 +634,18 @@ function renderRun() {
   const busyStates = ['created', 'queued', 'running'];
   if (busyStates.includes(S.run.status)) {
     const steps = S.run.steps || [];
-    // 流水线骨架只在结构变化时重建；进度环/秒数交给本地 ticker 高频刷新
+    // 运行中只保留明确的分析状态，不展示容易制造误解的百分比进度。
     const pipeKey = `pipe|${S.run.status}|${steps.length}`;
     if (S.overviewKey !== pipeKey) {
       S.overviewKey = pipeKey;
-      const pipeHTML = window.Viz ? Viz.pipeline(steps) : '';
-      $('#tabContent').innerHTML = window.Viz
-        ? Viz.loaderHTML(0.02, '质检执行中', '正在同步进度…', pipeHTML)
-        : '<div class="empty-note">执行中…</div>';
-      if (window.Viz) Viz.mount($('#tabContent'));
+      $('#tabContent').innerHTML = `<div class="ai-analyzing" role="status" aria-live="polite">
+        <div class="ai-analyzing-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="ai-analyzing-title">AI员工正在分析</div>
+        <div class="ai-analyzing-text">${esc((S.run.progress || {}).label || '正在准备分析…')}</div>
+      </div>`;
     }
-    if (window.Viz) {
-      const renderProgress = () => {
-        const run = S.run;
-        if (!run) return;
-        const liveSteps = run.steps || [];
-        const doneCount = liveSteps.filter((s) => s.status === 'ok').length;
-        const total = liveSteps.length || 1;
-        // 后端细粒度 progress（如"已扫描 N 张"）优先用于副标题
-        const prog = run.progress || {};
-        const current = liveSteps.find((s) => s.status === 'running') || liveSteps[liveSteps.length - 1];
-        const elapsed = Viz.liveElapsed(current);
-        const elapsedText = elapsed != null ? ` · 已用 ${Viz.fmtElapsed(elapsed)}` : '';
-        const stepLabel = prog.label || (current ? current.title : '');
-        const stepText = current || prog.label
-          ? `▸ ${stepLabel}${current?.detail?.error ? ' · ' + current.detail.error : ''}${elapsedText}`
-          : '等待接单…';
-        Viz.updateLoader($('#tabContent'), doneCount / total, stepText);
-        // 标题行显示已完成/总数
-        const titleEl = $('#tabContent .viz-loader-title');
-        if (titleEl) titleEl.textContent = `质检执行中 · ${doneCount}/${total}`;
-      };
-      renderProgress();
-      markLiveTick('loader');
-    }
+    const analyzing = $('#tabContent .ai-analyzing-text');
+    if (analyzing) analyzing.textContent = (S.run.progress || {}).label || '正在准备分析…';
     return;
   }
   if (window.Viz) Viz.stopTicker();
@@ -669,7 +671,7 @@ function renderRun() {
 
 function statusText(status) {
   return ({
-    created: '已创建', queued: '排队中', running: '执行中…', needs_input: '等待人工确认',
+    created: '已创建', queued: '排队中', running: '执行中…', needs_input: '自动补齐默认规范',
     done: '已完成', failed: '失败', cancelled: '已取消',
   }[status] || status);
 }
@@ -717,10 +719,10 @@ function renderOverview() {
 
   const checksBlock = (window.Viz && checks.length)
     ? Viz.bars(checks.map(([name, n]) => ({
-        label: Viz.checkName(name),
-        value: n,
-        cls: (name.includes('duplicate') || name.includes('missing')) ? 'red' : '',
-      })))
+      label: Viz.checkName(name),
+      value: n,
+      cls: (name.includes('duplicate') || name.includes('missing')) ? 'red' : '',
+    })))
     : '';
 
   const classBlock = (window.Viz && classItems.length)
@@ -741,15 +743,20 @@ function renderOverview() {
         ${(coverage.scenes || []).slice(0, 4).map((scene) => `<div class="rowline"><span>${esc(scene.name)}</span><span>${scene.actual}/${scene.required || '—'}</span></div>`).join('')}
       </div>
       <div class="panel">
-        <h3>双通道质检</h3><p>确定性规则 + 模型交叉复核</p>
-        <div class="viz-stat-grid">
-          <div class="viz-stat"><b data-count="${confidence.deterministic || 0}">${confidence.deterministic || 0}</b><span>确定性证据</span></div>
-          <div class="viz-stat"><b data-count="${confidence.candidate || 0}">${confidence.candidate || 0}</b><span>模型候选</span></div>
-          <div class="viz-stat"><b data-count="${llm.calls || 0}">${llm.calls || 0}</b><span>LLM 调用</span></div>
-          <div class="viz-stat"><b data-count="${llm.seconds || 0}" data-decimals="1">${llm.seconds || 0}s</b><span>LLM 耗时</span></div>
+        <h3>双通道质检</h3><p>规则先筛查，模型再补充疑似问题</p>
+        <div class="viz-channel-grid">
+          <div class="viz-channel deterministic">
+            <div class="viz-channel-head"><span class="viz-channel-dot"></span><b>确定性规则</b><span class="badge deterministic">主证据</span></div>
+            <strong data-count="${confidence.deterministic || 0}">${confidence.deterministic || 0}</strong>
+            <span>条可直接核验的规则证据</span>
+          </div>
+          <div class="viz-channel candidate">
+            <div class="viz-channel-head"><span class="viz-channel-dot"></span><b>模型复核</b><span class="badge candidate">候选证据</span></div>
+            <strong data-count="${confidence.candidate || 0}">${confidence.candidate || 0}</strong>
+            <span>条需要人工确认的模型候选</span>
+          </div>
         </div>
-        <div class="rowline" style="margin-top:8px"><span>推理设备</span><span>${esc(probe.device || (probe.available ? '—' : '本轮未启用模型复核'))}</span></div>
-        <div class="rowline"><span>推理耗时</span><span>${probe.seconds != null ? probe.seconds + 's' : (probe.available ? '—' : '—（未执行）')}</span></div>
+        <div class="channel-note">两路证据分别保留来源，合并进入同一份质检报告。</div>
       </div>
     </div>
   </div>
@@ -757,10 +764,10 @@ function renderOverview() {
   ${classBlock ? `<div class="section"><h3>类别实例分布</h3><div class="panel">${classBlock}</div></div>` : ''}
   <div class="section"><h3>类别配额</h3><div class="panel">
     ${classQuota.length ? classQuota.map((item) => {
-      const ratio = item.required ? Math.min(1, item.actual / item.required) : 0;
-      return `<div class="rowline"><span>${esc(item.name)} <span class="muted">${item.actual}/${item.required || '—'}</span></span><span>${item.required ? (ratio * 100).toFixed(0) + '%' : '无配额'}</span></div>
+    const ratio = item.required ? Math.min(1, item.actual / item.required) : 0;
+    return `<div class="rowline"><span>${esc(item.name)} <span class="muted">${item.actual}/${item.required || '—'}</span></span><span>${item.required ? (ratio * 100).toFixed(0) + '%' : '无配额'}</span></div>
       <div class="bar ${item.gap ? 'amber' : ''}"><i style="width:${ratio * 100}%"></i></div>`;
-    }).join('') : '<div class="empty-note">规范未设置类别配额</div>'}
+  }).join('') : '<div class="empty-note">规范未设置类别配额</div>'}
   </div></div>
   <div class="section"><h3>方法与边界</h3><div class="panel">
     ${(summary.limitations || []).map((x) => `<div class="rowline"><span>${esc(x)}</span><span></span></div>`).join('') || '<span class="muted">运行完成后显示</span>'}
@@ -1078,60 +1085,6 @@ async function adjudicate(findingId, action, note) {
     renderRun();
   } catch (error) {
     toast(`裁定失败：${error.message}`, true);
-  }
-}
-
-// ---------- 人工确认 ----------
-function openQuestions() {
-  const run = S.run;
-  if (!run || run.status !== 'needs_input') return;
-  if (S.modalFor === run.id) return;
-  S.modalFor = run.id;
-  const questions = run.questions || [];
-  $('#questionList').innerHTML = questions.map((q) => `<div class="question"><b>${esc(q.question)}</b><span>${esc(q.why || '')}</span></div>`).join('');
-  const classes = [];
-  (run.batch_names || []).forEach((item) => Object.values(item.names || {}).forEach((name) => {
-    if (!classes.includes(name)) classes.push(name);
-  }));
-  $('#questionForm').innerHTML = `
-    <div class="def-row" style="margin-top:14px"><label>项目名</label><input class="input" id="qProject" value="${esc(run.spec?.data?.project || '')}" placeholder="项目名称"></div>
-    <div class="def-row"><label>标签格式</label><select class="input" id="qLabelFormat">
-      <option value="segmentation" ${run.spec?.data?.label_format === 'segmentation' ? 'selected' : ''}>segmentation（分割多边形）</option>
-      <option value="detection" ${run.spec?.data?.label_format === 'detection' ? 'selected' : ''}>detection（检测框）</option>
-      <option value="either">either（两者都允许）</option></select></div>
-    ${classes.length ? `<div style="margin-top:14px"><div class="tiny">从批次类别表补齐（可留空）</div>
-      ${classes.map((name) => `<div class="def-row"><label>${esc(name)}</label><input class="input" data-class="${esc(name)}" placeholder="判定标准（包含/排除）"></div>`).join('')}</div>` : ''}`;
-  $('#modal').hidden = false;
-}
-
-async function submitQuestions() {
-  const classes = [];
-  $$('#questionForm input[data-class]').forEach((input) => {
-    classes.push({ name: input.dataset.class, definition: input.value.trim() });
-  });
-  const answers = {
-    project: $('#qProject')?.value.trim() || '',
-    label_format: $('#qLabelFormat')?.value || 'either',
-  };
-  if (classes.length) answers.classes = classes;
-  else {
-    const names = [];
-    (S.run.batch_names || []).forEach((item) => Object.values(item.names || {}).forEach((n) => names.includes(n) || names.push(n)));
-    if (names.length) answers.classes = names.map((name) => ({ name, definition: '' }));
-  }
-  $('#modal').hidden = true;
-  S.modalFor = '';
-  try {
-    await api(`/api/runs/${S.runId}/resume`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(answers),
-    });
-    toast('已确认，继续执行');
-    S.run.status = 'running';
-    S.renderKey = '';
-    renderRun();
-    schedulePoll();
-  } catch (error) {
-    toast(`继续失败：${error.message}`, true);
   }
 }
 

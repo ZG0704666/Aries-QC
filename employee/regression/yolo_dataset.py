@@ -33,7 +33,14 @@ class YoloDataset:
 
     def _load_root(self) -> Path:
         path = self._meta.get('path')
-        return Path(path) if path else self.data_yaml.parent
+        if not path:
+            return self.data_yaml.parent
+        candidate = Path(path)
+        if not candidate.is_absolute():
+            candidate = self.data_yaml.parent / candidate
+        # 旧展项 fixture 可能携带另一台机器上的绝对路径；数据集文件本身
+        # 仍然是可移植的，此时以 dataset.yaml 所在目录作为本地根目录。
+        return candidate if candidate.exists() else self.data_yaml.parent
 
     def _load_names(self) -> List[str]:
         names = self._meta.get('names')

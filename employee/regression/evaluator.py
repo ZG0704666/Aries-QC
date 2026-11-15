@@ -79,6 +79,8 @@ class RegressionEvaluator:
                 cls_name = gt_boxes[gt_idx]['cls_name']
                 per_class_stats[cls_name]['fn'] += 1
                 missed_cases.append({
+                    'category': 'missed',
+                    'category_label': '漏检',
                     'image': str(image_path.relative_to(self.dataset.root)).replace('\\', '/'),
                     'gt_box': gt_boxes[gt_idx],
                     'severity': self._assess_severity(gt_boxes[gt_idx], image_path),
@@ -87,6 +89,8 @@ class RegressionEvaluator:
                 cls_name = pred_boxes[pred_idx]['cls_name']
                 per_class_stats[cls_name]['fp'] += 1
                 false_positive_cases.append({
+                    'category': 'false_positive',
+                    'category_label': '错检',
                     'image': str(image_path.relative_to(self.dataset.root)).replace('\\', '/'),
                     'pred_box': pred_boxes[pred_idx],
                     'conf': pred_boxes[pred_idx]['conf'],

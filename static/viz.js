@@ -160,9 +160,6 @@
     duplicate_box: '重复标注框',
     overlap_conflict: '框重叠冲突',
     label_density_outlier: '标注密度异常',
-    coverage_class_gap: '类别数量缺口',
-    coverage_scene_gap: '场景数量缺口',
-    coverage_image_gap: '图像数量缺口',
     class_id_out_of_range: '类别编号越界',
     coord_out_of_range: '坐标越界',
     box_zero_area: '零面积框',
@@ -266,7 +263,7 @@
   // ---------- 5. 流水线 pipeline ----------
   // steps: [{title, status, detail, duration}]
   function pipeline(steps) {
-    if (!steps || !steps.length) return '<div class="empty-note">等待接单…</div>';
+    if (!steps || !steps.length) return '<div class="empty-note">等待开始…</div>';
     const rows = steps.map((s, i) => {
       const status = s.status || '';
       const meta = stepMeta(s);
@@ -372,7 +369,7 @@
   }
 
   // ---------- 9. 加载界面 ----------
-  function loaderHTML(progress = 0, title = '正在准备质检', step = '等待接单…', steps = null) {
+  function loaderHTML(progress = 0, title = '正在准备质检', step = '等待开始…', steps = null) {
     const C = 2 * Math.PI * 56;
     const dash = ((Math.max(0, Math.min(1, progress))) * C).toFixed(2);
     return `

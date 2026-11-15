@@ -34,6 +34,11 @@ def _markdown(comparison: Dict, decision: Dict, metadata: Dict) -> str:
         f"- 候选模型：{comparison.get('candidate_backend', '—')}",
         f"- 判定：**{decision['verdict']}** — {decision['summary']}",
         '',
+        '## 实际推理运行信息',
+        '',
+        _runtime_line('基线', overall.get('baseline', {}).get('runtime')),
+        _runtime_line('候选', overall.get('candidate', {}).get('runtime')),
+        '',
         '## 整体指标对比',
         '',
         '| 指标 | 基线 | 候选 | 变化 |',
@@ -63,3 +68,12 @@ def _markdown(comparison: Dict, decision: Dict, metadata: Dict) -> str:
 
     lines += ['', f"候选模型新增漏检 {len(comparison['missed_cases'])} 条，新增错检 {len(comparison['false_positive_cases'])} 条。"]
     return '\n'.join(lines) + '\n'
+
+
+def _runtime_line(label: str, runtime: dict | None) -> str:
+    if not runtime:
+        return f'- {label}：暂无运行信息'
+    return (f"- {label}：设备 **{runtime.get('device', '—')}**，"
+            f"实际耗时 **{runtime.get('elapsed_seconds', '—')} 秒**，"
+            f"处理 **{runtime.get('images', '—')} 张**，"
+            f"{runtime.get('images_per_second', '—')} 张/秒")
