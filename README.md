@@ -1,8 +1,8 @@
-# 标尺 · AI 数据采集与标注质检专员
+# Aries QC · AI 数据采集与标注质检专员
 
 > slogan：**每一帧都有依据**
 
-「标尺」是一个面向数据服务商的 **AI 数据采集与标注质检专员**：把一批原始图像 + 一份采集/标注规范交给它，
+「Aries QC」是一个面向数据服务商的 **AI 数据采集与标注质检专员**：把一批原始图像 + 一份采集/标注规范交给它，
 它会自主产出 **任务拆解 → 标签体系 → 质检报告（漏标/错标/类别 ID 冲突/误检热点）→ 补采清单**，
 并输出可派工、可验收、可审计的交付包。
 
@@ -20,9 +20,9 @@ pip install -r requirements.txt
 
 # 2) 配置（可选，不配也能跑，只是没有规范编译/摘要）
 copy .env.example .env
-#   LABELQC_BASE_URL / LABELQC_MODEL / LABELQC_API_KEY  OpenAI 兼容服务
-#   LABELQC_DATA_ROOT   演示批次根目录（例如 F:\Aries AI\Aries Glass\archive）
-#   LABELQC_MODEL_PATH  交叉复核权重（ultralytics .pt）
+#   ARIES_QC_BASE_URL / ARIES_QC_MODEL / ARIES_QC_API_KEY  OpenAI 兼容服务
+#   ARIES_QC_DATA_ROOT   演示批次根目录（例如 F:\Aries AI\Aries Glass\archive）
+#   ARIES_QC_MODEL_PATH  交叉复核权重（ultralytics .pt）
 
 # 3) Web UI（数据质检 / 模型回归门禁）
 python server.py --open        # 默认 http://127.0.0.1:8765/
@@ -60,7 +60,7 @@ Web 页面顶部可切换「数据质检」和「模型回归门禁」。回归�
 
 ## 演示数据
 
-仓库不携带大体积图像。演示时把真实批次（约 145MB）放在 `LABELQC_DATA_ROOT` 指向的目录，
+仓库不携带大体积图像。演示时把真实批次（约 145MB）放在 `ARIES_QC_DATA_ROOT` 指向的目录，
 仓库内只有规范文件 `fixtures/specs/`：
 
 - `robot_ops.yaml` / `robot_ops.md`：怀柔机器人产线一期规范（检测/分割，类别 agv / robotic arm / rail door）。

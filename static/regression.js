@@ -15,7 +15,7 @@
       RS.profiles = options.profiles || [];
       RS.thresholds = options.thresholds || {};
       renderOptions();
-      const last = localStorage.getItem('labelqc.regRun');
+      const last = localStorage.getItem('ariesqc.regRun');
       if (last) {
         try { await openRun(last); } catch { /* 运行已不存在，忽略 */ }
       }
@@ -83,7 +83,7 @@
         body: JSON.stringify({ dataset_id: datasetId, baseline_id: baselineId, candidate_id: candidateId, thresholds }),
       });
       RS.runId = created.id;
-      localStorage.setItem('labelqc.regRun', created.id);
+      localStorage.setItem('ariesqc.regRun', created.id);
       RS.run = null; RS.renderKey = ''; RS.tab = 'overview'; RS.cases = { missed: [], falsePositive: [], loaded: false };
       $$('#regTabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'overview'));
       $('#regWelcome').hidden = true;
@@ -99,7 +99,7 @@
 
   async function openRun(runId) {
     RS.runId = runId;
-    localStorage.setItem('labelqc.regRun', runId);
+    localStorage.setItem('ariesqc.regRun', runId);
     RS.run = await api(`/api/regression/runs/${runId}`);
     $('#regWelcome').hidden = true;
     $('#regRunView').hidden = false;

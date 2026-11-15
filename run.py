@@ -1,4 +1,4 @@
-"""标尺 CLI：端到端跑一批数据并产出交付包。"""
+"""Aries QC CLI：端到端跑一批数据并产出交付包。"""
 from __future__ import annotations
 
 import argparse
@@ -18,7 +18,7 @@ from employee.runner import Runner
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='标尺 · AI 数据采集与标注质检专员')
+    parser = argparse.ArgumentParser(description='Aries QC · AI 数据采集与标注质检专员')
     parser.add_argument('--batch', required=True, help='批次目录（可含多个子批次）')
     parser.add_argument('--spec', required=True, help='规范文件（PDF/MD/TXT/YAML/JSON）')
     parser.add_argument('--no-model', action='store_true', help='跳过模型交叉复核')

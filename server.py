@@ -355,7 +355,7 @@ class Handler(BaseHTTPRequestHandler):
         path = runner.run_dir / 'delivery.zip'
         if not path.exists():
             return _error(self, '交付包尚未生成', 404)
-        self._serve_file(path, download=True, filename=f'labelqc_{run_id}.zip')
+        self._serve_file(path, download=True, filename=f'aries_qc_{run_id}.zip')
 
     def _download_fixed(self, run_id: str):
         runner = _run(run_id)
@@ -376,7 +376,7 @@ class Handler(BaseHTTPRequestHandler):
         payload = buffer.getvalue()
         self.send_response(200)
         self.send_header('Content-Type', 'application/zip')
-        self.send_header('Content-Disposition', f'attachment; filename="labelqc_fixed_{run_id}.zip"')
+        self.send_header('Content-Disposition', f'attachment; filename="aries_qc_fixed_{run_id}.zip"')
         self.send_header('Content-Length', str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)

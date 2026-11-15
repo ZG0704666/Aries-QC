@@ -48,7 +48,7 @@ DEFAULTS: dict = {
     'notes': '',
 }
 
-SYSTEM_PROMPT = '''你是「标尺」数据采集与标注质检员工的规范编译器。
+SYSTEM_PROMPT = '''你是「Aries QC」数据采集与标注质检员工的规范编译器。
 只输出一个 JSON 对象，不要 markdown，不要解释，不要思考过程。
 
 任务：把客户给的采集/标注规范编译成可执行 JSON，供程序做质检与任务拆解。

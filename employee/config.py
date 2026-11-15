@@ -44,6 +44,11 @@ def _i(name: str, default: int) -> int:
         return default
 
 
+def _env(name: str, default: str = '') -> str:
+    """读取 Aries QC 配置变量。"""
+    return os.environ.get(f'ARIES_QC_{name}', default)
+
+
 @dataclass
 class BatchInfo:
     id: str
@@ -78,15 +83,15 @@ class Config:
     def load(cls) -> 'Config':
         load_env()
         return cls(
-            data_root=os.environ.get('LABELQC_DATA_ROOT', ''),
-            model_path=os.environ.get('LABELQC_MODEL_PATH', ''),
-            base_url=os.environ.get('LABELQC_BASE_URL', '').rstrip('/'),
-            model=os.environ.get('LABELQC_MODEL', ''),
-            api_key=os.environ.get('LABELQC_API_KEY', ''),
-            timeout=_i('LABELQC_TIMEOUT', 120),
-            max_llm_calls=_i('LABELQC_MAX_LLM_CALLS', 6),
-            host=os.environ.get('LABELQC_HOST', '127.0.0.1'),
-            port=_i('LABELQC_PORT', 8765),
+            data_root=_env('DATA_ROOT'),
+            model_path=_env('MODEL_PATH'),
+            base_url=_env('BASE_URL').rstrip('/'),
+            model=_env('MODEL'),
+            api_key=_env('API_KEY'),
+            timeout=_i('ARIES_QC_TIMEOUT', 120),
+            max_llm_calls=_i('ARIES_QC_MAX_LLM_CALLS', 6),
+            host=_env('HOST', '127.0.0.1'),
+            port=_i('ARIES_QC_PORT', 8765),
         )
 
     @property

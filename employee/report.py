@@ -258,7 +258,7 @@ def _markdown(summary, findings, coverage, task_plan, recollect, fix_summary) ->
               '', '## 7. 方法与边界', '']
     for item in summary.get('limitations', []):
         lines.append(f'- {item}')
-    lines += ['', '> 本报告由「标尺」AI 数据质检员工生成；所有数字由脚本计算，候选问题须人工裁定后执行。']
+    lines += ['', '> 本报告由「Aries QC」AI 数据质检员工生成；所有数字由脚本计算，候选问题须人工裁定后执行。']
     return '\n'.join(lines)
 
 
@@ -323,7 +323,7 @@ img{{max-width:220px;border-radius:6px;border:1px solid var(--line)}}
 code{{color:#d2a8ff}}pre{{background:var(--panel);padding:14px;border-radius:8px;overflow:auto}}
 .note{{border-left:3px solid var(--cyan);padding:8px 14px;background:#101820;color:#b9c7d6}}
 </style></head><body><div class="wrap">
-<header><div class="muted">标尺 · AI 数据采集与标注质检专员</div><h1>{esc(summary.get('project') or '数据质检交付报告')}</h1>
+<header><div class="muted">Aries QC · AI 数据采集与标注质检专员</div><h1>{esc(summary.get('project') or '数据质检交付报告')}</h1>
 <div class="muted">批次 {esc(summary['batch']['root'])} · 指纹 {esc((summary['batch'].get('fingerprint') or {}).get('fingerprint', ''))} · 规范 {esc(summary['spec'].get('source_name', ''))}</div>
 <p><span class="gate">{esc(gate_text)}</span></p>
 <p>{esc(summary.get('summary', {}).get('headline', ''))}</p></header>
@@ -336,7 +336,7 @@ code{{color:#d2a8ff}}pre{{background:var(--panel);padding:14px;border-radius:8px
 <h2>5. 修复预览</h2><p>可自动修复文件 <b>{fix_summary.get('changed_files', 0)}</b> 个，动作 {esc(json.dumps(fix_summary.get('actions', {}), ensure_ascii=False))}；转人工 {fix_summary.get('manual_count', 0)} 个。</p>
 <p class="note">{esc(fix_summary.get('note', ''))}</p>
 <h2>6. 方法与边界</h2><ul>{''.join(f'<li>{esc(x)}</li>' for x in summary.get('limitations', []))}</ul>
-<p class="muted">本报告由「标尺」生成；所有数字由脚本计算，模型只做规范编译与文字归纳；候选问题须人工裁定后执行。</p>
+<p class="muted">本报告由「Aries QC」生成；所有数字由脚本计算，模型只做规范编译与文字归纳；候选问题须人工裁定后执行。</p>
 </div></body></html>'''
 
 
@@ -369,7 +369,7 @@ def _write_json(path: Path, data) -> None:
 
 
 def _delivery_readme(summary, has_fixed: bool) -> str:
-    return f'''标尺 · 数据质检交付包
+    return f'''Aries QC · 数据质检交付包
 ======================
 项目：{summary.get('project') or ''}
 批次：{summary['batch']['root']}

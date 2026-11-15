@@ -141,7 +141,7 @@ async function init() {
     S.specs = specs.items || [];
     renderHealth(runs.items || []);
     renderOptions();
-    const last = localStorage.getItem('labelqc.run');
+    const last = localStorage.getItem('ariesqc.run');
     if (last && (runs.items || []).some((r) => r.id === last)) {
       await openRun(last);
     }
@@ -165,10 +165,10 @@ function setMode(mode) {
   $$('.mode-btn').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
   $('#qualityShell').hidden = mode !== 'quality';
   $('#regressionShell').hidden = mode !== 'regression';
-  localStorage.setItem('labelqc.mode', mode);
+  localStorage.setItem('ariesqc.mode', mode);
 }
 (function restoreMode() {
-  const saved = localStorage.getItem('labelqc.mode');
+  const saved = localStorage.getItem('ariesqc.mode');
   if (saved === 'regression') setMode('regression');
 })();
 
@@ -199,7 +199,7 @@ function renderOptions() {
   const spec = $('#specSelect');
   spec.innerHTML = '<option value="">选择规范文件…</option>' + S.specs.map((s) =>
     `<option value="${esc(s.id)}" data-path="${esc(s.path)}">${esc(s.name)} · ${esc(s.kind)}</option>`).join('');
-  if (!S.batches.length) $('#intakeHint').textContent = '未发现演示批次：请在 .env 配置 LABELQC_DATA_ROOT，或上传批次 zip。';
+  if (!S.batches.length) $('#intakeHint').textContent = '未发现演示批次：请在 .env 配置 ARIES_QC_DATA_ROOT，或上传批次 zip。';
 }
 
 function bind() {
@@ -303,7 +303,7 @@ async function startRun() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
     S.runId = created.id;
-    localStorage.setItem('labelqc.run', created.id);
+    localStorage.setItem('ariesqc.run', created.id);
     S.run = null; S.findings = []; S.findingsLoaded = false; S.renderKey = ''; S.tab = 'overview';
     const traceEl = $('#trace');
     if (traceEl) { traceEl.innerHTML = '<div class="trace-empty">等待接单…</div>'; traceEl.dataset.rendered = '0'; }
@@ -349,7 +349,7 @@ function quickDemo(kind) {
 
 async function openRun(runId) {
   S.runId = runId;
-  localStorage.setItem('labelqc.run', runId);
+  localStorage.setItem('ariesqc.run', runId);
   try {
     S.run = await api(`/api/runs/${runId}`);
     restoreSnapshots(runId);   // 恢复刷新前的计时快照，防状态丢失
@@ -431,7 +431,7 @@ function reconcileStepTimers() {
 function persistSnapshots() {
   try {
     if (S.runId && S.snapshots.length) {
-      sessionStorage.setItem(`labelqc.snap.${S.runId}`, JSON.stringify({
+      sessionStorage.setItem(`ariesqc.snap.${S.runId}`, JSON.stringify({
         at: Date.now(), snaps: S.snapshots,
       }));
     }
@@ -440,7 +440,7 @@ function persistSnapshots() {
 function restoreSnapshots(runId) {
   if (!runId) return;
   try {
-    const raw = sessionStorage.getItem(`labelqc.snap.${runId}`);
+    const raw = sessionStorage.getItem(`ariesqc.snap.${runId}`);
     if (!raw) return;
     const data = JSON.parse(raw);
     // 快照超过 5 分钟视为过期（运行可能已被别处重置），不恢复
@@ -459,11 +459,11 @@ function learnHistoryDurations(steps) {
     }
   });
   S.historyDurations = hist;
-  try { localStorage.setItem('labelqc.histDurations', JSON.stringify(hist)); } catch { /* ignore */ }
+  try { localStorage.setItem('ariesqc.histDurations', JSON.stringify(hist)); } catch { /* ignore */ }
 }
 function restoreHistoryDurations() {
   try {
-    const raw = localStorage.getItem('labelqc.histDurations');
+    const raw = localStorage.getItem('ariesqc.histDurations');
     if (raw) S.historyDurations = JSON.parse(raw);
   } catch { S.historyDurations = null; }
 }

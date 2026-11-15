@@ -74,7 +74,7 @@ class LLMClient:
             headers={
                 'Authorization': 'Bearer ' + self.api_key,
                 'Content-Type': 'application/json',
-                'User-Agent': 'LabelQC-Employee/0.1',
+                'User-Agent': 'AriesQC-Employee/0.1',
             },
         )
         started = time.time()
