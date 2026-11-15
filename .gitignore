@@ -14,3 +14,6 @@ exhibit_ai_employee/_ui_shots/
 
 # 用户项目数据库，不入库
 exhibit_ai_employee/studio.sqlite3
+
+# 外部技能/依赖的源码副本，不入库
+_skill_recover/
