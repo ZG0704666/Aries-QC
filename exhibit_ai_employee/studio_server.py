@@ -64,7 +64,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-m"
+CODE_REV = "studio-2026-11-15-n"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -948,7 +948,12 @@ def apply_quote(project, data):
             quote[key] = _text(data.get(key), 200)
     for key, label in QUOTE_MONEY_FIELDS:
         if key in data:
-            quote[key] = _money(data.get(key), label)
+            # 空字符串 = 用户没填这个金额框。金额框留空是常态，不能当成脏数据拒掉整次提交，
+            # 否则「更新测算」一点就报「必须是数字」，用户填的报价其实一分钱都没存进去。
+            raw = data.get(key)
+            if raw is None or (isinstance(raw, str) and not raw.strip()):
+                continue
+            quote[key] = _money(raw, label)
     if data.get("confirm"):
         missing = [label for key, label in QUOTE_TEXT_FIELDS[:1] + QUOTE_TEXT_FIELDS[3:]
                    if not quote[key]]
@@ -1014,6 +1019,15 @@ def record_acceptance(project, data):
     decision = _text(data.get("decision"), 20)
     if decision not in ("accepted", "rejected"):
         raise ValueError("decision 必须是 accepted 或 rejected")
+    previous = project.get("acceptance")
+    if previous:
+        # 签收是客户的最终动作，重复点两次不该把「已签收」悄悄改写成「已拒收」。
+        # 同一个人同一结论重发算幂等成功，换了结论或换了人必须先退回流程。
+        if previous.get("decision") == decision and previous.get("signer") == signer:
+            return previous
+        raise PermissionError("v%s 已由 %s 登记为「%s」，如需改判请先重新发布新版本"
+                              % (previous.get("version"), previous.get("signer"),
+                                 "已签收" if previous.get("decision") == "accepted" else "已拒收"))
     project["acceptance"] = {"signer": signer, "decision": decision,
                              "note": _text(data.get("note"), 1000),
                              "version": project.get("version"), "at": now()}
@@ -1475,6 +1489,19 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send_json(409, {"error": "尚未通过人工审核，不能发布"})
                 if not project.get("tests") or any(t["status"] != "passed" for t in project["tests"]):
                     return self.send_json(409, {"error": "自测未全部通过，不能发布"})
+                # 门禁必须和前端 gates() 一致：前端列出 5 项，后端只挡 2 项就是漏检。
+                # 审核人签的「通过」绑定当时版本，改过内容后版本号变了，旧签名不能放行新版本。
+                if project["review"].get("version") != project["version"]:
+                    return self.send_json(409, {"error": "审核签名对应 v%s，当前是 v%s，请重新审核"
+                                                % (project["review"].get("version"), project["version"])})
+                if project.get("issues"):
+                    return self.send_json(409, {"error": "仍有 %d 处待核验引用，不能发布" % len(project["issues"])})
+                exhibits = project.get("exhibits") or []
+                audio = project.get("audio") or {}
+                missing_audio = [e["id"] for e in exhibits if not audio.get(e["id"])]
+                if exhibits and missing_audio:
+                    return self.send_json(409, {"error": "还有展项没合成音频：%s，交付包里会缺 MP3"
+                                                % "、".join(missing_audio)})
                 project["status"] = "published"
                 save(project)
                 event(project_id, "publish", {"message": "已发布 v%s" % project["version"]})

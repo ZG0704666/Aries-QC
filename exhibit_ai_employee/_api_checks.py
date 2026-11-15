@@ -213,6 +213,17 @@ def main():
                                      {"signer": "王老师", "decision": "accepted"})
         check("未发布不能登记签收", status == 403 and "已发布" in payload.get("error", ""),
               "status=%s %s" % (status, payload.get("error")))
+        # 发布门禁还要求每个展项都有音频：这份种子项目只有 1 个展项且没带音频，
+        # 先验证「缺音频被拦」，再补一条音频记录走通发布。
+        status, payload, _ = request("POST", "/api/studio/projects/fix01/publish")
+        check("缺音频时发布被拦", status == 409 and "音频" in payload.get("error", ""),
+              "status=%s %s" % (status, payload.get("error")))
+        conn = sqlite3.connect(DB_PATH, timeout=20)
+        body = json.loads(conn.execute("SELECT body FROM projects WHERE id='fix01'").fetchone()[0])
+        body["audio"] = {"EX01": {"filename": "EX01-seed.mp3", "bytes": 1024, "format": "mp3"}}
+        conn.execute("UPDATE projects SET body=? WHERE id='fix01'", (json.dumps(body, ensure_ascii=False),))
+        conn.commit()
+        conn.close()
         status, payload, _ = request("POST", "/api/studio/projects/fix01/publish")
         check("审核与自测齐备后可发布", status == 200 and payload["project"]["status"] == "published",
               "status=%s %s" % (status, payload.get("project", {}).get("status")))

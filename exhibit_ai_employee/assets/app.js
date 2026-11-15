@@ -159,12 +159,14 @@
 
   function gates() {
     const p = P();
+    const reviewedVersion = p && p.review && p.review.version;
     return {
       authorized: !!(p && p.authorization),
       drafted: exs().length > 0,
       tested: testsOf().length > 0,
       allPassed: allPassed(),
-      approved: !!(p && p.review && p.review.decision === 'approved'),
+      // 审核签名绑定当时版本，改过内容后旧签名不算数（与后端 publish 门禁同一判据）
+      approved: !!(p && p.review && p.review.decision === 'approved' && reviewedVersion === p.version),
       audio: exs().length > 0 && audioCount() === exs().length,
       clean: issues().length === 0,
       published: !!(p && p.status === 'published'),
@@ -613,7 +615,9 @@
     }));
     files.push({ name: '音频/README.md', note: '自动生成：引擎、音色、sha256 与已验证/未验证边界', ok: audioCount() > 0 });
     const reasons = [];
-    if (!g.approved) reasons.push('人工审核未批准');
+    if (!g.authorized) reasons.push('资料授权未登记');
+    if (!g.approved) reasons.push(p.review && p.review.decision === 'approved'
+      ? `审核签名是 v${p.review.version}，当前 v${p.version}，需重新审核` : '人工审核未批准');
     if (!g.allPassed) reasons.push('自测未全部通过');
     if (!g.audio) reasons.push('音频未全部合成');
     if (!g.clean) reasons.push(`还有 ${issues().length} 处引用待核验`);
@@ -1223,7 +1227,7 @@
       try {
         const data = await api.post('/api/studio/projects/' + p.id + '/delete', {});
         S.project = null;
-        S.exhibitsIndex = 0;
+        S.exhibitIndex = 0;
         S.lastEventId = 0;
         S.events = [];
         try { localStorage.removeItem(PROJECT_KEY); } catch (e) {}
