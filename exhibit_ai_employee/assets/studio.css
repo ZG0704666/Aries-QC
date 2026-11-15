@@ -139,3 +139,56 @@ small { font-size:var(--ds-fs-11); line-height:1.5; }
 .stat.is-pass{color:var(--ds-accent)}
 .stat.is-warn{color:var(--ds-warn)}
 .stat.is-fail{color:var(--ds-danger)}
+
+/* ── ui-ux-pro-max skill：Data-Dense Dashboard + ux-guidelines 落地 ──
+   来源：search.py --design-system / --domain ux / --domain color。
+   行 hover 高亮、可点列表 cursor-pointer、150ms 过渡、等宽数字、折叠指示、生成 spinner。
+   色板沿用现有 token（skill 首推 navy #1E3A5F + green #16A34A，与 --ds-navy/--ds-accent 同族）。 */
+
+/* ① 行高亮：表格行、可点反馈项、展项瓦片、运行事件、门禁行、资料行 */
+@media (hover:hover){
+  .table-wrap tbody tr{transition:background .15s ease}
+  .table-wrap tbody tr:hover{background:var(--ds-surface-1)}
+  .feedback-item,.exhibit-tile,.chat-result-row,.reference-files button{cursor:pointer}
+  .feedback-item:hover{background:var(--ds-surface-2)}
+  .gate-list li,.cost-lines li,.detail-list>div{transition:background .15s ease}
+  .gate-list li:hover,.cost-lines li:hover,.detail-list>div:hover{background:var(--ds-surface-1)}
+  .event-list li{transition:background .15s ease;border-radius:6px}
+  .event-list li:hover{background:var(--ds-surface-1)}
+  .tab-line button,.workspace-tabs a,.pipeline li{transition:background .15s ease,color .15s ease}
+}
+
+/* ② 数字对齐：金额、指标、时长、编号统一等宽数字，逐列比较不跳位 */
+.price,.metric strong,.cost-lines strong,.mono,.progress-text,
+.stat,.pipeline li small,.gate-list .pill,td .stat{
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+}
+
+/* ③ 折叠指示：summary 加旋转箭头，开合一目了然（原 ▸ 字符换成 CSS 三角，避免宽度抖动） */
+details>summary{cursor:pointer;list-style:none;position:relative}
+details>summary::-webkit-details-marker{display:none}
+/* 箭头放在弹性布局里，不占绝对定位，避免盖住 summary 里的文字。
+   styles.css / workspace-tools.css 早先给 .file-tree、.event-history 的 ::before
+   写过字符 '›' / '⌄'，选择器更具体，后加载也压不住。
+   这里对这两处用同等级或更具体的选择器，把 content 一并收回，统一只画一个三角。 */
+details>summary{display:flex;align-items:center;gap:8px}
+details.file-tree>summary{display:grid}
+details>summary::before,
+details.event-history>summary::before,
+.file-tree details>summary::before,
+details.file-tree>summary::before{content:"";width:0;height:0;flex:none;
+  border:5px solid transparent;border-left-color:var(--ds-ink-3);
+  transition:transform .15s ease;transform-origin:30% 50%}
+details[open]>summary::before,
+.event-history[open]>summary::before,
+.file-tree details[open]>summary::before{content:"";transform:rotate(90deg)}
+details>summary:hover{color:var(--ds-ink-1)}
+
+/* ④ 提交/生成中反馈：pendingRun 时主按钮显示 spinner，pending 气泡头像慢转 */
+@keyframes ds-spin{to{transform:rotate(360deg)}}
+button[data-action="run"][disabled]{position:relative;color:transparent!important}
+button[data-action="run"][disabled]::after{content:"";position:absolute;left:50%;top:50%;
+  width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;
+  border:2px solid var(--ds-ink-3);border-top-color:transparent;animation:ds-spin .8s linear infinite}
+.message.pending .mini-avatar .orbit{animation:ds-spin 3s linear infinite}
+@media (prefers-reduced-motion:reduce){button[data-action="run"][disabled]::after,.message.pending .mini-avatar .orbit{animation:none}}

@@ -630,7 +630,7 @@
         <section class="panel panel-pad">
           <h3>交付包文件结构</h3>
           <div class="file-tree"><h4>⌄ ${esc(p.name)}_v${p.version}</h4>
-            ${files.map((f) => `<details${f.ok ? '' : ' open'}><summary>▤ ${esc(f.name)} ${f.ok ? stat('真实生成', 'pass') : stat('缺', 'fail')}</summary><p>${esc(f.note)}</p></details>`).join('')}
+            ${files.map((f) => `<details${f.ok ? '' : ' open'}><summary>${esc(f.name)} ${f.ok ? stat('真实生成', 'pass') : stat('缺', 'fail')}</summary><p>${esc(f.note)}</p></details>`).join('')}
           </div>
           <div class="section-spacer">${act('download-zip', '↓ 下载交付包（含 MP3）', 'primary full')}</div>
           <div class="section-spacer">${act('download-md', '↓ 只下载交付稿 .md', 'outline-green full')}</div>
