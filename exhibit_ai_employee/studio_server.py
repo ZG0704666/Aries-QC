@@ -5,6 +5,8 @@
 数据：  studio.sqlite3（项目、事件、调用记录）
 模型：  通过 .env.local 的 AI_BASE_URL / AI_MODEL / DEEPSEEK_API_KEY 调用
 """
+import hmac
+import ipaddress
 import json
 import os
 import re
@@ -24,6 +26,20 @@ ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("STUDIO_DB", ROOT / "studio.sqlite3"))
 HOST = os.environ.get("STUDIO_HOST", "127.0.0.1")
 PORT = int(os.environ.get("STUDIO_PORT", "4182"))
+# 访问口令。Studio 这套此前完全没有鉴权：一旦监听非本机地址，任何人都能调生成、
+# 审批、发布并烧掉模型与 Breeze 额度。这里与 app.py 用同一个变量名，便于一套口令管两套服务。
+ACCESS_TOKEN = (os.environ.get("STUDIO_ACCESS_TOKEN") or os.environ.get("ACCESS_TOKEN") or "").strip()
+
+
+def is_loopback(host):
+    """判断监听地址是否只对本机可见。用于决定「没配口令」能不能放行。"""
+    host = (host or "").strip().strip("[]").lower()
+    if host in ("", "localhost"):
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def load_local_env():
@@ -42,7 +58,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-b"
+CODE_REV = "studio-2026-11-15-c"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -526,6 +542,25 @@ class Handler(BaseHTTPRequestHandler):
         except (json.JSONDecodeError, UnicodeDecodeError):
             return {}
 
+    def authorized(self):
+        """校验访问口令。未配置口令时放行——启动护栏（main）保证这只在监听本机时才发生。
+
+        口令支持 X-Access-Token 头或 ?token= 查询参数；后者是给 <audio src>、
+        导出下载这类浏览器无法附加自定义头的请求用的。比较用 compare_digest 避免计时侧信道。
+        """
+        if not ACCESS_TOKEN:
+            return True
+        supplied = self.headers.get("X-Access-Token") or ""
+        if not supplied:
+            supplied = (parse_qs(urlparse(self.path).query).get("token") or [""])[0]
+        return hmac.compare_digest(supplied.strip(), ACCESS_TOKEN)
+
+    def require_auth(self):
+        """未授权时回 401。返回值非 None 表示已经写过响应。"""
+        if self.authorized():
+            return None
+        return self.send_json(401, {"error": "需要访问口令：请带 X-Access-Token 头，或在地址后加 ?token=..."})
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -538,11 +573,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return self.wfile.write(page)
+        # 静态页本身不含数据，放行；所有 /api/studio/* 接口都要口令。
+        denied = self.require_auth()
+        if denied is not None:
+            return denied
         try:
             if path == "/api/studio/health":
                 return self.send_json(200, {"ok": True, "model": MODEL, "key_configured": bool(API_KEY),
                                             "database": DB_PATH.name, "code": CODE_REV, "pid": os.getpid(),
-                                            "tts": tts.status()})
+                                            "auth_required": bool(ACCESS_TOKEN), "tts": tts.status()})
             if path in ("/api/studio/projects", "/api/studio/seed"):
                 with db() as c:
                     rows = c.execute("SELECT body FROM projects ORDER BY updated_at DESC").fetchall()
@@ -628,6 +667,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(500, {"error": "%s: %s" % (type(error).__name__, error)})
 
     def do_POST(self):
+        denied = self.require_auth()
+        if denied is not None:
+            return denied
         path = urlparse(self.path).path
         data = self.read_json()
         try:
@@ -838,7 +880,20 @@ def handle_chat(project, message):
 
 def main():
     initialize()
+    # 启动护栏：没配口令却监听非本机地址，等于把生成/审批/发布和付费额度敞开给内网。
+    # 这里选择「拒绝启动」而不是自动生成口令——自动生成的口令容易被当成没生效。
+    if not ACCESS_TOKEN and not is_loopback(HOST):
+        raise SystemExit(
+            "拒绝启动：STUDIO_HOST=%s 不是本机地址，但没有配置访问口令。\n"
+            "  · 正式/内网部署请设置 STUDIO_ACCESS_TOKEN（或 ACCESS_TOKEN）后再启动；\n"
+            "  · 只做临时本机演示请用 STUDIO_HOST=127.0.0.1；\n"
+            "  · 确认无鉴权风险、仍要对外监听，可显式设置 STUDIO_ALLOW_NO_AUTH=1 跳过这条护栏。"
+            % HOST)
+    if not ACCESS_TOKEN and os.environ.get("STUDIO_ALLOW_NO_AUTH") == "1":
+        print("警告：已按 STUDIO_ALLOW_NO_AUTH=1 跳过鉴权护栏，本服务任何调用方都能触发生成与发布。")
     print("Studio listening on http://%s:%d" % (HOST, PORT))
+    print("  鉴权：%s" % ("已启用（X-Access-Token / ?token=）" if ACCESS_TOKEN
+                        else "未启用（仅本机监听，生产环境必须配置 STUDIO_ACCESS_TOKEN）"))
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
 
 

@@ -513,11 +513,34 @@ const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 const hhmm = iso => { const d = new Date(iso); return isNaN(d) ? '--:--' : d.toLocaleTimeString('zh-CN', {hour12:false, hour:'2-digit', minute:'2-digit'}); };
 
+/* ---------------- 访问口令 ---------------- */
+/* 后端配置 STUDIO_ACCESS_TOKEN 后，所有 /api/studio/* 都要口令。
+   口令来源优先级：地址栏 ?token= → localStorage（从地址栏取到后会存下来）。 */
+const TOKEN_KEY = 'studio_token';
+function readToken() {
+  const fromUrl = new URLSearchParams(location.search).get('token');
+  if (fromUrl) { localStorage.setItem(TOKEN_KEY, fromUrl); return fromUrl; }
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+function authHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const t = readToken();
+  if (t) h['X-Access-Token'] = t;
+  return h;
+}
+function withToken(path) {
+  const t = readToken();
+  if (!t) return path;
+  return path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(t);
+}
+
 async function api(path, body) {
-  const opt = body === undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)};
+  const headers = authHeaders(body === undefined ? {} : {'Content-Type':'application/json'});
+  const opt = body === undefined ? {headers} : {method:'POST', headers, body: JSON.stringify(body)};
   const res = await fetch(path, opt);
   let data = {};
   try { data = await res.json(); } catch {}
+  if (res.status === 401) { const e = new Error('需要访问口令'); e.unauthorized = true; throw e; }
   if (!res.ok) throw new Error(data.error || ('请求失败 ' + res.status));
   return data;
 }
@@ -561,7 +584,7 @@ function render() {
   $('chipExhibits').textContent = (p.materials || []).length + ' 个展项';
   $('agentState').textContent = p.status === 'running' ? '正在生成' : (p.status === 'failed' ? '出错，等待指示' : '工作中');
   $('footNote').textContent = '原文保持不变，所有成果都锁定为 v' + p.version.toFixed(1);
-  $('exportLink').href = '/api/studio/projects/' + p.id + '/export';
+  $('exportLink').href = withToken('/api/studio/projects/' + p.id + '/export');
   $('tabDot').hidden = !(p.issues && p.issues.length);
 
   renderSteps();
@@ -966,7 +989,7 @@ $('playVoice').addEventListener('click', async () => {
       {text, exhibit_id: exhibitId});
     S.project = project;
     if (audioEl) { audioEl.pause(); audioEl = null; }
-    audioEl = new Audio('/api/studio/projects/' + S.project.id + '/audio/' + audio.filename);
+    audioEl = new Audio(withToken('/api/studio/projects/' + S.project.id + '/audio/' + audio.filename));
     audioEl.play().then(() => {
       $('voiceState').textContent = '播放中 · ' + (audio.format === 'mp3' ? 'MP3' : 'WAV') + ' ' + (audio.bytes / 1024).toFixed(0) + ' KB';
       $('voiceState').className = 'tag ok';
@@ -1058,8 +1081,14 @@ async function boot() {
     await loadProject(id);
     pollEvents();
   } catch (err) {
+    if (err.unauthorized) { askToken(); return; }
     $('chat').innerHTML = '<div class="empty-note">无法连接后端：' + esc(err.message) + '</div>';
   }
+}
+function askToken() {
+  const t = window.prompt('这个服务需要访问口令。请输入 STUDIO_ACCESS_TOKEN：', '');
+  if (t && t.trim()) { localStorage.setItem(TOKEN_KEY, t.trim()); location.reload(); return; }
+  $('chat').innerHTML = '<div class="empty-note">后端要求访问口令；未提供口令时不会读取任何项目数据。</div>';
 }
 boot();
 </script>
