@@ -1730,7 +1730,7 @@ canvas {
   color: var(--amber)
 }
 
-.viz-channel > span:last-child {
+.viz-channel>span:last-child {
   display: block;
   margin-top: 5px;
   color: var(--muted);
