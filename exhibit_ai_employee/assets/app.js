@@ -219,7 +219,7 @@
     return header('项目与报价', `${esc(p.id)} · ${esc(p.name)} · 任务 #${p.task_no} · v${p.version}`,
       pill(q.confirmed ? '范围已确认' : '范围待确认', q.confirmed ? 'green' : 'amber')) +
       pipeline([['需求', phases[0]], ['范围', phases[1]], ['签约', phases[2]], ['回款', phases[3]]], step) +
-      (!(p.sources || []).length ? note('<strong>这个项目还没有资料</strong>先到「内容成果」页导入真实的展签或教育材料文本；没有资料时生成会被服务端拒绝。') : '') +
+      (!((p.sources || []).length || (p.research || []).length) ? note('<strong>这个项目还没有内容依据</strong>知名作品让我先联网调研就行；客户自己的作品再导入原文资料。两者都没有时，生成会被服务端拒绝。') : '') +
       `<div class="grid cols-2">
         <section class="panel panel-pad">
           <h3>需求与交付范围</h3>
@@ -314,15 +314,21 @@
     const e = cur();
     if (!e) {
       const hasSources = (p.sources || []).length > 0;
+      const research = p.research || [];
+      const plan = p.plan || [];
+      const runBtn = `<div class="inline-actions section-spacer">${act('run', '▶ 生成草稿', 'primary', S.pendingRun ? 'disabled' : '')}</div>`;
       return header('执行现场', `${esc(p.id)} · v${p.version}`, pill('尚无草稿', 'amber')) +
         pipeline(steps, 0) +
         `<section class="panel panel-pad"><h3>还没有任何展项草稿</h3>` +
         (hasSources
           ? note(`<strong>下一步：生成草稿</strong>项目里已有 ${(p.sources || []).length} 份资料、${paraCount()} 个来源段落。` +
-            `生成会为每个展项各调用一次模型（共 ${(p.materials || []).length} 次），成功后逐条核对原文引用。`, 'green') +
-            `<div class="inline-actions section-spacer">${act('run', '▶ 生成草稿', 'primary', S.pendingRun ? 'disabled' : '')}</div>`
-          : note(`<strong>还没有资料，生成会被服务端拒绝</strong>先去「内容成果」页导入展签或教育材料文本。生成器不编造展项内容。`, 'amber') +
-            `<div class="inline-actions section-spacer">${act('nav-content', '去导入资料 →', 'primary')}</div>`) +
+            `生成会为每个展项各调用一次模型（共 ${(p.materials || []).length} 次），成功后逐条核对原文引用。`, 'green') + runBtn
+          : research.length
+            ? note(`<strong>下一步：生成草稿</strong>已存 ${research.length} 个调研网页（${research.map((r) => esc(r.id)).join('、')}），` +
+              `可以按${plan.length ? `${plan.length} 个展项` : '作品名'}起草；引用会逐字核对到你存的网页摘录。`, 'green') + runBtn
+            : note(`<strong>还没有内容依据</strong>知名作品不用等资料——在对话框里说「先调研一下这个作品，然后起草」，我自己去查。` +
+              `客户自己送展的作品、网上查不到的藏品，才需要把资料导进来。`, 'amber') +
+              `<div class="inline-actions section-spacer">${act('nav-content', '去导入资料 →', 'primary')}${act('focus-chat', '让它先调研 ↗')}</div>`) +
         `</section>`;
     }
     const facts = e.facts || [];
@@ -376,15 +382,34 @@
     const e = cur();
     const sources = p.sources || [];
     if (!e) {
+      const research = p.research || [];
+      const researchPanel = research.length ? `<section class="panel panel-pad">
+          <h3>调研来源（${research.length} 个网页）</h3>
+          ${research.map((r) => `<div class="section-spacer">
+            <div class="metric-row"><strong>${esc(r.id)}</strong>${pill((r.quotes || []).length + ' 条摘录')}${r.url
+              ? `<a href="${esc(r.url)}" target="_blank" rel="noreferrer noopener" class="small">原始页面 ↗</a>` : ''}</div>
+            <p class="small muted">${esc(r.title || r.url || '')}</p>
+            <ul class="para-list">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
+              <div class="para-id">${esc(q.id)}</div><p>${esc(q.text)}</p></li>`).join('')}</ul>
+          </div>`).join('')}
+          <p class="subtle">这些是服务端从网页上抓下来的原文整句，起草时逐字核对到这里。</p>
+        </section>` : '';
       if (!sources.length) {
         return header('内容成果', '原始资料只读 · 引用可定位 · 改一个字旧结论就失效',
-          pill('还没有资料', 'amber')) +
+          pill(research.length ? `${research.length} 个调研来源` : '还没有内容依据', research.length ? 'green' : 'amber')) +
           `<div class="grid cols-2">
             <section class="panel panel-pad">
-              <h3>先导入真实资料</h3>
-              <p>这个项目还没有任何来源文本。展签牌、教育材料、展项说明——把馆方给的原文整份导进来，讲解里的每一句都要能在里面逐字找到。</p>
+              <h3>${research.length ? '接下来：起草' : '两条路，选一条'}</h3>
+              ${research.length
+                ? `<p>已经存下 ${research.length} 个调研网页。点「生成草稿」，模型会按${(p.plan || []).length ? ` 定的 ${(p.plan || []).length} 个展项` : '作品名'}起草，每条事实的引用都逐字核对到网页摘录。</p>
+                   <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div>`
+                : `<p><strong>一、知名作品</strong>：不用等资料。在对话框里说「先调研一下这个作品，然后起草」，我自己上网查、存来源、定展项，再起草。</p>
+                   <p><strong>二、客户自己的作品</strong>：网上查不到、或者资料很少，才需要把馆方给的原文导进来，讲解里的每一句都要能在里面逐字找到。</p>
+                   <div class="inline-actions">${act('focus-chat', '让它先联网调研 ↗', 'primary')}</div>`}
+              <div class="divider"></div>
+              <h4>导入资料（第二种路线）</h4>
               <label class="file-input">＋ 导入资料（txt / md / csv / json / html / docx / pdf）<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
-              <p class="subtle">支持 .txt（UTF-8），至少 20 字。导入后写入资料来源并自动编号 SRC-001、SRC-002…，不会自动生成草稿。</p>
+              <p class="subtle">至少 20 字。导入后写入资料来源并自动编号 SRC-001、SRC-002…，不会自动生成草稿。</p>
               <div class="divider"></div>
               <h4>资料授权</h4>
               ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}</div>`
@@ -392,22 +417,23 @@
                   <button type="submit" class="outline-green">登记资料授权</button></form>
                   <p class="subtle">登记资料来源已获授权，发布门禁会读这条记录。</p>`}
             </section>
-            <section class="panel panel-pad">
+            ${researchPanel || `<section class="panel panel-pad">
               <h3>接下来会发生什么</h3>
               <ol class="gate-list">
-                <li><strong>资料接收</strong>原文存进项目，只读，不会被生成内容覆盖。</li>
-                <li><strong>来源定位</strong>每个事实登记到具体段落（例如 SRC-001·P003）。</li>
-                <li><strong>知识卡</strong>抽取展项事实，逐条核对原文引用。</li>
-                <li><strong>讲解与问答</strong>生成为主讲解、简化版、追问与资料外兜底。</li>
+                <li><strong>来源收集</strong>调研网页存成摘录（WEB-001·Q002），或导入原文（SRC-001·P003）。</li>
+                <li><strong>展项清单</strong>一件作品一个展项，起草前先定清楚。</li>
+                <li><strong>知识卡</strong>抽取事实，逐条核对引用。</li>
+                <li><strong>讲解与问答</strong>生成主讲解、简化版、追问与来源外兜底。</li>
               </ol>
-              ${note('没有资料时点「生成草稿」会被服务端拒绝——生成器不会编造展项内容。')}
-            </section>
+              ${note('既没有资料也没有调研记录时，点「生成草稿」会被拒绝——生成器不会编造展项内容。')}
+            </section>`}
           </div>`;
       }
       return header('内容成果', '资料已就位 · 还没有草稿', pill('待生成', 'amber')) +
         `<section class="panel panel-pad"><h3>已导入 ${sources.length} 份资料</h3>
           <p>共 ${paraCount()} 个段落。到「执行现场」点生成，模型会按资料抽取展项并写草稿。</p>
-          <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div></section>`;
+          <div class="inline-actions">${act('goto-live', '去执行现场生成 →', 'primary')}</div></section>` +
+        researchPanel;
     }
     const refs = new Set(e.source_refs || []);
     const mine = sources.filter((s) => !refs.size || refs.has(s.id));
@@ -1213,6 +1239,11 @@
     },
     'content-tab': (value) => { S.contentTab = value || '主讲解'; render(); },
     'nav-content': () => go('content'),
+    'focus-chat': () => {
+      const box = document.querySelector('#message');
+      if (box) { box.focus(); box.scrollIntoView({ block: 'center' }); }
+      else { toast('在右侧对话框里说：先调研一下这个作品，然后起草'); }
+    },
     'nav-tests': () => go('tests'),
     'goto-live': () => go('live'),
     'goto-issues': () => go('tests'),

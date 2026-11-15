@@ -64,7 +64,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-f"
+CODE_REV = "studio-2026-11-15-g"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -218,10 +218,10 @@ def repair_quote(quote, paragraph):
     return paragraph[start:end].strip(), True
 
 
-SYSTEM_PROMPT = """你是博物馆/科技馆的「展览互动内容制作员」。你把馆方提供的资料改写成现场可用的中文讲解内容，面向亲子观众。
+SYSTEM_PROMPT = """你是博物馆/科技馆的「展览互动内容制作员」。你把给定的来源（馆方资料或联网调研的网页摘录）改写成现场可用的中文讲解内容，面向亲子观众。
 硬性要求：
-1. 只能使用资料中的事实。不得补充资料里没有的数据、年份、人名、机构名。
-2. 每条事实必须给出原文逐字引用 quote：从资料段落里原样复制一整句，逐字符一致，包括标点，不得增删改一个字，也不得拼接两个不相邻的句子。quote 必须能在标注的 [段落编号] 正文里做到字符串精确匹配。source_ref 写该段落的完整编号，例如 SRC-001·P003。
+1. 只能使用给定来源中的事实。不得补充来源里没有的数据、年份、人名、机构名。
+2. 每条事实必须给出原文逐字引用 quote：从来源段落里原样复制一整句，逐字符一致，包括标点，不得增删改一个字，也不得拼接两个不相邻的句子。quote 必须能在标注的 [编号] 正文里做到字符串精确匹配。source_ref 写该段落的完整编号：资料段落形如 SRC-001·P003，网页摘录形如 WEB-001·Q002。
 3. 讲解要口语化、适合对着观众说，控制在约 45 秒（中文约 140~170 字）。
 4. 严格输出 JSON，不要任何解释文字。
 JSON 结构：
@@ -252,6 +252,98 @@ def build_sources(materials):
     return sources
 
 
+def research_index(project):
+    """把联网调研档案摊平成和资料一样的形状：一条网页 = 一个来源，摘录 = 段落。
+
+    为什么要统一形状：verify / 自测门 / 交付导出都要按「引用能不能在来源正文里
+    逐字找到」来判，资料和网页摘录除了编号前缀没有区别，不该各写一套校验。
+    """
+    items = []
+    for entry in project.get("research") or []:
+        items.append({
+            "id": entry["id"],
+            "name": entry.get("title") or entry.get("url") or "",
+            "url": entry.get("url") or "",
+            "kind": "web",
+            "paragraphs": list(entry.get("quotes") or []),
+        })
+    return items
+
+
+def all_sources(project):
+    """本轮可用的全部来源：员工上传的资料 + 联网调研的网页摘录。"""
+    return list(project.get("sources") or []) + research_index(project)
+
+
+def _norm_space(text):
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
+def add_research(project, url, text, title="", quotes=None, query=""):
+    """登记一条联网调研，返回 (来源编号, 保留摘录数, 丢弃数)。
+
+    quotes 里每条都要能在页面正文里原样找到，找不到的直接丢掉——
+    宁可少一条摘录，也不让改写过的句子混进「原文引用」。
+    """
+    body = _norm_space(text)
+    if len(body) < 120:
+        raise ValueError("这页只抓到 %d 字正文，太短，换一页。" % len(body))
+    existing = {entry["id"] for entry in project.get("research") or []}
+    number = 1
+    while "WEB-%03d" % number in existing:
+        number += 1
+    web_id = "WEB-%03d" % number
+
+    kept, dropped = [], 0
+    candidates = [_norm_space(item) for item in (quotes or []) if _norm_space(item)]
+    for quote in candidates:
+        if quote in body:
+            kept.append(quote)
+        else:
+            dropped += 1
+    # 模型挑的句子若只命中一两条，就从正文补足；宁可多几条可引用的整句，
+    # 也不要让一个展项只挂一条事实（知识卡门要求每个展项至少 2 条）。
+    if len(kept) < 3:
+        for sentence in SENTENCE.findall(body):
+            sentence = sentence.strip()
+            if len(sentence) >= 14 and _norm_space(sentence) not in [_norm_space(k) for k in kept]:
+                kept.append(sentence)
+            if len(kept) >= 6:
+                break
+    if not kept:
+        raise ValueError("这页没有可用的整句摘录。")
+
+    # 页面标题常常已经带书名号（《蒙娜丽莎》），界面上又包了一层，先剥掉再存。
+    clean_title = _norm_space(title).strip("《》「」\"' ").strip() or url
+    project.setdefault("research", []).append({
+        "id": web_id, "url": url, "title": clean_title[:120], "query": str(query or "")[:120],
+        "retrieved_at": now(), "chars": len(body),
+        "quotes": [{"id": "%s·Q%03d" % (web_id, index), "text": item}
+                   for index, item in enumerate(kept[:20], start=1)],
+    })
+    return web_id, len(kept[:20]), dropped
+
+
+def exhibit_units(project):
+    """这一轮要起草哪几个展项。
+
+    有资料就一份资料一个展项（老口径不变）；没资料但有调研记录时按展项清单
+    来，清单也没定就用项目名兜一个——知名作品不需要员工先上传资料。
+    """
+    materials = project.get("materials") or []
+    if materials:
+        return [dict(item) for item in materials]
+    plan = project.get("plan") or []
+    if plan:
+        return [{"id": item.get("id") or "EX%02d" % (index + 1), "title": item.get("title") or ""}
+                for index, item in enumerate(plan)]
+    research = project.get("research") or []
+    if research:
+        title = project.get("name") or research[0].get("title") or "展项"
+        return [{"id": "EX01", "title": str(title)[:60]}]
+    return []
+
+
 def find_exhibit(project, exhibit_id):
     for item in project.get("exhibits", []):
         if item["id"] == exhibit_id:
@@ -261,9 +353,9 @@ def find_exhibit(project, exhibit_id):
 
 def verify(project, exhibit):
     """逐字校验：quote 必须能在其来源资料中原样出现。
-    来源编号可以是段落级（SRC-001·P002）或资料级（SRC-001）；
-    资料级时只在同一份资料内自动定位段落，绝不跨展项找。"""
-    source_map = {src["id"]: src for src in project.get("sources", [])}
+    来源编号可以是段落级（SRC-001·P002 / WEB-001·Q003）或来源级（SRC-001 / WEB-001）；
+    来源级时只在同一份来源内自动定位段落，绝不跨展项找。"""
+    source_map = {src["id"]: src for src in all_sources(project)}
     issues = []
     facts = []
     for fact in exhibit.get("facts", []):
@@ -338,22 +430,36 @@ def run_pipeline(project_id):
             event(project_id, "step", {"step": "locate", "state": "done", "label": "来源定位",
                                        "detail": "%d 个可定位段落" % sum(len(s["paragraphs"]) for s in project.get("sources", []))})
 
+            units = exhibit_units(project)
+            if not units:
+                project["status"] = "failed"
+                project["error"] = "没有可用的内容依据"
+                save(project)
+                event(project_id, "error", {"message": "还没有可用的内容依据：先联网调研，或导入资料。"})
+                return
+            research_mode = not (project.get("materials") or [])
             drafts = []
-            for index, exhibit in enumerate(project["materials"]):
+            for index, unit in enumerate(units):
+                exhibit = dict(unit)
                 event(project_id, "step", {"step": "cards", "state": "running", "label": "知识卡",
-                                           "detail": "正在处理 %s %s" % (exhibit["id"], exhibit["title"])})
-                own = project["sources"][index] if index < len(project["sources"]) else None
+                                           "detail": "正在处理 %s %s" % (exhibit["id"], exhibit.get("title", ""))})
+                own = None if research_mode else (
+                    project["sources"][index] if index < len(project["sources"]) else None)
+                pool = [own] if own else all_sources(project)
                 context = ""
-                for source in ([own] if own else project["sources"]):
+                for source in pool:
                     for para in source["paragraphs"]:
                         context += "[%s] %s\n" % (para["id"], para["text"])
                 context = context[:12000]
-                exhibit["source_refs"] = [own["id"]] if own else [s["id"] for s in project["sources"]]
+                exhibit["source_refs"] = [source["id"] for source in pool]
+                hint = ("资料段落（只能引用这里的 [编号]）：" if own else
+                        "来源段落（员工资料 SRC-… 与联网摘录 WEB-… 混排，只能引用这里的 [编号]）：")
                 messages = [
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content":
-                        "展项编号：%s\n展项名称：%s\n观众：%s\n\n资料段落（只能引用这里的 [编号]）：\n%s\n\n请为这个展项输出 JSON。"
-                        % (exhibit["id"], exhibit["title"], project.get("audience", "亲子观众"), context)},
+                        "展项编号：%s\n展项名称：%s\n观众：%s\n\n%s\n%s\n\n请为这个展项输出 JSON。"
+                        % (exhibit["id"], exhibit.get("title", ""), project.get("audience", "亲子观众"),
+                           hint, context)},
                 ]
                 try:
                     data = model_json(messages, project_id, max_tokens=4000)
@@ -387,12 +493,20 @@ def run_pipeline(project_id):
                                            "detail": "%s：%d 条事实，%d 处待核验" % (
                                                item["id"], len(item["facts"]), len(item.get("issues", [])))})
 
-            project["status"] = "awaiting_confirmation" if project["issues"] else "draft"
+            # 起草完顺手把自测跑掉：质量门是系统自己的事，不该让员工再点一次按钮。
+            project["tests"] = content_tests(project)
+            failed = [row for row in project["tests"] if row.get("status") != "passed"]
+            project["status"] = "awaiting_confirmation" if (project["issues"] or failed) else "tested"
             save(project)
             event(project_id, "step", {"step": "draft", "state": "done", "label": "讲解与问答",
                                        "detail": "共 %d 个展项草稿" % len(project["exhibits"])})
+            event(project_id, "tests", {
+                "passed": len(project["tests"]) - len(failed), "total": len(project["tests"]),
+                "failed": [row.get("name") for row in failed],
+            })
             event(project_id, "run.finished", {
-                "message": "草稿已生成，%d 处引用需要确认" % len(project["issues"]),
+                "message": "草稿已生成，%d 处引用需要确认；自测 %d/%d 通过" % (
+                    len(project["issues"]), len(project["tests"]) - len(failed), len(project["tests"])),
                 "issues": len(project["issues"]),
             })
         except Exception as error:
@@ -536,7 +650,7 @@ def content_tests(project):
         results.append({"name": name, "status": "passed" if ok else "failed", "detail": detail})
 
     exhibits = project.get("exhibits", [])
-    expected = {m["id"] for m in project.get("materials", [])}
+    expected = {unit["id"] for unit in exhibit_units(project)}
     got = {e["id"] for e in exhibits}
     add("覆盖完整", bool(expected) and got == expected,
         "项目 %d 个展项，已生成 %d 个%s" % (
@@ -1185,15 +1299,16 @@ class Handler(BaseHTTPRequestHandler):
             if action == "run":
                 if project["status"] == "running":
                     return self.send_json(409, {"error": "正在执行，请等待本轮结束"})
-                if not project.get("materials"):
-                    return self.send_json(400, {"error": "还没有资料。先在「内容成果」页导入展签或教育材料文本，再生成。"})
-                for exhibit in project.get("materials", []):
-                    exhibit["source_refs"] = [s["id"] for s in project["sources"]]
+                units = exhibit_units(project)
+                if not units:
+                    return self.send_json(400, {"error": "还没有内容依据。知名作品可以直接让我联网调研："
+                                                         "在对话里说「先调研一下这个作品，然后起草」，"
+                                                         "或者把展签/资料导进来。"})
                 project["status"] = "running"
                 project["issues"] = []
                 save(project)
                 event(project_id, "step", {"step": "cards", "state": "running", "label": "知识卡",
-                                           "detail": "开始为 %d 个展项抽取事实" % len(project["materials"])})
+                                           "detail": "开始为 %d 个展项抽取事实" % len(units)})
                 run_pipeline(project_id)
                 return self.send_json(202, {"status": "running"})
 
@@ -1422,6 +1537,23 @@ PROJECT_TOOL_SPECS = [
             "text": {"type": "string", "description": "资料原文"}},
             "required": ["name", "text"]}}},
     {"type": "function", "function": {
+        "name": "add_research",
+        "description": "把一个网页登记成项目的可引用来源：服务端会重新抓这页正文，把你给的 quotes 里"
+                       "能在正文中原样找到的句子存成摘录（WEB-001·Q001…）。不给 quotes 就自动截取正文整句。"
+                       "要让网页内容进草稿，必须先调它——只调 fetch_url 是存不进项目的。",
+        "parameters": {"type": "object", "properties": {
+            "url": {"type": "string", "description": "网页地址（http/https）"},
+            "quotes": {"type": "array", "items": {"type": "string"},
+                       "description": "从这页原样复制的整句，2~12 条；一个字都不要改"}},
+            "required": ["url"]}}},
+    {"type": "function", "function": {
+        "name": "plan_exhibits",
+        "description": "定这一批要起草几个展项（通常一件作品一个展项）。没有上传资料时，起草前必须先用它定清单。",
+        "parameters": {"type": "object", "properties": {
+            "titles": {"type": "array", "items": {"type": "string"},
+                       "description": "展项名称，按展厅动线顺序，最多 12 个"}},
+            "required": ["titles"]}}},
+    {"type": "function", "function": {
         "name": "start_generation",
         "description": "按当前资料重新生成全部展项的草稿（要调模型，几十秒）。只有员工明确要你生成/重做时才调。",
         "parameters": {"type": "object", "properties": {}}}},
@@ -1440,7 +1572,18 @@ def project_digest_text(project):
         lines.append("资料 %d 份：%s" % (len(sources), "；".join(
             "%s《%s》%d 段" % (s["id"], s.get("name", ""), len(s.get("paragraphs") or [])) for s in sources)))
     else:
-        lines.append("资料：还没导入，任何生成都会被拒绝。")
+        lines.append("资料：还没导入（不影响起草——知名作品可以用联网调研代替）。")
+    research = project.get("research") or []
+    if research:
+        lines.append("联网调研 %d 个网页：%s" % (len(research), "；".join(
+            "%s《%s》%d 条摘录" % (item["id"], (item.get("title") or "")[:24], len(item.get("quotes") or []))
+            for item in research[:5])))
+    else:
+        lines.append("联网调研：还没有存过网页。")
+    plan = project.get("plan") or []
+    if plan:
+        lines.append("展项清单（%d 个）：%s" % (len(plan), "、".join(
+            "%s %s" % (item["id"], item.get("title", "")) for item in plan[:8])))
     exhibits = project.get("exhibits") or []
     if not exhibits:
         lines.append("展项：还没生成草稿。")
@@ -1481,8 +1624,11 @@ def agent_system_prompt(project):
 - 一件事做完，用一句话说清「结果 + 下一步」，一般不超过 150 字。真要分点，最多三条，用「·」而不是长表格。
 
 边界：
-- 展项内容和引用必须来自员工上传的资料，正文的原文引用不许改写。外部查到的信息只能用来核对、补充背景、纠正说法，不能顶替资料原文。
-- 涉及生成（花钱、花时间）的动作，只有员工明确要求才做。
+- 内容依据有两种：员工上传的资料（编号 SRC-…），和你联网调研存进项目的网页摘录（编号 WEB-…）。两者引用都必须逐字原文，一个字都不许改；没有依据的内容一律不写。
+- 判断要不要等资料：博物馆/美术馆的公开展品、知名作品、网上有可靠资料的题材 —— 你自己调研就够，不要拿「请提供资料」当挡箭牌，也不要说「资料为空所以做不了」。客户自己送展的作品、内部藏品、网上查不到的东西（资料很少）—— 才请他提供资料或原文，并说清为什么需要。
+- 调研要落库才作数：fetch_url 只是看一眼，要让内容进草稿必须 add_research 存成 WEB 来源；再来 plan_exhibits 定展项清单，最后 start_generation。
+- 你一旦调用了 start_generation，起草就会在你这轮说完之后自动开始。所以这时候别再说「还没生成」「需要你点头确认」——就说一句「正在起草，好了叫你」。员工真不想生成，他会自己叫停。
+- 涉及别的生成类动作（比如合成语音、发布），只有员工明确要求才做。
 
 项目现场（真实数据）：
 %s""" % project_digest_text(project)
@@ -1512,8 +1658,12 @@ def tool_label(name, args):
         return "正在读资料 %s" % str(args.get("source_id") or "")
     if name == "add_material":
         return "正在登记资料「%s」" % str(args.get("name") or "")[:20]
+    if name == "add_research":
+        return "正在把这页存进项目"
+    if name == "plan_exhibits":
+        return "正在定展项清单"
     if name == "start_generation":
-        return "准备按当前资料重做草稿"
+        return "准备按当前来源起草"
     return "正在处理 %s" % name
 
 
@@ -1556,6 +1706,46 @@ def _tool_add_material(project, args):
             % (name, source_id, paragraphs)), {"source_id": source_id, "paragraphs": paragraphs}
 
 
+def _tool_add_research(project, args):
+    """把网页存成可引用来源。服务端自己再抓一次正文，模型给的句子必须原样命中。"""
+    url = str(args.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        return "需要一个 http/https 网址。", None
+    quotes = args.get("quotes")
+    if isinstance(quotes, str):
+        quotes = [line for line in quotes.split("\n") if line.strip()]
+    page = websearch.fetch(url, 40000)
+    text = page.get("text") or ""
+    if len(_norm_space(text)) < 120:
+        return ("这页没抓到正文（%s）。换一个页面，或者让员工把这段原文贴给你。"
+                % (page.get("note") or "内容太少")), None
+    web_id, kept, dropped = add_research(project, url, text, title=page.get("title") or url,
+                                         quotes=quotes or [])
+    save(project)
+    stored = next((item for item in project.get("research") or [] if item.get("id") == web_id), {})
+    tail = "，丢掉 %d 条（在正文里找不到原句）" % dropped if dropped else ""
+    return ("已存《%s》为 %s，%d 条可引用摘录%s。起草时引用就写 %s·Q001 这样的编号。"
+            % (stored.get("title") or url, web_id, kept, tail, web_id)), {
+        "web_id": web_id, "quotes": kept}
+
+
+def _tool_plan_exhibits(project, args):
+    titles = args.get("titles") or []
+    if isinstance(titles, str):
+        titles = [item for item in re.split(r"[\n,，、;；]", titles) if item.strip()]
+    titles = [str(item).strip()[:60] for item in titles if str(item).strip()]
+    if not titles:
+        return "至少给一个展项名称。", None
+    if len(titles) > 12:
+        return "一次最多 12 个展项，分两批吧。", None
+    plan = [{"id": "EX%02d" % index, "title": title}
+            for index, title in enumerate(titles, start=1)]
+    project["plan"] = plan
+    save(project)
+    return ("定了 %d 个展项：%s。起草时每个展项各出一份主讲解，引用来自现有来源。"
+            % (len(plan), "、".join(item["title"] for item in plan))), {"titles": titles}
+
+
 def run_agent_tool(project, name, args, flags):
     """执行一个工具调用。永不抛异常：失败也返回一句能继续往下聊的话。"""
     try:
@@ -1567,17 +1757,41 @@ def run_agent_tool(project, name, args, flags):
             return _tool_read_source(project, args)
         if name == "add_material":
             return _tool_add_material(project, args)
+        if name == "add_research":
+            return _tool_add_research(project, args)
+        if name == "plan_exhibits":
+            return _tool_plan_exhibits(project, args)
         if name == "start_generation":
-            if not project.get("materials"):
-                return "现在还没有任何资料，生成会被服务端拒绝。先导入展签或教育材料。", None
+            units = exhibit_units(project)
+            if not units:
+                return ("现在既没有资料也没有调研记录，起草没有依据。"
+                        "先 add_research 存一两个网页，或者让员工导入资料。"), None
             flags["generate"] = True
-            return "好，等这轮说完我就按当前 %d 份资料重做草稿。" % len(project["materials"]), {"queued": True}
+            return ("好，等这轮说完我就按 %d 个展项、当前来源重做草稿。" % len(units)), {"queued": True}
         return "没有叫 %s 的工具。" % name, None
     except websearch.WebError as error:
         return "刚才没查成：%s" % error, None
     except Exception as error:  # 工具坏掉不能把整轮对话弄崩
         traceback.print_exc()
         return "这个操作没成功：%s: %s" % (type(error).__name__, error), None
+
+
+# 模型偶尔会把工具调用的内部标记直接吐进正文（形如 <｜｜DSML｜｜ invoke name="…">）。
+# 那不是给人看的东西：句子要清掉，能认出来的调用要照做，否则员工看到的是一堆乱码。
+LEAK_BLOCK = re.compile(r"<[^<>\n]{0,120}?｜[^<>\n]{0,120}?>")
+LEAK_INVOKE = re.compile(r"invoke\s+name\s*=\s*[\"']?([A-Za-z_][A-Za-z0-9_]*)[\"']?", re.I)
+
+
+def strip_tool_leaks(text):
+    text = LEAK_BLOCK.sub("", text or "")
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
+def leaked_tools(text):
+    if not text or "｜" not in text:
+        return []
+    return [name for name in LEAK_INVOKE.findall(text)]
 
 
 def chat_turn(project, message, flags):
@@ -1593,9 +1807,20 @@ def chat_turn(project, message, flags):
         tool_calls = reply.get("tool_calls") or []
         content = (reply.get("content") or "").strip()
         if not tool_calls:
-            return content or "我在。需要我查点什么，或者直接动手改哪一块？", trace
+            leaked = leaked_tools(content)
+            clean = strip_tool_leaks(content)
+            if leaked:
+                # 模型把调用写成了正文：能认出来的就替它执行，别让员工对着乱码发愣。
+                for name in leaked:
+                    if name not in ("start_generation", "plan_exhibits", "add_research", "add_material"):
+                        continue
+                    text, data = run_agent_tool(project, name, {}, flags)
+                    trace.append({"tool": name, "arg": "模型把调用写进了正文", "ok": data is not None,
+                                  "summary": text.split("\n")[0][:80]})
+                return clean or "刚才那步没走通，我重来一遍——你说「生成」我就重新起草。", trace
+            return clean or "我在。需要我查点什么，或者直接动手改哪一块？", trace
         if last_round:
-            return content or "我把查到的先放这儿，你想继续我再往下深挖。", trace
+            return strip_tool_leaks(content) or "我把查到的先放这儿，你想继续我再往下深挖。", trace
         messages.append({"role": "assistant", "content": content, "tool_calls": tool_calls})
         for call in tool_calls:
             function = call.get("function") or {}
@@ -1654,11 +1879,9 @@ def chat_worker(project_id, message):
         last = (project.get("chat") or [{}])[-1]
         event(project_id, "chat.agent", {"text": last.get("text", ""), "tools": last.get("tools") or []})
         if flags.get("generate"):
-            if not project.get("materials"):
-                event(project_id, "chat.failed", {"message": "还没有资料，生成不了。"})
+            if not exhibit_units(project):
+                event(project_id, "chat.failed", {"message": "还没有内容依据，生成不了。"})
                 return
-            for material in project.get("materials", []):
-                material["source_refs"] = [s["id"] for s in project["sources"]]
             project["status"] = "running"
             project["issues"] = []
             save(project)
