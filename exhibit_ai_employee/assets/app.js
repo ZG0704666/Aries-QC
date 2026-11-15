@@ -377,12 +377,26 @@
   }
 
   /* ================= 视图：内容成果 ================= */
+  function researchBlock(research) {
+    if (!research.length) return '';
+    return `<div class="divider"></div>
+      <h4>联网调研来源（${research.length} 个网页）</h4>
+      ${research.map((r) => `<div class="section-spacer">
+        <div class="metric-row"><strong>${esc(r.id)}</strong>${pill((r.quotes || []).length + ' 条摘录', 'blue')}${r.url
+          ? `<a href="${esc(r.url)}" target="_blank" rel="noreferrer noopener" class="small">原始页面 ↗</a>` : ''}</div>
+        <p class="small muted">${esc(r.title || r.url || '')}${r.query ? ` · 搜索词「${esc(r.query)}」` : ''}</p>
+        <ul class="para-list" id="paras-${esc(r.id)}">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
+          <div class="para-id">${esc(q.id)}</div><p>${esc(q.text)}</p></li>`).join('')}</ul>
+      </div>`).join('')}
+      <p class="subtle">这些摘录是服务端从网页上抓下来的原文整句，和馆方资料同权：讲解里引用它们，同样逐字核对到 ${esc(research[0].id)}·Q001 这个粒度。</p>`;
+  }
+
   function contentView() {
     const p = P();
     const e = cur();
     const sources = p.sources || [];
+    const research = p.research || [];
     if (!e) {
-      const research = p.research || [];
       const researchPanel = research.length ? `<section class="panel panel-pad">
           <h3>调研来源（${research.length} 个网页）</h3>
           ${research.map((r) => `<div class="section-spacer">
@@ -438,17 +452,24 @@
     const refs = new Set(e.source_refs || []);
     const mine = sources.filter((s) => !refs.size || refs.has(s.id));
     const list = mine.length ? mine : sources;
+    const rMine = research.filter((r) => !refs.size || refs.has(r.id)
+      || (r.quotes || []).some((q) => refs.has(q.id)));
+    const rList = rMine.length ? rMine : research;
     return header('每一句讲解，都能回到来源', '原始资料只读 · 引用可定位 · 修改后旧结论全部失效') +
       `<section class="panel panel-pad" style="margin-bottom:16px">${exhibitTray()}</section>
       <div class="grid content-two">
         <section id="source-panel" class="panel panel-pad">
-          <h3>原始资料（只读）</h3>
+          <h3>来源（只读）：${esc(e.id)} 用到 ${[
+            list.length ? `${list.length} 份资料` : '',
+            rList.length ? `${rList.length} 个网页` : '',
+          ].filter(Boolean).join(' + ') || '（暂无依据）'}</h3>
           ${list.map((s) => `<div class="section-spacer">
             <div class="metric-row"><strong>${esc(s.id)}</strong>${pill(byteText(s.bytes), 'blue')}${pill((s.paragraphs || []).length + ' 段')}</div>
             <p class="small muted">${esc(s.name)} · 原文不被生成内容覆盖</p>
             <ul class="para-list" id="paras-${esc(s.id)}">${(s.paragraphs || []).map((x) => `<li data-para="${esc(x.id)}">
               <div class="para-id">${esc(x.id)}</div><p>${esc(x.text)}</p></li>`).join('')}</ul>
           </div>`).join('')}
+          ${researchBlock(rList)}
           <div class="divider"></div>
           <h4>资料授权</h4>
           ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}<br>${esc(p.authorization.scope || '')}</div>`

@@ -64,7 +64,7 @@ load_local_env()
 API_BASE = os.environ.get("AI_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or ""
 MODEL = os.environ.get("AI_MODEL", "deepseek-chat")
-CODE_REV = "studio-2026-11-15-g"
+CODE_REV = "studio-2026-11-15-h"
 
 # 本地 TTS 模块：放在 load_local_env() 之后导入，使 .env.local 里的音色配置能生效。
 import tts  # noqa: E402
@@ -1794,6 +1794,25 @@ def leaked_tools(text):
     return [name for name in LEAK_INVOKE.findall(text)]
 
 
+def thin_reply(text):
+    """只剩一个链接、或者只有几个字，就不算回答了。"""
+    bare = re.sub(r"https?://\S+", " ", text or "")
+    bare = re.sub(r"[\s。，、；：！？,.!?;:()（）\[\]【】\"'“”‘’—-]+", "", bare)
+    return len(bare) < 8
+
+
+def ask_once_more(project, messages, content):
+    """模型交白卷（只发了个链接/几个字）时，礼貌地催一句，让它把结论说出来。"""
+    nudge = {"role": "user",
+             "content": "别只发链接、也别只回一两个字：用一两句话把结论说给我听，链接放句末。"}
+    try:
+        again = model_chat(messages + [{"role": "assistant", "content": content}, nudge],
+                           tools=None, project_id=project.get("id", "-"))
+    except ModelError:
+        return ""
+    return strip_tool_leaks((again.get("content") or "").strip())
+
+
 def chat_turn(project, message, flags):
     """跑一轮对话（可多轮工具调用）。返回 (回复文本, 工具轨迹)。"""
     messages = [{"role": "system", "content": agent_system_prompt(project)}]
@@ -1818,9 +1837,19 @@ def chat_turn(project, message, flags):
                     trace.append({"tool": name, "arg": "模型把调用写进了正文", "ok": data is not None,
                                   "summary": text.split("\n")[0][:80]})
                 return clean or "刚才那步没走通，我重来一遍——你说「生成」我就重新起草。", trace
+            if thin_reply(clean):
+                # 有人问一句，回一个链接就走，那不叫同事。催它把话说完整一次。
+                fuller = ask_once_more(project, messages, content)
+                if not thin_reply(fuller):
+                    return fuller, trace
             return clean or "我在。需要我查点什么，或者直接动手改哪一块？", trace
         if last_round:
-            return strip_tool_leaks(content) or "我把查到的先放这儿，你想继续我再往下深挖。", trace
+            text = strip_tool_leaks(content)
+            if thin_reply(text):
+                fuller = ask_once_more(project, messages, content)
+                if not thin_reply(fuller):
+                    return fuller, trace
+            return text or "我把查到的先放这儿，你想继续我再往下深挖。", trace
         messages.append({"role": "assistant", "content": content, "tool_calls": tool_calls})
         for call in tool_calls:
             function = call.get("function") or {}
