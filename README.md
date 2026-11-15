@@ -24,7 +24,7 @@ copy .env.example .env
 #   LABELQC_DATA_ROOT   演示批次根目录（例如 F:\Aries AI\Aries Glass\archive）
 #   LABELQC_MODEL_PATH  交叉复核权重（ultralytics .pt）
 
-# 3) Web UI
+# 3) Web UI（数据质检 / 模型回归门禁）
 python server.py --open        # 默认 http://127.0.0.1:8765/
 
 # 4) CLI（跑一批数据并产出交付包）
@@ -47,6 +47,16 @@ python run.py --batch "F:\path\to\dataset(hr1)" --spec fixtures\specs\robot_ops.
 ```powershell
 python -m pytest tests -q
 ```
+
+## 模型回归门禁
+
+Web 页面顶部可切换「数据质检」和「模型回归门禁」。回归模式使用仓库内的旧展项 YOLO 验证集，比较基线与候选模型的逐类指标，并展示漏检、错检证据、发布判定、处理建议和可下载的交付包。
+
+在「模型回归门禁」接单台选择数据集、基线和候选档案后，点击「快速演示」即可启动回归。内置 `candidate_v2` 和 `candidate_v3` 均包含退化类别，预期判定为 `BLOCK`；可通过复制并调整候选档案的类别健康度，演示 `WARNING` 或 `RELEASE` 情形。运行产物写入 `runs/reg_<run_id>/`。
+
+此演示使用零 ML 依赖的模拟推理后端，因此无需安装 PyTorch 或 Ultralytics；数据集加载、检测框 IoU 匹配和汇总指标由项目代码计算。模拟得出的 AP50 以 F1 近似，适用于验证门禁交互和流程，不代表真实模型评估结果。真实模型接入不属于当前模拟演示范围。
+
+回归数据集来源于 `qc_engineer` 项目的旧展项样例，已复制到 `fixtures/regression/datasets/`；该大体积目录由 `.gitignore` 排除。回归档案保留在 `fixtures/regression/profiles/`，用于可重复演示。
 
 ## 演示数据
 
@@ -103,7 +113,7 @@ scripts/                   UI 冒烟测试
 本项目使用了赛前已有的资产，特此披露：
 
 - **Label Once**（F:\Aries AI\Label Once）：.NET 10 WPF + Python studio，YOLO 标注/合并/ID 修复，
-  提供真实客户痛点来源；本次**未复用其代码**。
+  提供真实客户痛点来源；本次**未复用其代码**。模型回归门禁实现来自独立的 `qc_engineer` 工程。
 - **Aries Glass 数据与权重**（F:\Aries AI\Aries Glass）：hr1/hr2/Underwater 数据集与
   `best.pt`（10 类）权重，作为演示批次的只读数据源与交叉复核权重。
 - **旧黑客松工程范式**（F:\Aries AI\hks\exhibit_employee）：stdlib HTTP + 无构建前端 + 证据脚本的

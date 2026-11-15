@@ -9,6 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / 'fixtures'
 SPECS_DIR = FIXTURES / 'specs'
+REGRESSION_DIR = FIXTURES / 'regression'
+REGRESSION_DATASETS_DIR = REGRESSION_DIR / 'datasets'
+REGRESSION_PROFILES_DIR = REGRESSION_DIR / 'profiles'
 
 
 def load_env(path: Path | None = None) -> None:
@@ -150,6 +153,53 @@ class Config:
                 'preview': path.read_text(encoding='utf-8-sig', errors='replace')[:400],
             })
         return items
+
+    def regression_datasets(self) -> list[dict]:
+        """发现回归门禁可用的旧展项数据集（只读模拟演示数据）。"""
+        items = []
+        if not REGRESSION_DATASETS_DIR.exists():
+            return items
+        for path in sorted(REGRESSION_DATASETS_DIR.iterdir()):
+            data_yaml = path / 'dataset.yaml'
+            if not path.is_dir() or not data_yaml.exists():
+                continue
+            names = _read_names(path)
+            items.append({
+                'id': path.name,
+                'name': path.name,
+                'path': str(data_yaml),
+                'classes': names,
+                'note': f'{len(names)} 类',
+            })
+        return items
+
+    def regression_profiles(self) -> list[dict]:
+        """发现回归门禁可用的模拟健康度档案（基线/候选）。"""
+        items = []
+        if not REGRESSION_PROFILES_DIR.exists():
+            return items
+        for path in sorted(REGRESSION_PROFILES_DIR.iterdir()):
+            if path.suffix.lower() not in ('.yaml', '.yml', '.json') or path.stem == 'thresholds':
+                continue
+            try:
+                import yaml
+                data = yaml.safe_load(path.read_text(encoding='utf-8-sig')) or {}
+            except Exception:
+                data = {}
+            items.append({
+                'id': path.stem,
+                'name': data.get('model_name', path.stem),
+                'path': str(path),
+            })
+        return items
+
+    def regression_thresholds(self) -> dict:
+        """默认验收阈值；找不到档案时返回保守默认值。"""
+        path = REGRESSION_PROFILES_DIR / 'thresholds.yaml'
+        if not path.exists():
+            return {'map50_min': 0.75, 'per_class_drop_max': 0.05, 'recall_drop_max': 0.1, 'critical_classes': []}
+        import yaml
+        return yaml.safe_load(path.read_text(encoding='utf-8-sig')) or {}
 
 
 def _looks_like_dataset(path: Path) -> bool:

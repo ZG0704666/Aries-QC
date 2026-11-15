@@ -10,9 +10,11 @@ dist/
 build/
 *.egg-info/
 demo_data/
+fixtures/regression/datasets/
 *.zip
 !fixtures/**/*.zip
 .venv/
 venv/
 .DS_Store
 Thumbs.db
+logs/

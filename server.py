@@ -1,4 +1,4 @@
-"""标尺 Web 服务：接单、实时轨迹、证据查看、人工裁定、交付下载。"""
+"""Aries QC Web 服务：接单、实时轨迹、证据查看、人工裁定、交付下载。"""
 from __future__ import annotations
 
 import argparse
@@ -20,12 +20,14 @@ import cv2
 import numpy as np
 
 from employee.config import Config, ROOT
+from employee.regression.pipeline import RegressionRunner
 from employee.runner import Runner
 
 STATIC = ROOT / 'static'
 UPLOADS = ROOT / 'uploads'
 CONFIG = Config.load()
 RUNNERS: dict[str, Runner] = {}
+REG_RUNNERS: dict[str, RegressionRunner] = {}
 LOCK = threading.Lock()
 STARTED = time.time()
 
@@ -68,8 +70,13 @@ def _run(run_id: str) -> Runner | None:
         return RUNNERS.get(run_id)
 
 
+def _reg_run(run_id: str) -> RegressionRunner | None:
+    with LOCK:
+        return REG_RUNNERS.get(run_id)
+
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'LabelQC/0.1'
+    server_version = 'Aries QC/0.1'
 
     def log_message(self, fmt, *args):
         if '/api/runs/' in (args[0] if args else '') and 'GET' in str(args[0]):
@@ -95,6 +102,7 @@ class Handler(BaseHTTPRequestHandler):
                 'config': CONFIG.public(),
                 'uptime': round(time.time() - STARTED, 1),
                 'runs': len(RUNNERS),
+                'regression_runs': len(REG_RUNNERS),
             })
         if path == '/api/batches':
             return _json(self, {'items': [b.to_dict() for b in CONFIG.batches()]})
@@ -126,6 +134,29 @@ class Handler(BaseHTTPRequestHandler):
         match = re.match(r'^/api/runs/([^/]+)/fixed\.zip$', path)
         if match:
             return self._download_fixed(match.group(1))
+        if path == '/api/regression/options':
+            return _json(self, {
+                'datasets': CONFIG.regression_datasets(),
+                'profiles': CONFIG.regression_profiles(),
+                'thresholds': CONFIG.regression_thresholds(),
+            })
+        if path == '/api/regression/runs':
+            return _json(self, {'items': [self._reg_run_brief(r) for r in REG_RUNNERS.values()]})
+        match = re.match(r'^/api/regression/runs/([^/]+)$', path)
+        if match:
+            return self._get_reg_run(match.group(1))
+        match = re.match(r'^/api/regression/runs/([^/]+)/cases$', path)
+        if match:
+            return self._get_reg_cases(match.group(1), parse_qs(parsed.query))
+        match = re.match(r'^/api/regression/runs/([^/]+)/image$', path)
+        if match:
+            return self._get_reg_image(match.group(1), parse_qs(parsed.query))
+        match = re.match(r'^/api/regression/runs/([^/]+)/artifact/([^/]+)$', path)
+        if match:
+            return self._get_reg_artifact(match.group(1), match.group(2))
+        match = re.match(r'^/api/regression/runs/([^/]+)/download$', path)
+        if match:
+            return self._download_reg(match.group(1))
         return _error(self, 'not found', 404)
 
     def do_POST(self):
@@ -147,6 +178,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._upload('spec')
             if path == '/api/upload/batch':
                 return self._upload('batch')
+            if path == '/api/regression/runs':
+                return self._create_reg_run()
+            match = re.match(r'^/api/regression/runs/([^/]+)/cancel$', path)
+            if match:
+                return self._cancel_reg(match.group(1))
             return _error(self, 'not found', 404)
         except ValueError as error:
             return _error(self, str(error), 400)
@@ -374,6 +410,100 @@ class Handler(BaseHTTPRequestHandler):
         runner.cancel()
         _json(self, {'id': run_id, 'cancelled': True})
 
+    # ---------- 模型回归门禁 ----------
+    def _reg_run_brief(self, runner: RegressionRunner) -> dict:
+        state = runner.state
+        return {
+            'id': state.get('id'),
+            'status': state.get('status'),
+            'created_at': state.get('created_at'),
+            'finished_at': state.get('finished_at'),
+            'dataset': (state.get('dataset') or {}),
+            'verdict': (state.get('decision') or {}).get('verdict'),
+        }
+
+    def _create_reg_run(self):
+        body = _read_json(self)
+        dataset_id = body.get('dataset_id') or ''
+        baseline_id = body.get('baseline_id') or ''
+        candidate_id = body.get('candidate_id') or ''
+        dataset_path = next((d['path'] for d in CONFIG.regression_datasets() if d['id'] == dataset_id), '')
+        baseline_path = next((p['path'] for p in CONFIG.regression_profiles() if p['id'] == baseline_id), '')
+        candidate_path = next((p['path'] for p in CONFIG.regression_profiles() if p['id'] == candidate_id), '')
+        if not dataset_path:
+            raise ValueError('请选择旧展项数据集')
+        if not baseline_path or not candidate_path:
+            raise ValueError('请选择基线模型和候选模型档案')
+        thresholds = body.get('thresholds') if isinstance(body.get('thresholds'), dict) else None
+        runner = RegressionRunner(CONFIG, dataset_path, baseline_path, candidate_path, thresholds=thresholds)
+        with LOCK:
+            REG_RUNNERS[runner.run_id] = runner
+        thread = threading.Thread(target=runner.start, name=f'reg-{runner.run_id}', daemon=True)
+        thread.start()
+        _json(self, {'id': runner.run_id, 'status': 'queued'})
+
+    def _get_reg_run(self, run_id: str):
+        runner = _reg_run(run_id)
+        if runner is None:
+            return _error(self, '运行不存在', 404)
+        _json(self, runner.state)
+
+    def _get_reg_cases(self, run_id: str, query: dict):
+        runner = _reg_run(run_id)
+        if runner is None:
+            return _error(self, '运行不存在', 404)
+        comparison = runner.state.get('comparison') or {}
+        kind = (query.get('type') or ['missed'])[0]
+        cls_filter = (query.get('class') or [''])[0]
+        offset = int((query.get('offset') or ['0'])[0])
+        limit = min(200, int((query.get('limit') or ['50'])[0]))
+        field = 'missed_cases' if kind == 'missed' else 'false_positive_cases'
+        items = comparison.get(field) or []
+        if cls_filter:
+            box_field = 'gt_box' if kind == 'missed' else 'pred_box'
+            items = [c for c in items if c[box_field]['cls_name'] == cls_filter]
+        _json(self, {'total': len(items), 'offset': offset, 'items': items[offset:offset + limit]})
+
+    def _get_reg_image(self, run_id: str, query: dict):
+        runner = _reg_run(run_id)
+        if runner is None or runner.dataset is None:
+            return _error(self, '运行不存在', 404)
+        rel = (query.get('path') or [''])[0]
+        if not rel:
+            return _error(self, '缺少 path 参数', 400)
+        target = runner.dataset.root / rel
+        if not _safe_child(runner.dataset.root, target):
+            return _error(self, '路径越界', 403)
+        self._serve_file(target)
+
+    def _get_reg_artifact(self, run_id: str, name: str):
+        runner = _reg_run(run_id)
+        if runner is None:
+            return _error(self, '运行不存在', 404)
+        allowed = {a['name'] for a in runner.state.get('artifacts') or []}
+        if name not in allowed:
+            return _error(self, 'artifact 不在白名单', 403)
+        path = runner.run_dir / name
+        if not path.exists():
+            return _error(self, 'artifact 不存在', 404)
+        self._serve_file(path, download=name.endswith('.zip'))
+
+    def _download_reg(self, run_id: str):
+        runner = _reg_run(run_id)
+        if runner is None:
+            return _error(self, '运行不存在', 404)
+        path = runner.run_dir / 'delivery.zip'
+        if not path.exists():
+            return _error(self, '交付包尚未生成', 404)
+        self._serve_file(path, download=True, filename=f'regression_{run_id}.zip')
+
+    def _cancel_reg(self, run_id: str):
+        runner = _reg_run(run_id)
+        if runner is None:
+            return _error(self, '运行不存在', 404)
+        runner.cancel()
+        _json(self, {'id': run_id, 'cancelled': True})
+
     # ---------- 上传 ----------
     def _upload(self, kind: str):
         length = int(self.headers.get('Content-Length') or 0)
@@ -490,14 +620,14 @@ def _dataset_root(root: Path) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='标尺 Web 服务')
+    parser = argparse.ArgumentParser(description='Aries QC Web 服务')
     parser.add_argument('--port', type=int, default=CONFIG.port)
     parser.add_argument('--host', default=CONFIG.host)
     parser.add_argument('--open', action='store_true')
     args = parser.parse_args()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     url = f'http://{args.host}:{args.port}/'
-    print(f'标尺已启动：{url}')
+    print(f'Aries QC Web 服务已启动：{url}')
     print(f'模型：{CONFIG.model or "未配置"} | 数据根目录：{CONFIG.data_root}')
     if args.open:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()

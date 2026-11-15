@@ -13,7 +13,102 @@ const S = {
   tab: 'overview', filter: { severity: '', confidence: '', check: '' },
   pollTimer: null, renderKey: '', modalFor: '', sample: null, selectedFinding: null,
   drawerSampleId: null, busy: false,
+  overviewKey: '', headlineKey: '',
+  snapshots: [],      // 上一次轮询的步骤计时快照，供后端心跳对账，防刷新后状态丢失
+  historyDurations: null, // 历史运行各步骤耗时，用作进度环预估总量
 };
+
+// ---------- 统一实时心跳 ----------
+// 运行中步骤后端只在结束时回填 duration，执行中恒为 0s。这里用本地时钟
+// 每 200ms 刷新一次所有"活"区域（loader 进度/秒数、侧栏轨迹秒数），
+// 让已耗时平滑跳动，与轮询节奏解耦。
+let liveTickHandle = null;
+let liveTickRenderers = new Set();
+function markLiveTick(which) {
+  if (which) liveTickRenderers.add(which);
+  if (liveTickHandle) return;
+  const tick = () => {
+    liveTickHandle = null;
+    if (!window.Viz) return;
+    liveTickRenderers.forEach((kind) => {
+      if (kind === 'loader') tickLoader();
+      if (kind === 'trace') tickTrace();
+    });
+    if (liveTickRenderers.size) liveTickHandle = setTimeout(tick, 200);
+  };
+  liveTickHandle = setTimeout(tick, 200);
+}
+function clearLiveTick() { liveTickRenderers.clear(); if (liveTickHandle) { clearTimeout(liveTickHandle); liveTickHandle = null; } }
+
+// 刷新 loader：进度环 + 当前步骤 + 实时已耗时
+// 进度环按"耗时加权"估算：用历史各步骤真实耗时（S.historyDurations）作权重，
+// 比单纯的"完成步数/总数"更贴近真实执行进度；无历史数据时退化为步数进度。
+function tickLoader() {
+  const run = S.run;
+  if (!run || !['created', 'queued', 'running'].includes(run.status)) { liveTickRenderers.delete('loader'); return; }
+  const steps = run.steps || [];
+  const total = steps.length || 1;
+  const prog = run.progress || {};
+  const current = steps.find((s) => s.status === 'running') || steps[steps.length - 1];
+  const elapsed = Viz.liveElapsed(current);
+  const elapsedText = elapsed != null ? ` · 已用 ${Viz.fmtElapsed(elapsed)}` : '';
+  const stepLabel = prog.label || (current ? current.title : '');
+  const stepText = (current || prog.label)
+    ? `▸ ${stepLabel}${current?.detail?.error ? ' · ' + current.detail.error : ''}${elapsedText}`
+    : '等待接单…';
+  const fraction = estimateProgress(steps, S.historyDurations);
+  Viz.updateLoader($('#tabContent'), fraction, stepText);
+  const titleEl = $('#tabContent .viz-loader-title');
+  if (titleEl) titleEl.textContent = `质检执行中 · ${doneCountText(steps)}`;
+}
+
+// 进度估算：优先用历史耗时加权，缺历史时按步数均分
+function estimateProgress(steps, history) {
+  const total = steps.length || 1;
+  if (!history || typeof history !== 'object') {
+    return steps.filter((s) => s.status === 'ok').length / total;
+  }
+  let done = 0, runningWeight = 0, totalWeight = 0;
+  steps.forEach((step, i) => {
+    const key = stepTitle(step, i);
+    const w = Math.max(0.1, Number(history[key]) || 0); // 历史耗时秒，缺省给 0.1 权重
+    totalWeight += w;
+    if (step.status === 'ok') done += w;
+    else if (step.status === 'running') {
+      // 运行中步骤按 elapsed/history 给出部分进度，上限 0.95 避免虚满
+      const e = step._elapsed || 0;
+      runningWeight += Math.min(0.95, w > 0 ? e / w : 0) * w;
+    }
+  });
+  if (totalWeight <= 0) return steps.filter((s) => s.status === 'ok').length / total;
+  return Math.min(0.99, (done + runningWeight) / totalWeight);
+}
+function stepTitle(step, i) { return step?.title || `step-${i}`; }
+function doneCountText(steps) {
+  const done = steps.filter((s) => s.status === 'ok').length;
+  return `${done}/${steps.length || 0}`;
+}
+
+// 刷新侧栏轨迹：运行中步骤的实时秒数
+function tickTrace() {
+  const run = S.run;
+  if (!run) return;
+  const steps = run.steps || [];
+  const nodes = document.querySelectorAll('#trace .trace-step');
+  let anyRunning = false;
+  steps.forEach((step, i) => {
+    if (step.status !== 'running') return;
+    anyRunning = true;
+    const node = nodes[i];
+    if (!node) return;
+    const metaEl = node.querySelector('.t-meta');
+    const elapsed = Viz.liveElapsed(step);
+    if (metaEl && elapsed != null) metaEl.textContent = `已用 ${Viz.fmtElapsed(elapsed)}`;
+  });
+  if (!anyRunning && !['running', 'created', 'queued'].includes(run.status)) {
+    liveTickRenderers.delete('trace');
+  }
+}
 
 async function api(path, options = {}) {
   const response = await fetch(path, options);
@@ -35,6 +130,8 @@ function toast(message, bad = false) {
 
 async function init() {
   bind();
+  bindModeSwitch();
+  restoreHistoryDurations();   // 恢复历史步骤耗时权重，供进度环加权
   try {
     const [health, batches, specs, runs] = await Promise.all([
       api('/api/health'), api('/api/batches'), api('/api/specs'), api('/api/runs'),
@@ -51,7 +148,29 @@ async function init() {
   } catch (error) {
     toast(`服务未就绪：${error.message}`, true);
   }
+  if (window.RegressionUI) window.RegressionUI.init();
 }
+
+// ---------- 模式切换 ----------
+function bindModeSwitch() {
+  $('#modeSwitch').addEventListener('click', (event) => {
+    const button = event.target.closest('.mode-btn');
+    if (!button) return;
+    setMode(button.dataset.mode);
+  });
+  $$('.mode-jump').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.jump)));
+}
+
+function setMode(mode) {
+  $$('.mode-btn').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
+  $('#qualityShell').hidden = mode !== 'quality';
+  $('#regressionShell').hidden = mode !== 'regression';
+  localStorage.setItem('labelqc.mode', mode);
+}
+(function restoreMode() {
+  const saved = localStorage.getItem('labelqc.mode');
+  if (saved === 'regression') setMode('regression');
+})();
 
 function renderHealth(runs) {
   const llm = $('#llmStatus');
@@ -186,6 +305,8 @@ async function startRun() {
     S.runId = created.id;
     localStorage.setItem('labelqc.run', created.id);
     S.run = null; S.findings = []; S.findingsLoaded = false; S.renderKey = ''; S.tab = 'overview';
+    const traceEl = $('#trace');
+    if (traceEl) { traceEl.innerHTML = '<div class="trace-empty">等待接单…</div>'; traceEl.dataset.rendered = '0'; }
     $$('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'overview'));
     $('#welcome').hidden = true;
     $('#runView').hidden = false;
@@ -231,6 +352,8 @@ async function openRun(runId) {
   localStorage.setItem('labelqc.run', runId);
   try {
     S.run = await api(`/api/runs/${runId}`);
+    restoreSnapshots(runId);   // 恢复刷新前的计时快照，防状态丢失
+    reconcileStepTimers();
     S.renderKey = '';
     renderRun();
     renderTrace();
@@ -242,6 +365,109 @@ async function openRun(runId) {
   }
 }
 
+// ---------- 步骤计时器心跳对账（后端心跳方案） ----------
+// 思路：以每次轮询从后端取回的 duration 作为"心跳快照"，计算相邻两次轮询间
+// 该步骤真实推进了多少秒，累加到 _elapsed。duration 由后端权威回填，前端只做
+// 增量累加与平滑展示，不依赖前端本地时钟，避免与真实执行进度脱节。
+//
+// 防"灾难性遗忘"：S.snapshots 保存相邻两次轮询的快照，poll 期间页面不会丢。
+// 若快照缺失（首次打开/刷新）、轮询间隔异常偏大，或 duration 一次性大幅回填，
+// 都以当前 duration 为基准重新对齐，宁可短暂重置也不让秒数虚增或倒流。
+function reconcileStepTimers() {
+  const run = S.run;
+  if (!run || !Array.isArray(run.steps)) return;
+  const now = performance.now();
+  const prevSnaps = S.snapshots || [];
+  const snaps = [];
+  run.steps.forEach((step, i) => {
+    const key = `${step.index ?? i}:${step.title || ''}`;
+    const status = step.status;
+    const duration = typeof step.duration === 'number' ? step.duration : 0;
+    const prevSnap = prevSnaps.find((s) => s.key === key);
+    let elapsed;
+
+    if (status === 'running') {
+      if (prevSnap && prevSnap.status === 'running') {
+        // 两次轮询都在跑：累加真实增量
+        const dt = Math.max(0, now - prevSnap.at) / 1000;
+        const dDuration = duration - prevSnap.duration;
+        // duration 一次性回填（>1s 视为心跳丢失后的补齐），以真实值为准
+        if (dDuration > 1) elapsed = duration;
+        // 轮询间隔异常（>15s，可能标签页被冻结/刷新），以 duration 为准
+        else if (dt > 15) elapsed = Math.max(duration, prevSnap.elapsed + dDuration);
+        else elapsed = Math.max(prevSnap.elapsed + Math.max(0, dDuration), prevSnap.elapsed + dt * 0.5);
+        // 平滑：增量与真实 duration 取更可信者（duration 权威但回填滞后）
+        elapsed = Math.min(elapsed, prevSnap.elapsed + Math.max(dt, dDuration));
+      } else if (prevSnap) {
+        // 步骤刚变成 running（之前是 pending）：从零开始或承接 duration
+        elapsed = duration > 0 ? duration : 0;
+      } else {
+        // 无快照（首次/刷新后）：以 duration 为准，若为 0 则从 0 起算
+        elapsed = duration > 0 ? duration : 0;
+      }
+      step._elapsed = elapsed;
+      // 基准锚点：以本次 poll 时刻为原点，tick 之间用本地时钟平滑插值，
+      // 避免 _startedAt 每 poll 重置导致秒数回跳。
+      step._baseElapsed = elapsed;
+      step._baseAt = now;
+    } else if (status === 'ok') {
+      // 完成步骤：直接用后端真实 duration（回填后的权威值）
+      step._elapsed = duration;
+      step._startedAt = null;
+    } else {
+      step._elapsed = 0;
+      step._startedAt = null;
+    }
+
+    snaps.push({ key, status, duration, elapsed: step._elapsed, at: now });
+  });
+  S.snapshots = snaps;
+}
+
+// ---------- 防"灾难性遗忘"：计时状态与历史权重持久化 ----------
+// 页面刷新/标签页休眠会丢失内存中的 S.snapshots 与历史耗时。这里把它们写入
+// sessionStorage / localStorage，init 时恢复；刷新后秒数从最近的 duration 续跑，
+// 进度环也能立刻用上历史权重，而不是退化成"完成步数/总数"。
+function persistSnapshots() {
+  try {
+    if (S.runId && S.snapshots.length) {
+      sessionStorage.setItem(`labelqc.snap.${S.runId}`, JSON.stringify({
+        at: Date.now(), snaps: S.snapshots,
+      }));
+    }
+  } catch { /* 存储不可用时静默忽略，心跳仍可用内存快照 */ }
+}
+function restoreSnapshots(runId) {
+  if (!runId) return;
+  try {
+    const raw = sessionStorage.getItem(`labelqc.snap.${runId}`);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    // 快照超过 5 分钟视为过期（运行可能已被别处重置），不恢复
+    if (data && Date.now() - data.at < 5 * 60 * 1000) S.snapshots = data.snaps || [];
+  } catch { S.snapshots = []; }
+}
+// 从已完成运行收集各步骤真实耗时，作为进度环的历史权重
+function learnHistoryDurations(steps) {
+  if (!Array.isArray(steps)) return;
+  const hist = S.historyDurations || {};
+  steps.forEach((step, i) => {
+    const key = stepTitle(step, i);
+    if (step.status === 'ok' && typeof step.duration === 'number' && step.duration > 0) {
+      // 多次观测取指数滑动平均，让权重随真实执行稳定收敛
+      hist[key] = hist[key] == null ? step.duration : hist[key] * 0.7 + step.duration * 0.3;
+    }
+  });
+  S.historyDurations = hist;
+  try { localStorage.setItem('labelqc.histDurations', JSON.stringify(hist)); } catch { /* ignore */ }
+}
+function restoreHistoryDurations() {
+  try {
+    const raw = localStorage.getItem('labelqc.histDurations');
+    if (raw) S.historyDurations = JSON.parse(raw);
+  } catch { S.historyDurations = null; }
+}
+
 function schedulePoll() {
   clearTimeout(S.pollTimer);
   S.pollTimer = setTimeout(poll, 700);
@@ -251,10 +477,16 @@ async function poll() {
   if (!S.runId) return;
   try {
     S.run = await api(`/api/runs/${S.runId}`);
+    // 后端心跳对账：用 S.snapshots 的相邻快照增量累加运行中步骤秒数，
+    // 不再沿用 _startedAt（会跟心跳累加冲突导致重复计时）。
+    reconcileStepTimers();
+    persistSnapshots();
     renderTrace();
     renderRun();
     const status = S.run.status;
     if (status === 'done') {
+      // 收集本次真实耗时作历史权重，供后续进度环加权
+      learnHistoryDurations(S.run.steps);
       await loadFindings();
       renderRun();
       toast('质检完成，交付包已生成');
@@ -286,19 +518,43 @@ function renderTrace() {
   const state = S.run?.status || 'idle';
   $('#traceState').textContent = state.toUpperCase();
   const steps = S.run?.steps || [];
+  const trace = $('#trace');
   if (!steps.length) {
-    $('#trace').innerHTML = '<div class="trace-empty">等待接单…</div>';
+    if (trace.dataset.built !== 'empty') {
+      trace.innerHTML = '<div class="trace-empty">等待接单…</div>';
+      trace.dataset.built = 'empty';
+    }
     return;
   }
-  $('#trace').innerHTML = steps.map((step) => {
-    const meta = traceMeta(step);
-    return `<div class="trace-step ${esc(step.status)}">
-      <span class="t-dot"></span>
-      <div><div class="t-name">${esc(step.title)}</div><div class="t-meta">${esc(meta)}</div></div>
-    </div>`;
-  }).join('');
-  const trace = $('#trace');
+  // 增量更新：已有步骤仅同步状态类（running→ok 等），新增步骤追加；不整块重建。
+  const current = Number(trace.dataset.rendered || 0);
+  if (current === 0 || trace.querySelector('.trace-empty')) {
+    trace.innerHTML = '';
+    trace.dataset.built = 'steps';
+  }
+  const existing = trace.querySelectorAll('.trace-step');
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    if (i < existing.length) {
+      // 复用节点，仅更新状态类与元信息（保留 DOM，动画记忆不丢）
+      const el = existing[i];
+      const wantCls = `trace-step ${esc(step.status)}`;
+      if (el.className !== wantCls) el.className = wantCls;
+      const metaEl = el.querySelector('.t-meta');
+      const meta = window.Viz ? Viz.stepMeta(step) : traceMeta(step);
+      if (metaEl && metaEl.textContent !== meta) metaEl.textContent = meta;
+      continue;
+    }
+    const meta = window.Viz ? Viz.stepMeta(step) : traceMeta(step);
+    const el = document.createElement('div');
+    el.className = `trace-step ${esc(step.status)} new`;
+    el.innerHTML = `<span class="t-dot"></span>
+      <div><div class="t-name">${esc(step.title)}</div><div class="t-meta">${esc(meta)}</div></div>`;
+    trace.appendChild(el);
+  }
+  trace.dataset.rendered = String(steps.length);
   trace.scrollTop = trace.scrollHeight;
+  markLiveTick();
 }
 
 function traceMeta(step) {
@@ -333,20 +589,81 @@ function renderRun() {
   gate.className = `gate ${gateValue}`;
   gate.textContent = gateValue ? ({ blocked: '不可交付 · P0', at_risk: '有风险 · 覆盖不足', pass: '可进入人工复核' }[gateValue] || gateValue) : statusText(S.run.status);
   const severity = counts.by_severity || {};
-  const kpis = [
-    ['图像', fmt(stats.images), '张'],
-    ['实例', fmt(stats.objects), '个'],
-    ['P0', fmt(severity.P0 || 0), '硬伤', 'p0'],
-    ['P1', fmt(severity.P1 || 0), '高风险', 'p1'],
-    ['P2', fmt(severity.P2 || 0), '候选/提示', ''],
-    ['覆盖', S.run.coverage?.score ?? '—', '%', 'pass'],
+  const kpiItems = [
+    { label: '图像', value: stats.images ?? 0, unit: '张' },
+    { label: '实例', value: stats.objects ?? 0, unit: '个' },
+    { label: 'P0', value: severity.P0 || 0, unit: '硬伤', cls: 'p0' },
+    { label: 'P1', value: severity.P1 || 0, unit: '高风险', cls: 'p1' },
+    { label: 'P2', value: severity.P2 || 0, unit: '候选/提示' },
+    { label: '覆盖', value: S.run.coverage?.score ?? 0, unit: '%', cls: 'pass', decimals: 1 },
   ];
-  $('#kpis').innerHTML = kpis.map(([label, value, unit, cls]) =>
-    `<div class="kpi ${cls || ''}"><b>${esc(value)}</b><span>${esc(label)} · ${esc(unit)}</span></div>`).join('');
+  const kpiContainer = $('#kpis');
+  if (window.Viz) {
+    // 首次构建结构，之后每次轮询仅增量更新，数字从旧值平滑滚到新值
+    Viz.updateKpis(kpiContainer, kpiItems);
+  } else {
+    kpiContainer.innerHTML = kpiItems.map((it) =>
+      `<div class="kpi ${it.cls || ''}"><b>${esc(it.value)}</b><span>${esc(it.label)} · ${esc(it.unit)}</span></div>`).join('');
+  }
+
+  // 运行中：在 tab 区域显示全屏 loader（含流水线动画）
+  const busyStates = ['created', 'queued', 'running'];
+  if (busyStates.includes(S.run.status)) {
+    const steps = S.run.steps || [];
+    // 流水线骨架只在结构变化时重建；进度环/秒数交给本地 ticker 高频刷新
+    const pipeKey = `pipe|${S.run.status}|${steps.length}`;
+    if (S.overviewKey !== pipeKey) {
+      S.overviewKey = pipeKey;
+      const pipeHTML = window.Viz ? Viz.pipeline(steps) : '';
+      $('#tabContent').innerHTML = window.Viz
+        ? Viz.loaderHTML(0.02, '质检执行中', '正在同步进度…', pipeHTML)
+        : '<div class="empty-note">执行中…</div>';
+      if (window.Viz) Viz.mount($('#tabContent'));
+    }
+    if (window.Viz) {
+      const renderProgress = () => {
+        const run = S.run;
+        if (!run) return;
+        const liveSteps = run.steps || [];
+        const doneCount = liveSteps.filter((s) => s.status === 'ok').length;
+        const total = liveSteps.length || 1;
+        // 后端细粒度 progress（如"已扫描 N 张"）优先用于副标题
+        const prog = run.progress || {};
+        const current = liveSteps.find((s) => s.status === 'running') || liveSteps[liveSteps.length - 1];
+        const elapsed = Viz.liveElapsed(current);
+        const elapsedText = elapsed != null ? ` · 已用 ${Viz.fmtElapsed(elapsed)}` : '';
+        const stepLabel = prog.label || (current ? current.title : '');
+        const stepText = current || prog.label
+          ? `▸ ${stepLabel}${current?.detail?.error ? ' · ' + current.detail.error : ''}${elapsedText}`
+          : '等待接单…';
+        Viz.updateLoader($('#tabContent'), doneCount / total, stepText);
+        // 标题行显示已完成/总数
+        const titleEl = $('#tabContent .viz-loader-title');
+        if (titleEl) titleEl.textContent = `质检执行中 · ${doneCount}/${total}`;
+      };
+      renderProgress();
+      markLiveTick('loader');
+    }
+    return;
+  }
+  if (window.Viz) Viz.stopTicker();
+
+  // headline 打字机效果（一次性触发）
+  if (window.Viz) {
+    const headEl = $('#headline');
+    const hKey = `headline|${S.run.id}|${summary.headline || ''}`;
+    if (S.headlineKey !== hKey && summary.headline && S.run.status === 'done') {
+      S.headlineKey = hKey;
+      Viz.typeIn(headEl, summary.headline, { speed: 8 });
+    }
+  }
+
   const key = `${S.run.status}|${(S.run.steps || []).length}|${counts.total}|${summary.gate}|${S.tab}|${S.findingsLoaded}`;
   if (key === S.renderKey) return;
   S.renderKey = key;
+  S.overviewKey = '';
   $('#tabContent').innerHTML = renderTab();
+  if (window.Viz) Viz.mount($('#tabContent'));
   if (S.tab === 'findings') bindFindings();
 }
 
@@ -379,41 +696,65 @@ function renderOverview() {
   const sev = counts.by_severity || {};
   const total = counts.total || 0;
   const p0 = sev.P0 || 0, p1 = sev.P1 || 0, p2 = sev.P2 || 0;
-  const deg = (value) => total ? (value / total) * 360 : 0;
-  const donut = `conic-gradient(#ff5f56 0deg ${deg(p0)}deg,#ffb020 ${deg(p0)}deg ${deg(p0 + p1)}deg,#4dd0e1 ${deg(p0 + p1)}deg 360deg)`;
   const coverage = run.coverage || {};
   const classQuota = coverage.class_quota || [];
+  const classCounts = coverage.class_counts || run.batch?.stats?.class_counts || {};
+  const classItems = Object.entries(classCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
   const checks = Object.entries(counts.by_check || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  const maxCheck = Math.max(1, ...checks.map(([, n]) => n));
   const probe = run.probe || {};
   const llm = run.llm || {};
+  const confidence = counts.by_confidence || {};
+
+  const donutBlock = window.Viz
+    ? Viz.donut({ P0: p0, P1: p1, P2: p2, total })
+    : `<div class="legend"><span>P0 ${p0}</span><span>P1 ${p1}</span><span>P2 ${p2}</span></div>`;
+
+  const gaugeBlock = window.Viz
+    ? Viz.gauge(coverage.score ?? 0, 100)
+    : `<div class="bar"><i style="width:${Math.min(100, coverage.score || 0)}%"></i></div>`;
+
+  const checksBlock = (window.Viz && checks.length)
+    ? Viz.bars(checks.map(([name, n]) => ({
+        label: Viz.checkName(name),
+        value: n,
+        cls: (name.includes('duplicate') || name.includes('missing')) ? 'red' : '',
+      })))
+    : '';
+
+  const classBlock = (window.Viz && classItems.length)
+    ? `<div class="viz-bars">${Viz.classBars(classItems)}</div>`
+    : '';
+
   return `
   <div class="section">
     <div class="grid3">
       <div class="panel">
-        <h3>问题构成</h3><p>${total} 条证据 · ${counts.by_confidence?.candidate || 0} 条候选</p>
-        <div class="donut" style="background:${donut}"><div><b>${total}</b><span>findings</span></div></div>
-        <div class="legend"><span><i style="background:#ff5f56"></i>P0 ${p0}</span><span><i style="background:#ffb020"></i>P1 ${p1}</span><span><i style="background:#4dd0e1"></i>P2 ${p2}</span></div>
+        <h3>问题构成</h3><p>${total} 条证据 · ${confidence.candidate || 0} 条候选</p>
+        ${donutBlock}
       </div>
       <div class="panel">
         <h3>覆盖率</h3><p>规范配额 vs 实际数据</p>
-        <div style="display:flex;align-items:baseline;gap:8px;margin:10px 0 6px"><b style="font:700 40px/1 var(--mono);color:var(--lime)">${coverage.score ?? '—'}</b><span class="muted">%</span></div>
-        <div class="bar"><i style="width:${Math.min(100, coverage.score || 0)}%"></i></div>
+        ${gaugeBlock}
+        ${(coverage.scenes || []).length ? '<div class="tiny" style="margin:4px 0 2px">场景抽样达标情况（当前 / 规范要求）</div>' : ''}
         ${(coverage.scenes || []).slice(0, 4).map((scene) => `<div class="rowline"><span>${esc(scene.name)}</span><span>${scene.actual}/${scene.required || '—'}</span></div>`).join('')}
       </div>
       <div class="panel">
         <h3>双通道质检</h3><p>确定性规则 + 模型交叉复核</p>
-        <div class="rowline"><span>确定性</span><span>${counts.by_confidence?.deterministic || 0} 条</span></div>
-        <div class="rowline"><span>模型候选</span><span>${probe.candidate_missing ?? 0} 漏标 / ${probe.candidate_confusion ?? 0} 错标</span></div>
-        <div class="rowline"><span>模型设备</span><span>${esc(probe.device || '—')}</span></div>
-        <div class="rowline"><span>推理耗时</span><span>${probe.seconds ?? '—'}s</span></div>
-        <div class="rowline"><span>LLM 调用</span><span>${llm.calls ?? 0} 次 / ${llm.seconds ?? 0}s</span></div>
+        <div class="viz-stat-grid">
+          <div class="viz-stat"><b data-count="${confidence.deterministic || 0}">${confidence.deterministic || 0}</b><span>确定性证据</span></div>
+          <div class="viz-stat"><b data-count="${confidence.candidate || 0}">${confidence.candidate || 0}</b><span>模型候选</span></div>
+          <div class="viz-stat"><b data-count="${llm.calls || 0}">${llm.calls || 0}</b><span>LLM 调用</span></div>
+          <div class="viz-stat"><b data-count="${llm.seconds || 0}" data-decimals="1">${llm.seconds || 0}s</b><span>LLM 耗时</span></div>
+        </div>
+        <div class="rowline" style="margin-top:8px"><span>推理设备</span><span>${esc(probe.device || (probe.available ? '—' : '本轮未启用模型复核'))}</span></div>
+        <div class="rowline"><span>推理耗时</span><span>${probe.seconds != null ? probe.seconds + 's' : (probe.available ? '—' : '—（未执行）')}</span></div>
       </div>
     </div>
   </div>
-  ${total ? `<div class="section"><h3>检查项分布</h3><div class="panel">
-    ${checks.map(([name, n]) => `<div class="rowline"><span><code>${esc(name)}</code></span><span>${n}</span></div><div class="bar" style="margin:2px 0 8px"><i style="width:${(n / maxCheck) * 100}%"></i></div>`).join('')}
-  </div></div>` : ''}
+  ${checksBlock ? `<div class="section"><h3>检查项分布</h3><div class="panel">${checksBlock}</div></div>` : ''}
+  ${classBlock ? `<div class="section"><h3>类别实例分布</h3><div class="panel">${classBlock}</div></div>` : ''}
   <div class="section"><h3>类别配额</h3><div class="panel">
     ${classQuota.length ? classQuota.map((item) => {
       const ratio = item.required ? Math.min(1, item.actual / item.required) : 0;
@@ -466,7 +807,11 @@ function renderClasses() {
 }
 
 function renderFindings() {
-  if (!S.findingsLoaded) return '<div class="empty-note">正在加载证据…</div>';
+  if (!S.findingsLoaded) {
+    return window.Viz
+      ? `<div class="section"><h3>加载证据中</h3>${Viz.skeletonRows(6)}</div>`
+      : '<div class="empty-note">正在加载证据…</div>';
+  }
   const filtered = filteredFindings();
   const checks = Object.keys(S.findingsMeta.checks || {}).sort();
   return `
@@ -512,7 +857,7 @@ function findingRow(f) {
     : f.status === 'rejected' ? '<span class="badge muted">已排除</span>' : '';
   return `<div class="finding-row ${f.severity.toLowerCase()} ${f.status !== 'open' ? 'done' : ''}" data-sample="${sampleId ?? ''}" data-finding="${esc(f.id)}">
     <div>${thumb}</div>
-    <div><span class="badge ${f.severity.toLowerCase()}">${f.severity}</span><div class="f-check">${esc(f.check)}</div></div>
+    <div><span class="badge ${f.severity.toLowerCase()}">${f.severity}</span><div class="f-check">${esc(window.Viz ? Viz.checkName(f.check) : f.check)}</div></div>
     <div><div class="f-msg">${esc(f.message)}</div><div class="f-check"><span class="badge ${f.confidence}">${f.confidence === 'candidate' ? '候选' : '确定性'}</span></div></div>
     <div class="f-img">${esc(f.subject?.image_rel || '')}</div>
     <div class="f-status">${status || '待裁定'}</div>

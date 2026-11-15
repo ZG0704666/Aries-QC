@@ -1,0 +1,24 @@
+﻿model_name: candidate_v2
+global_health:
+  recall: 0.95
+  conf_drift: 0.0
+  bbox_jitter: 0.01
+  false_positive_rate: 0.03
+per_class_health:
+  agv:
+    recall: 0.65
+    conf_drift: -0.15
+    confusion:
+      rail door: 0.2
+  rail door:
+    recall: 0.95
+    conf_drift: 0.0
+  robotic arm:
+    recall: 0.72
+    conf_drift: -0.1
+  sliding door:
+    recall: 0.95
+    conf_drift: 0.0
+  smart hand:
+    recall: 0.95
+    conf_drift: 0.0

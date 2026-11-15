@@ -1,0 +1,6 @@
+﻿map50_min: 0.75
+per_class_drop_max: 0.05
+recall_drop_max: 0.1
+critical_classes:
+- agv
+- rail door

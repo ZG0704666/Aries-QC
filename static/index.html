@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>标尺 · AI 数据采集与标注质检专员</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/viz.css">
 </head>
 <body>
 <div class="bg-grid"></div>
 <header class="topbar">
   <div class="brand">
-    <div class="mark">尺</div>
+    <img class="mark-img" src="/static/logo.png" alt="标尺 logo">
     <div>
-      <div class="brand-name">标尺 <span>LABEL QC</span></div>
+      <div class="brand-name">Aries QC <span>LABEL QC ENGINE</span></div>
       <div class="brand-sub">AI 数据采集与标注质检专员 · 每一帧都有依据</div>
     </div>
+  </div>
+  <div class="mode-switch" id="modeSwitch" role="tablist">
+    <button class="mode-btn active" data-mode="quality" role="tab">数据质检</button>
+    <button class="mode-btn" data-mode="regression" role="tab">模型回归门禁</button>
   </div>
   <div class="top-status">
     <span class="pill" id="llmStatus"><i></i> 模型服务检测中</span>
@@ -23,7 +28,7 @@
   </div>
 </header>
 
-<div class="shell">
+<div class="shell" id="qualityShell">
   <aside class="sidebar">
     <section class="card intake">
       <div class="card-title">
@@ -92,6 +97,7 @@
       <div class="pipeline">
         <span>规范编译</span><i></i><span>类别对齐</span><i></i><span>双通道质检</span><i></i><span>人工裁定</span><i></i><span>补采闭环</span>
       </div>
+      <button class="chip mode-jump" data-jump="regression">需要检查模型回归？切到「模型回归门禁」 →</button>
     </section>
 
     <section id="runView" hidden>
@@ -117,6 +123,93 @@
     </section>
   </main>
 </div>
+
+<div class="shell" id="regressionShell" hidden>
+  <aside class="sidebar">
+    <section class="card intake">
+      <div class="card-title">
+        <span>回归门禁 · 接单</span>
+        <span class="tiny">NEW RUN</span>
+      </div>
+
+      <div class="quick">
+        <button class="quick-btn" data-reg-demo="v2">候选 v2 · 预期拦截</button>
+        <button class="quick-btn" data-reg-demo="v3">候选 v3 · 预期放行</button>
+      </div>
+
+      <label class="field-label">旧展项数据集</label>
+      <select id="regDatasetSelect" class="input"></select>
+
+      <label class="field-label">基线模型档案</label>
+      <select id="regBaselineSelect" class="input"></select>
+
+      <label class="field-label">候选模型档案</label>
+      <select id="regCandidateSelect" class="input"></select>
+
+      <label class="field-label">验收阈值</label>
+      <div class="reg-thresholds">
+        <div class="reg-th-row"><span>mAP50 下限</span><input id="regThMap50" class="input mono" type="number" step="0.01" min="0" max="1"></div>
+        <div class="reg-th-row"><span>逐类 AP50 跌幅上限</span><input id="regThDrop" class="input mono" type="number" step="0.01" min="0" max="1"></div>
+        <div class="reg-th-row"><span>召回率跌幅上限</span><input id="regThRecall" class="input mono" type="number" step="0.01" min="0" max="1"></div>
+      </div>
+
+      <button class="primary" id="regStartBtn">开始回归检测 <span>→</span></button>
+      <div class="hint">模拟后端演示：换候选档案即可模拟"换权重"，匹配与指标走真实 IoU 逻辑，结论是算出来的。</div>
+    </section>
+
+    <section class="card trace-card">
+      <div class="card-title"><span>执行轨迹</span><span class="tiny" id="regTraceState">IDLE</span></div>
+      <div class="trace" id="regTrace">
+        <div class="trace-empty">等待接单…</div>
+      </div>
+    </section>
+  </aside>
+
+  <main class="main">
+    <section id="regWelcome" class="welcome">
+      <div class="hero">
+        <div class="eyebrow">MODEL GATE · ANTI CATASTROPHIC FORGETTING</div>
+        <h1>换一次权重前，<br>先看<span>旧展项会不会被遗忘</span>。</h1>
+        <p>对比基线模型和候选模型在旧展项数据集上的表现，逐类定位退化，给出放行、警告或拦截的结论，并附带回补数据、调阈值、冻结层等处理建议。</p>
+        <div class="hero-actions">
+          <button class="primary" id="regHeroStart">用候选 v2 跑一遍</button>
+          <span class="mono muted">模拟后端 · 真实 IoU 匹配 · 可复现</span>
+        </div>
+      </div>
+      <div class="outputs">
+        <div class="output"><span>01</span><b>指标对比</b><p>基线与候选逐类 AP50、召回率、精确率对比，带跌幅方向。</p></div>
+        <div class="output"><span>02</span><b>退化定位</b><p>逐类判定是否退化，关键类别命中直接拦截。</p></div>
+        <div class="output"><span>03</span><b>漏检错检案例</b><p>候选模型新增的漏检、错检案例，带证据框可核验。</p></div>
+        <div class="output"><span>04</span><b>处理建议</b><p>按优先级给出回补数据、调阈值、冻结层、重训练建议。</p></div>
+      </div>
+      <div class="pipeline">
+        <span>加载数据集</span><i></i><span>加载档案</span><i></i><span>双模型评估</span><i></i><span>逐类对比</span><i></i><span>阈值判定</span>
+      </div>
+    </section>
+
+    <section id="regRunView" hidden>
+      <div class="run-head">
+        <div>
+          <div class="eyebrow" id="regRunIdLabel">RUN</div>
+          <h1 id="regDatasetName">—</h1>
+          <p id="regHeadline">—</p>
+        </div>
+        <div class="gate" id="regVerdictBadge">—</div>
+      </div>
+      <div class="kpis" id="regKpis"></div>
+      <div class="tabs" id="regTabs">
+        <button data-tab="overview" class="active">概览</button>
+        <button data-tab="compare">指标对比</button>
+        <button data-tab="degraded">退化定位</button>
+        <button data-tab="cases">案例</button>
+        <button data-tab="suggestions">处理建议</button>
+        <button data-tab="delivery">交付包</button>
+      </div>
+      <div id="regTabContent" class="tab-content"></div>
+    </section>
+  </main>
+</div>
+
 
 <div id="drawer" class="drawer" hidden>
   <div class="drawer-backdrop"></div>
@@ -160,6 +253,8 @@
 </div>
 
 <div id="toast" class="toast" hidden></div>
+<script src="/static/viz.js"></script>
 <script src="/static/app.js"></script>
+<script src="/static/regression.js"></script>
 </body>
 </html>
