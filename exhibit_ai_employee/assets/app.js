@@ -190,11 +190,21 @@
       const art = ['<i class="glass"></i><i class="straw"></i>',
         '<i class="speaker"></i>', '<i class="mirror-plane"></i><i class="ray"></i>'][i % 3];
       const a = audioOf(e.id);
-      const state = a ? '音频 ' + secOf(a.duration_s) : '无音频';
-      const pending = (e.issues || []).length ? stat('待核验', 'fail') : stat('引用可定位', 'pass');
-      return `<button type="button" class="exhibit-tile ${S.exhibitIndex === i ? 'active' : ''}" ` +
-        `data-action="exhibit" data-value="${i}"><span class="exhibit-art ${['refraction', 'sound', 'colour'][i % 3]}" aria-hidden="true">${art}</span>` +
-        `<span><strong>${esc(e.id)} ${esc(e.title)}</strong>${pending}<small>　${state}</small></span></button>`;
+      const running = S.pendingRun === e.id;
+      const busy = !!S.pendingRun;
+      const state = running ? '生成中…' : (a ? '音频 ' + secOf(a.duration_s) : '无音频');
+      const pending = running ? stat('正在生成', 'warn')
+        : ((e.issues || []).length ? stat('待核验', 'fail') : stat('引用可定位', 'pass'));
+      /* 瓦片不是一整颗按钮：标题区负责切换展项，下面两个是它自己的操作。
+         这样单个展项可以独立重做、独立合成，不用绕到对话框里喊。 */
+      return `<div class="exhibit-tile ${S.exhibitIndex === i ? 'active' : ''} ${running ? 'is-running' : ''}">` +
+        `<button type="button" class="exhibit-pick" data-action="exhibit" data-value="${i}">` +
+        `<span class="exhibit-art ${['refraction', 'sound', 'colour'][i % 3]}" aria-hidden="true">${art}</span>` +
+        `<span><strong>${esc(e.id)} ${esc(e.title)}</strong>${pending}<small>　${state}</small></span></button>` +
+        `<span class="exhibit-ops">` +
+        `<button type="button" data-action="run-one" data-value="${esc(e.id)}" ${busy ? 'disabled' : ''} title="只重新生成这个展项">重做</button>` +
+        `<button type="button" data-action="synth" data-value="${esc(e.id)}" ${running ? 'disabled' : ''} title="只为这个展项合成音频">${a ? '重合成' : '合成'}</button>` +
+        `</span></div>`;
     }).join('')}</div>`;
   }
 
@@ -1061,6 +1071,23 @@
     } catch (error) { S.pendingRun = false; fail(error); render(); }
   }
 
+  /* 只重新生成一个展项：其余展项的草稿、音频都不动。
+     这是「不用所有事都走对话框」的关键——单个展项可以独立重做。 */
+  async function doRunOne(exhibitId) {
+    if (S.pendingRun) return;
+    const exhibit = exs().find((e) => e.id === exhibitId);
+    if (!exhibit) { toast('展项不存在', 'error'); return; }
+    if (!window.confirm(`只重新生成 ${exhibitId}《${exhibit.title}》，其余展项保持不变。该展项的音频需要重新合成。继续？`)) return;
+    S.pendingRun = exhibitId;
+    render();
+    try {
+      await api.post('/api/studio/projects/' + S.project.id + '/run', { exhibit_id: exhibitId });
+      toast(`已开始重新生成 ${exhibitId}，事件流会实时刷新`);
+      await reloadProject();
+      await reloadEvents(false);
+    } catch (error) { S.pendingRun = false; fail(error); render(); }
+  }
+
   async function doTests() {
     try {
       const data = await postAction('tests');
@@ -1280,6 +1307,7 @@
     },
     publish: () => doPublish(),
     synth: (value) => doSynth(value),
+    'run-one': (value) => doRunOne(value),
     'export-quote': () => exportQuote(),
     'download-zip': () => { location.href = withToken('/api/studio/projects/' + P().id + '/export.zip'); },
     'download-md': () => { location.href = withToken('/api/studio/projects/' + P().id + '/export'); },
