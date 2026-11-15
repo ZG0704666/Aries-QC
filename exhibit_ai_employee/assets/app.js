@@ -119,6 +119,9 @@
   };
   const secOf = (v) => (v === null || v === undefined ? '—' : Number(v).toFixed(2) + ' 秒');
   const pill = (text, kind) => `<span class="pill ${kind || ''}">${esc(text)}</span>`;
+  // 成组出现的小指标用 stat：只有一个小圆点加文字，不占一块底色。
+  // 一屏十几个 pill 会让版面看起来到处是标签，stat 是同一信息的更轻写法。
+  const stat = (text, tone) => `<span class="stat${tone ? ' is-' + tone : ''}">${esc(text)}</span>`;
   const note = (html, kind) => `<div class="notice ${kind || ''}">${html}</div>`;
   const act = (action, label, cls, extra) =>
     `<button type="button" class="${cls || ''}" data-action="${action}" ${extra || ''}>${label}</button>`;
@@ -172,8 +175,8 @@
       const art = ['<i class="glass"></i><i class="straw"></i>',
         '<i class="speaker"></i>', '<i class="mirror-plane"></i><i class="ray"></i>'][i % 3];
       const a = audioOf(e.id);
-      const state = a ? pill('已合成 · 实测 ' + secOf(a.duration_s), 'green') : pill('无音频', 'amber');
-      const pending = (e.issues || []).length ? pill('待核验', 'red') : pill('引用可定位', 'green');
+      const state = a ? '已合成 · 实测 ' + secOf(a.duration_s) : '无音频';
+      const pending = (e.issues || []).length ? stat('待核验', 'fail') : stat('引用可定位', 'pass');
       return `<button type="button" class="exhibit-tile ${S.exhibitIndex === i ? 'active' : ''}" ` +
         `data-action="exhibit" data-value="${i}"><span class="exhibit-art ${['refraction', 'sound', 'colour'][i % 3]}" aria-hidden="true">${art}</span>` +
         `<span><strong>${esc(e.id)} ${esc(e.title)}</strong>${pending}<small>　${state}</small></span></button>`;
@@ -241,7 +244,7 @@
           <section class="panel panel-pad">
             <h3>报价与成本</h3>
             <div class="price">${money(q.price)}</div>
-            <div class="metric-row">${q.confirmed ? pill('范围已确认', 'green') : pill('范围待确认', 'amber')}${pill('合同与回款未接入', 'blue')}</div>
+            <div class="metric-row">${stat('合同与回款未接入')}</div>
             <form data-form="money">
               <div class="field-row">${field('报价', 'price', qText('price', ''), 'number')}${field('直接人工', 'labor', qText('labor', ''), 'number')}</div>
               <div class="field-row">${field('模型与语音', 'models', qText('models', ''), 'number')}${field('其他直接费用', 'other', qText('other', ''), 'number')}</div>
@@ -358,9 +361,9 @@
           <details class="event-history"><summary>查看运行记录 <span class="mono">${S.events.length} 条</span></summary>${eventsHtml(30)}</details>
           <h4>后续步骤</h4>
           <ul class="gate-list">
-            <li>自测 ${g.allPassed ? pill(passedCount() + '/' + testsOf().length + ' 通过', 'green') : (g.tested ? pill('有失败项', 'red') : pill('未运行', 'amber'))}</li>
-            <li>人工审核 ${g.approved ? pill('已通过', 'green') : pill('未批准', 'amber')}</li>
-            <li>音频 ${g.audio ? pill(audioCount() + '/' + exs().length + ' 段', 'green') : pill('缺 ' + (exs().length - audioCount()) + ' 段', 'amber')}</li>
+            <li>自测 ${g.allPassed ? stat(passedCount() + '/' + testsOf().length + ' 通过', 'pass') : (g.tested ? stat('有失败项', 'fail') : stat('未运行', 'warn'))}</li>
+            <li>人工审核 ${g.approved ? stat('已通过', 'pass') : stat('未批准', 'warn')}</li>
+            <li>音频 ${g.audio ? stat(audioCount() + '/' + exs().length + ' 段', 'pass') : stat('缺 ' + (exs().length - audioCount()) + ' 段', 'warn')}</li>
           </ul>
           <div class="stack-tight">
             ${act('run', '↻ 按当前资料重新生成', 'full', S.pendingRun ? 'disabled' : '')}
@@ -376,7 +379,7 @@
     return `<div class="divider"></div>
       <h4>联网调研来源（${research.length} 个网页）</h4>
       ${research.map((r) => `<div class="section-spacer">
-        <div class="metric-row"><strong>${esc(r.id)}</strong>${pill((r.quotes || []).length + ' 条摘录', 'blue')}${r.url
+        <div class="metric-row"><strong>${esc(r.id)}</strong>${stat((r.quotes || []).length + ' 条摘录')}${r.url
           ? `<a href="${esc(r.url)}" target="_blank" rel="noreferrer noopener" class="small">原始页面 ↗</a>` : ''}</div>
         <p class="small muted">${esc(r.title || r.url || '')}${r.query ? ` · 搜索词「${esc(r.query)}」` : ''}</p>
         <ul class="para-list" id="paras-${esc(r.id)}">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
@@ -393,7 +396,7 @@
       const researchPanel = research.length ? `<section class="panel panel-pad">
           <h3>调研来源（${research.length} 个网页）</h3>
           ${research.map((r) => `<div class="section-spacer">
-            <div class="metric-row"><strong>${esc(r.id)}</strong>${pill((r.quotes || []).length + ' 条摘录')}${r.url
+            <div class="metric-row"><strong>${esc(r.id)}</strong>${stat((r.quotes || []).length + ' 条摘录')}${r.url
               ? `<a href="${esc(r.url)}" target="_blank" rel="noreferrer noopener" class="small">原始页面 ↗</a>` : ''}</div>
             <p class="small muted">${esc(r.title || r.url || '')}</p>
             <ul class="para-list">${(r.quotes || []).map((q) => `<li data-para="${esc(q.id)}">
@@ -453,7 +456,7 @@
             rList.length ? `${rList.length} 个网页` : '',
           ].filter(Boolean).join(' + ') || '（暂无依据）'}</h3>
           ${list.map((s) => `<div class="section-spacer">
-            <div class="metric-row"><strong>${esc(s.id)}</strong>${pill(byteText(s.bytes), 'blue')}${pill((s.paragraphs || []).length + ' 段')}</div>
+            <div class="metric-row"><strong>${esc(s.id)}</strong>${stat(byteText(s.bytes))}${stat((s.paragraphs || []).length + ' 段')}</div>
             <p class="small muted">${esc(s.name)}</p>
             <ul class="para-list" id="paras-${esc(s.id)}">${(s.paragraphs || []).map((x) => `<li data-para="${esc(x.id)}">
               <div class="para-id">${esc(x.id)}</div><p>${esc(x.text)}</p></li>`).join('')}</ul>
@@ -469,7 +472,7 @@
         </section>
         <section class="panel">
           <div class="panel-header"><h3>知识卡与脚本</h3>
-            ${pill('v' + p.version, 'blue')}${e.verified ? pill('引用已核验', 'green') : pill('待核验', 'amber')}</div>
+            ${stat('v' + p.version)}${e.verified ? stat('引用已核验', 'pass') : stat('待核验', 'warn')}</div>
           <div class="tab-line">${TABS.map((t) => `<button type="button" class="${S.contentTab === t ? 'active' : ''}" data-action="content-tab" data-value="${t}">${t}</button>`).join('')}</div>
           <div class="panel-pad">
             <div class="paper-heading"><strong>${esc(e.id)} ${esc(e.title)}</strong><span class="mono">v${p.version} · ${((e.main || {}).text || '').length} 字</span></div>
@@ -501,16 +504,16 @@
         <section class="panel panel-pad">
           <div class="paper-heading"><h3>自测结果</h3>
             ${act('run-tests', rows.length ? '↻ 重新自测' : '▶ 运行自测', 'outline-green')}</div>
-          <div class="metric-row">${pill(`${rows.length} 条用例`, 'blue')}${rows.length
-            ? (g.allPassed ? pill(`${passedCount()} 通过`, 'green') : pill(`${testsOf().length - passedCount()} 未通过`, 'red'))
-            : pill('未运行', 'amber')}</div>
+          <div class="metric-row">${stat(`${rows.length} 条用例`)}${rows.length
+            ? (g.allPassed ? stat(`${passedCount()} 通过`, 'pass') : stat(`${testsOf().length - passedCount()} 未通过`, 'fail'))
+            : stat('未运行', 'warn')}</div>
           ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>用例</th><th>结果</th><th class="wrap">说明</th></tr></thead><tbody>
-            ${rows.map((t) => `<tr><td>${esc(t.name)}</td><td>${t.status === 'passed' ? pill('通过', 'green') : pill('未通过', 'red')}</td><td class="wrap">${esc(t.detail || '')}</td></tr>`).join('')}
+            ${rows.map((t) => `<tr><td>${esc(t.name)}</td><td>${t.status === 'passed' ? stat('通过', 'pass') : stat('未通过', 'fail')}</td><td class="wrap">${esc(t.detail || '')}</td></tr>`).join('')}
           </tbody></table></div>` : `<p class="small muted">还没运行自测。</p>`}
         </section>
         <section class="panel panel-pad">
           <h3>人工审核</h3>
-          <div class="metric-row">${pill('v' + p.version, 'blue')}${pill('版本绑定', 'green')}${g.approved ? pill('已批准', 'green') : pill('未批准', 'amber')}</div>
+          <div class="metric-row">${stat('v' + p.version)}${stat('版本绑定', 'pass')}${g.approved ? stat('已批准', 'pass') : stat('未批准', 'warn')}</div>
           ${p.review ? `<div class="mini-code">${p.review.decision === 'approved' ? '通过' : '要求修改'} · ${esc(p.review.reviewer)}<br>${esc(dateTimeOf(p.review.at))} · 绑定 v${p.review.version}</div>` : ''}
           ${blockReasons.length ? note(`<strong>${esc(blockReasons.join('；'))}</strong>`, 'red') : ''}
           <form data-form="review" class="section-spacer">
@@ -554,12 +557,12 @@
         <div class="stack">
           <section class="panel panel-pad">
             <h3>合成与试听</h3>
-            <div class="metric-row">${pill('引擎 breeze（BREEZE_MODEL_ID）', 'blue')}${pill('指定引擎失败即报错，不静默降级', 'green')}</div>
+            <div class="metric-row">${stat('引擎 breeze（BREEZE_MODEL_ID）')}${stat('指定引擎失败即报错，不静默降级', 'pass')}</div>
             <div class="table-wrap section-spacer"><table><thead><tr><th>展项</th><th>文本</th><th>音频</th><th>状态</th></tr></thead><tbody>
               ${rows.map((r) => `<tr><td><strong>${esc(r.e.id)}</strong><br><small>${esc(r.e.title)}</small></td>
                 <td class="num">${((r.e.main || {}).text || '').length} 字</td>
                 <td class="wrap">${r.a ? `${esc(r.a.filename)}<br><small>${byteText(r.a.bytes)} · ${r.a.format} · 实测 ${secOf(r.d)}</small>` : '—'}</td>
-                <td>${r.a ? pill('已合成', 'green') : pill('待合成', 'amber')}
+                <td>${r.a ? stat('已合成', 'pass') : stat('待合成', 'warn')}
                   <div class="section-spacer">${act('synth', r.a ? '重新合成' : '合成', 'outline-green', `data-value="${esc(r.e.id)}"`)}</div></td></tr>`).join('')}
             </tbody></table></div>
             ${rows.filter((r) => r.a).map((r) => `<div class="audio-line section-spacer"><strong>${esc(r.e.id)}</strong>
@@ -573,10 +576,10 @@
         </div>
         <section class="panel panel-pad">
           <h3>时长门 <span class="micro-tag">ffprobe 实测</span></h3>
-          <div class="metric-row">${pill(`窗口 ${low}~${high} 秒`, 'blue')}${pill(`目标 ${target} 秒 ±${tol * 100}%`, '')}</div>
+          <div class="metric-row">${stat(`窗口 ${low}~${high} 秒`)}${stat(`目标 ${target} 秒 ±${tol * 100}%`)}</div>
           <ul class="fact-list">${rows.map((r) => `<li class="fact-item ${r.ok === false ? 'is-issue' : ''}">
             <div class="fact-meta"><strong>${esc(r.e.id)}</strong><span class="mono">${r.a ? esc(r.a.engine || '') + ' · ' + (r.a.sample_rate || '—') + ' Hz' : '未合成'}</span>
-              ${r.ok === null ? pill('无音频', 'amber') : r.ok ? pill('落在窗口内', 'green') : pill('超出窗口', 'red')}</div>
+              ${r.ok === null ? stat('无音频', 'warn') : r.ok ? stat('落在窗口内', 'pass') : stat('超出窗口', 'fail')}</div>
             <p>${r.d ? '实测 ' + secOf(r.d) + '（' + (r.a.bitrate_kbps || '—') + ' kbps）' : '还没有实测值'}</p></li>`).join('')}</ul>
           ${rows.some((r) => r.ok === false) ? note(`<strong>有 ${rows.filter((r) => r.ok === false).length} 段超出时长窗口</strong>改稿重合成，或在交付说明里写明实际时长。`, 'red') : ''}
         </section>
@@ -610,7 +613,7 @@
         <section class="panel panel-pad">
           <h3>交付包文件结构</h3>
           <div class="file-tree"><h4>⌄ ${esc(p.name)}_v${p.version}</h4>
-            ${files.map((f) => `<details${f.ok ? '' : ' open'}><summary>▤ ${esc(f.name)} ${f.ok ? pill('真实生成') : pill('缺', 'red')}</summary><p>${esc(f.note)}</p></details>`).join('')}
+            ${files.map((f) => `<details${f.ok ? '' : ' open'}><summary>▤ ${esc(f.name)} ${f.ok ? stat('真实生成', 'pass') : stat('缺', 'fail')}</summary><p>${esc(f.note)}</p></details>`).join('')}
           </div>
           <div class="section-spacer">${act('download-zip', '↓ 下载交付包（含 MP3）', 'primary full')}</div>
           <div class="section-spacer">${act('download-md', '↓ 只下载交付稿 .md', 'outline-green full')}</div>
@@ -618,11 +621,11 @@
         <section class="panel panel-pad">
           <h3>发布门禁检查</h3>
           <ul class="gate-list">
-            <li>资料授权 ${g.authorized ? pill('已登记', 'green') : pill('未登记', 'amber')}</li>
-            <li>人工审核 ${g.approved ? pill('已批准', 'green') : pill('未批准', 'red')}</li>
-            <li>自测 ${g.allPassed ? pill(passedCount() + '/' + testsOf().length, 'green') : pill(g.tested ? '有未通过' : '未运行', 'red')}</li>
-            <li>引用 ${g.clean ? pill('全部定位', 'green') : pill(issues().length + ' 处待核验', 'red')}</li>
-            <li>音频 ${g.audio ? pill(audioCount() + '/' + exs().length, 'green') : pill('缺 ' + (exs().length - audioCount()) + ' 段', 'red')}</li>
+            <li>资料授权 ${g.authorized ? stat('已登记', 'pass') : stat('未登记', 'warn')}</li>
+            <li>人工审核 ${g.approved ? stat('已批准', 'pass') : stat('未批准', 'fail')}</li>
+            <li>自测 ${g.allPassed ? stat(passedCount() + '/' + testsOf().length, 'pass') : stat(g.tested ? '有未通过' : '未运行', 'fail')}</li>
+            <li>引用 ${g.clean ? stat('全部定位', 'pass') : stat(issues().length + ' 处待核验', 'fail')}</li>
+            <li>音频 ${g.audio ? stat(audioCount() + '/' + exs().length, 'pass') : stat('缺 ' + (exs().length - audioCount()) + ' 段', 'fail')}</li>
           </ul>
           ${reasons.length ? note(`<strong>${esc(reasons.join('；'))}</strong>`, 'red') : ''}
           <div class="section-spacer">${g.published ? act('download-zip', '↓ 已发布版本交付包', 'primary full') : act('publish', '⌑ 发布 v' + p.version, 'primary full', reasons.length ? 'disabled' : '')}</div>
@@ -633,8 +636,8 @@
           <dl class="detail-list">
             <div><dt>客户</dt><dd>${esc((p.quote && p.quote.customer) || '未填写')}</dd></div>
             <div><dt>交付范围</dt><dd>${esc((p.quote && p.quote.scope) || '未填写')}</dd></div>
-            <div><dt>报价</dt><dd>${money(p.quote && p.quote.price)} ${p.quote && p.quote.confirmed ? pill('已确认', 'green') : pill('未确认', 'amber')}</dd></div>
-            <div><dt>发布状态</dt><dd>${g.published ? pill('已发布', 'green') : pill('未发布', 'red')}</dd></div>
+            <div><dt>报价</dt><dd>${money(p.quote && p.quote.price)} ${p.quote && p.quote.confirmed ? stat('已确认', 'pass') : stat('未确认', 'warn')}</dd></div>
+            <div><dt>发布状态</dt><dd>${g.published ? stat('已发布', 'pass') : stat('未发布', 'warn')}</dd></div>
             <div><dt>签收记录</dt><dd>${p.acceptance ? `${p.acceptance.decision === 'accepted' ? '已签收' : '拒收'} · ${esc(p.acceptance.signer)} · v${p.acceptance.version}` : '未登记'}</dd></div>
           </dl>
           ${g.published
@@ -675,7 +678,7 @@
         </section>
         <section class="panel panel-pad">
           <h3>候选详情</h3>
-          ${chosen ? `<div class="metric-row">${pill(chosen.exhibit_id || '未指定展项', 'blue')}${pill(chosen.state)}${pill(timeOf(chosen.recorded_at), '')}</div>
+          ${chosen ? `<div class="metric-row">${stat(chosen.exhibit_id || '未指定展项')}${stat(chosen.state)}${stat(timeOf(chosen.recorded_at))}</div>
             <dl class="detail-list">
               <div><dt>观众问题</dt><dd>${esc(chosen.question || '—')}</dd></div>
               <div><dt>现象描述</dt><dd>${esc(chosen.problem)}</dd></div>
@@ -691,7 +694,7 @@
           <h3>回归测试台</h3>
           <div class="device-check"><span>当前用例</span><strong>${testsOf().length} 条</strong></div>
           <div class="device-check"><span>通过</span><strong>${passedCount()} 条</strong></div>
-          <div class="device-check"><span>最近结果</span>${g.allPassed ? pill('全通过', 'green') : g.tested ? pill('有未通过', 'red') : pill('未运行', 'amber')}</div>
+          <div class="device-check"><span>最近结果</span>${g.allPassed ? stat('全通过', 'pass') : g.tested ? stat('有未通过', 'fail') : stat('未运行', 'warn')}</div>
           <div class="section-spacer">${act('run-tests', '▶ 执行回归自测', 'primary full')}</div>
         </section>
       </div>

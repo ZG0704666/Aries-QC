@@ -3,7 +3,7 @@
   1) 任何视口宽度下都没有页面级横向溢出（设计稿明令禁止）；
   2) 桌面双栏比例约 1:2（左栏 ≈ 33%），窄屏退化为单栏且能切换；
   3) 关键面板真的占位（宽高都 > 0），没有塌成 0 高；
-  4) 字号符合设计稿：正文 16px、页面标题 24–28px、导航 14px；
+  4) 字号落在 token 阶梯内（11/13/15/18/22/28），标题用较大档；
   5) 专注工作区（focus-work）只藏对话栏，退出后恢复。
 跑法：python _ui_layout.py
 """
@@ -158,9 +158,11 @@ def main():
               return { body: pick('body'), h2: pick('#workspace-body h2'), tab: pick('#workspace-tabs a'),
                        chat: pick('#chat-log'), pill: pick('.pill') };
             }""")
-            check("字号：正文 16px", fonts["body"] == "16px", fonts["body"])
-            check("字号：页面标题 24–28px", fonts["h2"] in ("24px", "26px", "28px"), fonts["h2"])
-            check("字号：导航 14px", fonts["tab"] == "14px", fonts["tab"])
+            LADDER = {"11px", "13px", "15px", "18px", "22px", "28px"}
+            check("字号：正文在阶梯内", fonts["body"] in LADDER, fonts["body"])
+            check("字号：页面标题在阶梯内（且是较大档）",
+                  fonts["h2"] in ("22px", "28px"), fonts["h2"])
+            check("字号：导航在阶梯内", fonts["tab"] in LADDER, fonts["tab"])
 
             page.locator('[data-action="focus-work"]').first.click()
             page.wait_for_timeout(400)

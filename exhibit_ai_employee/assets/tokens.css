@@ -1,0 +1,36 @@
+/* 设计 token：全站唯一的取值来源。
+   由 _design_tokens.py 生成，改取值请改那个脚本再重跑，不要在别处手写字面色。
+   阶梯规则：字号 6 档、间距 4 的倍数、圆角 3 档、线两条、面四层、墨四层 + 三组状态色。
+   命名统一带 --ds- 前缀，避免与设计包自带的 --navy / --line 撞名（撞名会变成自引用而失效）。 */
+:root{
+  /* 字号 */
+  --ds-fs-11:11px; --ds-fs-13:13px; --ds-fs-15:15px; --ds-fs-18:18px; --ds-fs-22:22px; --ds-fs-28:28px;
+  /* 间距 */
+  --ds-sp-2:2px; --ds-sp-4:4px; --ds-sp-8:8px; --ds-sp-12:12px; --ds-sp-16:16px; --ds-sp-24:24px; --ds-sp-32:32px;
+  /* 圆角 */
+  --ds-r-6:6px; --ds-r-8:8px; --ds-r-12:12px; --ds-r-999:999px;
+  --ds-ink-1:#24364f; /* 正文 */
+  --ds-ink-2:#546a85; /* 次要文字 */
+  --ds-ink-3:#8296ad; /* 元信息、占位 */
+  --ds-ink-4:#aeb9c7; /* 最弱的分隔性文字 */
+  --ds-ink-invert:#eaf1ff; /* 深底上的文字 */
+  --ds-line:#e4e9f0; /* 常规分隔线、卡片描边 */
+  --ds-line-2:#cfd8e4; /* 需要更明确的描边 */
+  --ds-surface-0:#ffffff; /* 卡片、纸张 */
+  --ds-surface-1:#f7f9fc; /* 次级面、区块底 */
+  --ds-surface-2:#eef2f8; /* 凹槽、表头、禁用面 */
+  --ds-surface-3:#e3e9f2; /* 更重的面 */
+  --ds-navy:#132541; /* 顶栏深底 */
+  --ds-accent:#16815f; /* 主强调、主按钮 */
+  --ds-accent-deep:#0f6b4f; /* 强调的按下/深文字 */
+  --ds-accent-soft:#eaf6f1; /* 强调浅底 */
+  --ds-accent-line:#b7dccd; /* 强调描边 */
+  --ds-danger:#a8404f; /* 错误、阻断 */
+  --ds-danger-soft:#fdf1f3; /* 错误浅底 */
+  --ds-danger-line:#f0d2d8; /* 错误描边 */
+  --ds-warn:#9a6b1d; /* 待确认、警告 */
+  --ds-warn-soft:#fdf6e7; /* 警告浅底 */
+  --ds-warn-line:#ecd9b4; /* 警告描边 */
+  --ds-info:#2f5f9e; /* 进行中、信息 */
+  --ds-info-soft:#eef3fb; /* 信息浅底 */
+  --ds-info-line:#cddcf0; /* 信息描边 */}
