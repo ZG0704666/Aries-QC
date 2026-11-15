@@ -128,6 +128,20 @@
   const field = (label, name, value, type, extra) => `<label class="field"><span>${esc(label)}</span>` +
     `<input name="${name}" type="${type || 'text'}" value="${esc(value)}" ` +
     `${type === 'number' ? 'min="0" step="any" inputmode="decimal"' : ''} ${extra || ''}></label>`;
+  /* 空输入框配一句示例：用户对着一片白框往往不知道要填什么。
+     占位只是示例、不是预填值，也不会被当成真实数据提交。 */
+  const HINT = {
+    customer: '例如：市科技馆', reviewer: '例如：王老师',
+    scope: '例如：5 个展项的讲解与语音，网页端交付',
+    audience: '例如：小学三年级以上亲子观众',
+    price: '例如：12000', labor: '例如：6000', models: '例如：300', other: '例如：200',
+    title: '例如：小朋友问「她为什么在笑」答不上来',
+    question: '例如：这幅画为什么这么有名？',
+    confirmed_by: '例如：张老师',
+    signer: '例如：李馆长', note: '例如：现场试用通过'
+  };
+  const hintField = (label, name, value, type) =>
+    field(label, name, value, type, `placeholder="${esc(HINT[name] || '')}"`);
 
   /* ================= 派生数据 ================= */
   const P = () => S.project;
@@ -165,9 +179,8 @@
   }
 
   function header(title, subtitle, meta) {
-    const sm = statusMeta();
     return `<div class="page-header"><div><h2>${esc(title)}</h2><p>${subtitle}</p></div>` +
-      `<div class="header-meta">${meta || pill(sm[0], sm[1])}</div></div>`;
+      `<div class="header-meta">${meta || ''}</div></div>`;
   }
 
   function exhibitTray() {
@@ -226,9 +239,9 @@
         <section class="panel panel-pad">
           <h3>需求与交付范围</h3>
           <form data-form="quote">
-            <div class="field-row">${field('客户名称', 'customer', qText('customer', ''))}${field('内容审核人', 'reviewer', qText('reviewer', ''))}</div>
-            <div class="field-row">${field('目标观众', 'audience', qText('audience', p.audience || ''))}${field('讲解目标时长（秒）', 'duration', qText('duration', 45), 'number')}</div>
-            ${field('服务范围', 'scope', qText('scope', ''))}
+            <div class="field-row">${hintField('客户名称', 'customer', qText('customer', ''))}${hintField('内容审核人', 'reviewer', qText('reviewer', ''))}</div>
+            <div class="field-row">${hintField('目标观众', 'audience', qText('audience', p.audience || ''))}${field('讲解目标时长（秒）', 'duration', qText('duration', 45), 'number')}</div>
+            ${hintField('服务范围', 'scope', qText('scope', ''))}
             <dl class="detail-list">
               <div><dt>交付内容</dt><dd>主讲解、简化版、追问与资料外兜底<br>来源知识卡、自测记录、交付包（含 MP3）</dd></div>
               <div><dt>设备范围</dt><dd>网页内容体验<br>眼镜接入与实机验收<b>尚未实现</b></dd></div>
@@ -246,8 +259,8 @@
             <div class="price">${money(q.price)}</div>
             <div class="metric-row">${stat('合同与回款未接入')}</div>
             <form data-form="money">
-              <div class="field-row">${field('报价', 'price', qText('price', ''), 'number')}${field('直接人工', 'labor', qText('labor', ''), 'number')}</div>
-              <div class="field-row">${field('模型与语音', 'models', qText('models', ''), 'number')}${field('其他直接费用', 'other', qText('other', ''), 'number')}</div>
+              <div class="field-row">${hintField('报价', 'price', qText('price', ''), 'number')}${hintField('直接人工', 'labor', qText('labor', ''), 'number')}</div>
+              <div class="field-row">${hintField('模型与语音', 'models', qText('models', ''), 'number')}${hintField('其他直接费用', 'other', qText('other', ''), 'number')}</div>
               <button type="submit" class="outline-green full">更新测算</button>
             </form>
             <ul class="cost-lines">
@@ -355,7 +368,7 @@
           ${exhibitTray()}
         </section>
         <aside class="panel event-inspector"><div class="panel-pad">
-          <div class="panel-title">运行事件 <span class="micro-tag">真实记录</span></div>
+          <div class="panel-title">运行事件 </div>
           ${issuesHere ? note(`<strong>! 有 ${issuesHere} 处引用待处理</strong>`, 'red') : ''}
           ${issuesHere ? `<div class="notice-actions">${act('goto-issues', '查看待核验', 'primary')}</div>` : ''}
           <details class="event-history"><summary>查看运行记录 <span class="mono">${S.events.length} 条</span></summary>${eventsHtml(30)}</details>
@@ -418,7 +431,7 @@
               <div class="divider"></div>
               <h4>资料授权</h4>
               ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}</div>`
-                : `<form data-form="authorize"><div class="field-row">${field('确认人姓名', 'confirmed_by', '')}</div>
+                : `<form data-form="authorize"><div class="field-row">${hintField('确认人姓名', 'confirmed_by', '')}</div>
                   <button type="submit" class="outline-green">登记资料授权</button></form>`}
             </section>
             ${researchPanel || `<section class="panel panel-pad">
@@ -465,7 +478,7 @@
           <div class="divider"></div>
           <h4>资料授权</h4>
           ${p.authorization ? `<div class="mini-code">${esc(p.authorization.confirmed_by)} · ${esc(dateTimeOf(p.authorization.at))}<br>${esc(p.authorization.scope || '')}</div>`
-            : `<form data-form="authorize"><div class="field-row">${field('确认人姓名', 'confirmed_by', '')}</div>
+            : `<form data-form="authorize"><div class="field-row">${hintField('确认人姓名', 'confirmed_by', '')}</div>
               <button type="submit" class="outline-green">登记资料授权</button></form>`}
           <div class="divider"></div>
           <label class="file-input">＋ 导入资料<input type="file" data-upload="material" accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.docx,.pdf" hidden></label>
@@ -517,7 +530,7 @@
           ${p.review ? `<div class="mini-code">${p.review.decision === 'approved' ? '通过' : '要求修改'} · ${esc(p.review.reviewer)}<br>${esc(dateTimeOf(p.review.at))} · 绑定 v${p.review.version}</div>` : ''}
           ${blockReasons.length ? note(`<strong>${esc(blockReasons.join('；'))}</strong>`, 'red') : ''}
           <form data-form="review" class="section-spacer">
-            ${field('审核人', 'reviewer', (p.review && p.review.reviewer) || '')}
+            ${hintField('审核人', 'reviewer', (p.review && p.review.reviewer) || '')}
             <label class="field"><span>审核意见</span><textarea name="note" rows="3" maxlength="2000" placeholder="写下事实、语气或来源方面的修改意见…">${esc((p.review && p.review.note) || '')}</textarea></label>
             <div class="inline-actions">
               <button type="submit" class="outline-green" data-decision="needs_revision">保存退回意见</button>
@@ -606,7 +619,7 @@
     if (!g.clean) reasons.push(`还有 ${issues().length} 处引用待核验`);
     const step = g.published ? (g.accepted ? 5 : 4) : (g.approved ? 3 : (g.allPassed ? 2 : 1));
     return header('发布与交付验收', `${esc(p.name)} · v${p.version} · ${esc(p.id)}`, pill(g.published ? '已发布' : '未发布', g.published ? 'green' : 'amber')) +
-      pipeline([['内容批准', g.approved ? '已通过' : '未通过'], ['自测', g.allPassed ? '全通过' : '未全通过'],
+      pipeline([['内容批准', g.approved ? '已通过' : '未批准'], ['自测', g.allPassed ? '全通过' : '未全通过'],
         ['音频', audioCount() + '/' + exs().length], ['发布', g.published ? '已发布' : '未发布'],
         ['客户签收', g.accepted ? '已登记' : '未登记']], step) +
       `<div class="grid cols-3">
@@ -641,9 +654,9 @@
             <div><dt>签收记录</dt><dd>${p.acceptance ? `${p.acceptance.decision === 'accepted' ? '已签收' : '拒收'} · ${esc(p.acceptance.signer)} · v${p.acceptance.version}` : '未登记'}</dd></div>
           </dl>
           ${g.published
-            ? `<form data-form="acceptance" class="section-spacer">${field('签收人', 'signer', (p.acceptance && p.acceptance.signer) || '')}
+            ? `<form data-form="acceptance" class="section-spacer">${hintField('签收人', 'signer', (p.acceptance && p.acceptance.signer) || '')}
                <label class="field"><span>结论</span><select name="decision"><option value="accepted">接受</option><option value="rejected">拒收</option></select></label>
-               ${field('备注', 'note', (p.acceptance && p.acceptance.note) || '')}
+               ${hintField('备注', 'note', (p.acceptance && p.acceptance.note) || '')}
                <button type="submit" class="outline-green full">登记签收</button></form>`
             : `<button type="button" class="outline-green full section-spacer" disabled>登记签收（未发布）</button>`}
         </section>
@@ -663,15 +676,15 @@
         ['发布', g.published ? '已发布' : '未发布']], list.length ? 2 : 1) +
       `<div class="grid cols-3">
         <section class="panel panel-pad">
-          <div class="paper-heading"><h3>反馈列表（${list.length}）</h3>${pill('真实台账', 'green')}</div>
+          <div class="paper-heading"><h3>反馈列表（${list.length}）</h3></div>
           ${list.length ? list.map((f) => `<button type="button" class="feedback-item ${chosen && chosen.id === f.id ? 'active' : ''}" data-action="feedback-select" data-value="${esc(f.id)}">
             <strong>${esc(f.id)}</strong><span>${esc(f.title)}</span><small>${esc(f.state === 'candidate' ? '候选' : f.state === 'closed' ? '已关闭' : '已记录')} · ${esc(timeOf(f.recorded_at))}</small></button>`).join('')
             : `<div class="empty-action"><p class="small muted">还没有反馈。</p></div>`}
           <div class="divider"></div>
           <form data-form="feedback"><h4>记录一条反馈</h4>
             <label class="field"><span>展项</span><select name="exhibit_id">${exs().map((e) => `<option value="${esc(e.id)}">${esc(e.id)} ${esc(e.title)}</option>`).join('')}</select></label>
-            ${field('标题', 'title', '')}
-            ${field('观众问题', 'question', '')}
+            ${hintField('标题', 'title', '')}
+            ${hintField('观众问题', 'question', '')}
             <label class="field"><span>现象描述（至少 4 字）</span><textarea name="problem" rows="3" maxlength="2000" placeholder="观众说讲得太快跟不上…"></textarea></label>
             <button type="submit" class="outline-green full">记录反馈</button>
           </form>
