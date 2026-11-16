@@ -1,0 +1,91 @@
+{
+  "original_files": 48,
+  "original_bytes": 88800906,
+  "unique_original_files": 42,
+  "duplicate_copies_merged": 6,
+  "duplicate_bytes_saved": 10444366,
+  "archive_files_total": 44,
+  "archive_files_kept": 40,
+  "archive_cache_files_excluded": 4,
+  "asset_files": 81,
+  "asset_bytes": 78799557,
+  "checks": {
+    "asset_sha256": "全部通过",
+    "image_structure_verified": 37,
+    "office_and_3mf_zip_crc_verified": 10,
+    "json_parse_verified": 4,
+    "python_ast_parse_verified": 5,
+    "mp4_metadata_verified": 3,
+    "largest_file_bytes": 12467605,
+    "source_files_unchanged": true
+  },
+  "limitations": [
+    "本次执行资料整理与文件结构检查，未重新执行 Aries QC 或展览互动系统中的历史测试，不把原文测试数字视为本次验证结果。",
+    "CAD 文件按原字节保留，未用 SolidWorks 或打印软件进行装配/制造验证。",
+    "PPTX、DOCX 和 3MF 进行了容器 CRC 检查，未进行逐页排版渲染。",
+    "原未命名视频已根据画面标题归为智能眼镜框体零件拆解演示；视频明确为结构示意、非工程验证。",
+    "展览互动功能文档含 9 个本地图片引用，其目标未随 001 提供；保留原文并记录，不补造截图。",
+    "凭据检查覆盖可提取文本及压缩包内容，图片未做 OCR。参考 PDF 中的教学密钥示例已核查为占位符。"
+  ],
+  "videos": [
+    {
+      "file": "03-smart-glasses/animations/智能眼镜框体_零件拆解与结构标注.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080
+        }
+      ],
+      "format": {
+        "duration": "12.000000"
+      }
+    },
+    {
+      "file": "03-smart-glasses/animations/爆炸演示.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1520,
+          "height": 1400
+        }
+      ],
+      "format": {
+        "duration": "3.000000"
+      }
+    },
+    {
+      "file": "03-smart-glasses/animations/爆炸演示_高清.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080
+        }
+      ],
+      "format": {
+        "duration": "6.250000"
+      }
+    }
+  ],
+  "functional_document_image_references": {
+    "total": 9,
+    "not_supplied": [
+      "功能文档/screenshots/project.png",
+      "功能文档/screenshots/live.png",
+      "功能文档/screenshots/content.png",
+      "功能文档/screenshots/tests.png",
+      "功能文档/screenshots/voice.png",
+      "功能文档/screenshots/release.png",
+      "功能文档/screenshots/feedback.png",
+      "功能文档/screenshots/project-switch.png",
+      "功能文档/screenshots/classic.png"
+    ]
+  }
+}
